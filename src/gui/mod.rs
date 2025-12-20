@@ -77,12 +77,45 @@ pub fn main(app :&mut App) -> bool {
     if let Some(win) = &mut app.windows.synthesis_window { if !win.draw(&mut app.document.analysis) {
         app.windows.synthesis_window = None; }}
 
-    // Quit dialog
-    let really_quit = if app.windows.quit {
-		if app.document.fileinfo.unsaved {
-			windows::quit::quit_window(&mut app.document, &mut app.windows)
-		} else { true }
-	} else { false };
+    // Pending action dialog (Unsaved changes)
+    let really_quit = if let Some(action) = app.windows.pending_action {
+        if app.document.fileinfo.unsaved {
+            match windows::unsaved::unsaved_changes_window(&mut app.document, &mut app.windows) {
+                Some(true) => {
+                    // Confirmed (either saved or discarded)
+                    execute_action(app, action)
+                },
+                Some(false) => {
+                    // Cancelled
+                    app.windows.pending_action = None;
+                    false
+                },
+                None => false, // Dialog active
+            }
+        } else {
+            execute_action(app, action)
+        }
+    } else { false };
 
     !really_quit
+}
+
+fn execute_action(app :&mut App, action :PendingAction) -> bool {
+    app.windows.pending_action = None;
+    match action {
+        PendingAction::New => {
+            app.document = Document::empty(app.background_jobs.clone());
+            app.document.fileinfo.update_window_title();
+        },
+        PendingAction::Load => {
+            mainmenu::load(app);
+        },
+        PendingAction::Import => {
+            app.windows.import_window.open = true;
+        },
+        PendingAction::Quit => {
+            return true;
+        },
+    }
+    false
 }

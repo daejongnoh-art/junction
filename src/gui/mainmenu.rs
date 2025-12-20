@@ -32,13 +32,11 @@ pub fn main_menu(app :&mut App) {
 
                 // TODO warn about saving file when doing new file / load file
                 if igMenuItemBool(const_cstr!("New file").as_ptr(), std::ptr::null(), false, true) {
-                    app.document = Document::empty(app.background_jobs.clone());
-                    app.document.fileinfo.update_window_title();
+                    app.windows.pending_action = Some(PendingAction::New);
                 }
 
                 if igMenuItemBool(const_cstr!("Load file...").as_ptr(), std::ptr::null(), false, true) {
-
-                    load(app);
+                    app.windows.pending_action = Some(PendingAction::Load);
                 }
 
                 match &app.document.fileinfo.filename  {
@@ -78,7 +76,7 @@ pub fn main_menu(app :&mut App) {
                 widgets::sep();
 
                 if igMenuItemBool(const_cstr!("Import from railML...").as_ptr(), std::ptr::null(), false, true) {
-                    app.windows.import_window.open = true;
+                    app.windows.pending_action = Some(PendingAction::Import);
                 }
 
                 if igMenuItemBool(const_cstr!("Export to railML...").as_ptr(), std::ptr::null(), false, true) {
@@ -88,7 +86,7 @@ pub fn main_menu(app :&mut App) {
                 widgets::sep();
                 if igMenuItemBool(const_cstr!("Quit").as_ptr(), 
                                   std::ptr::null(), false, true) {
-                    app.windows.quit = true;
+                    app.windows.pending_action = Some(PendingAction::Quit);
                 }
 
                 igEndMenu();

@@ -4,6 +4,14 @@ use crate::gui::windows::logview::LogStore;
 use crate::import;
 use crate::gui;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum PendingAction {
+    New,
+    Load,
+    Import,
+    Quit,
+}
+
 pub struct App {
     pub document :Document,
     pub config :Config,
@@ -31,7 +39,7 @@ pub struct Windows {
     pub config: bool,
     pub debug: bool,
     pub log: bool,
-    pub quit: bool,
+    pub pending_action: Option<PendingAction>,
     pub vehicles: bool,
     pub diagram_split :Option<f32>,
     pub import_window :import::ImportWindow,
@@ -44,7 +52,7 @@ impl Windows {
             config :false,
             debug: false,
             log: false,
-            quit: false,
+            pending_action: None,
             vehicles: false,
 
             diagram_split: None,

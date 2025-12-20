@@ -46,7 +46,7 @@ fn main() {
                               
         match action {
             // Window system requested quit (clicked ALT+F4, close button, or similar)
-            backend_glfw::SystemAction::Close => { app.windows.quit = true; },
+            backend_glfw::SystemAction::Close => { app.windows.pending_action = Some(PendingAction::Quit); },
             _ => {},
         };
 

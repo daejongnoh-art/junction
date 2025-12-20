@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::app::{App, PendingAction};
 use crate::document::objects::*;
 use crate::document::infview::*;
 use crate::gui::mainmenu;
@@ -44,7 +44,7 @@ pub fn keys(app :&mut App) {
         }
 
         if (*io).KeyCtrl && !(*io).KeyShift && igIsKeyPressed('O' as _, false) {
-            mainmenu::load(app);
+            app.windows.pending_action = Some(PendingAction::Load);
         }
 
 
