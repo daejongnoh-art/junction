@@ -111,7 +111,7 @@ fn execute_action(app :&mut App, action :PendingAction) -> bool {
             mainmenu::load(app);
         },
         PendingAction::Import => {
-            app.windows.import_window.open = true;
+            app.windows.import_window.open();
         },
         PendingAction::Quit => {
             return true;

@@ -44,7 +44,11 @@ pub enum ImportState {
 }
 
 impl ImportWindow {
-    pub fn open(&mut self) { self.open = true; }
+    pub fn open(&mut self) {
+        self.open = true;
+        self.state = ImportState::ChooseFile;
+        self.thread = None;
+    }
 
     pub fn update(&mut self) {
         while let Some(Ok(msg)) = self.thread.as_mut().map(|rx| rx.try_recv()) {
