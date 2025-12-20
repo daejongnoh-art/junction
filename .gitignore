@@ -1,0 +1,10 @@
+/lib/lsqr-rs
+/lib/railplot
+/lib/trainspotting
+/target
+/lib/*/target
+*.xml
+build_check*
+build_log*
+test_output*
+compile_errors*
