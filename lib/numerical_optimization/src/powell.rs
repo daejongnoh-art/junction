@@ -59,7 +59,7 @@ pub fn powell_optimize_unit(initial_point :DVector<f64>,
     loop {
         trace!("Powell iteration");
         let mut iter_point = powell_point.clone();
-        let mut iter_start_point = powell_point.clone();
+        let iter_start_point = powell_point.clone();
         let mut iter_cost = powell_cost;
         let mut best_search_vector :Option<(usize, f64)> = None;
         for (v_i,v) in search_vectors.iter().enumerate() {
