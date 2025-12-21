@@ -12,6 +12,15 @@ pub struct InfView {
     pub selection :HashSet<Ref>,
     pub view :View,
     pub instant_cache: dispatch::InstantCache,
+    pub drag_ghost :Option<DragState>,
+    pub clipboard :crate::document::model::Model,
+}
+
+#[derive(Debug, Clone)]
+pub struct DragState {
+    pub initial_model: crate::document::model::Model,
+    pub initial_selection: HashSet<crate::document::model::Ref>,
+    pub offset: PtC,
 }
 
 #[derive(Debug)]
@@ -41,6 +50,8 @@ impl InfView {
             selection: HashSet::new(),
             view: View::default(),
             instant_cache: dispatch::InstantCache::new(),
+            drag_ghost: None,
+            clipboard: crate::document::model::Model::empty(),
         }
     }
 }

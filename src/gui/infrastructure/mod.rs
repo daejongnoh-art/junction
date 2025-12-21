@@ -125,7 +125,7 @@ fn interact_normal(config :&Config, analysis :&mut Analysis,
                                        config.color_u32(RailUIColorName::CanvasSelectionWindow),
                                        0.0, 0, 1.0);
                 } else {
-                    set_selection_window(inf_view, analysis, a,b);
+                    set_selection_window(inf_view, analysis, a, b, (*io).KeyShift, (*io).KeyCtrl);
                     inf_view.action = Action::Normal(NormalState::Default);
                 }
             },
@@ -133,18 +133,46 @@ fn interact_normal(config :&Config, analysis :&mut Analysis,
                 if igIsMouseDragging(0,-1.0) {
                     let delta = inf_view.view.screen_to_world_ptc((*io).MouseDelta) -
                                 inf_view.view.screen_to_world_ptc(ImVec2 { x:0.0, y: 0.0 });
-                    match typ {
-                        MoveType::Continuous => { if delta.x != 0.0 || delta.y != 0.0 {
-                            move_selected_objects(analysis, inf_view, delta); }},
-                        MoveType::Grid(p) => {
-                            inf_view.action = 
-                                Action::Normal(NormalState::DragMove(MoveType::Grid(p + delta)));
-                        },
+                    
+                    let (new_model, new_selection, initial_selection, final_offset) = {
+                        if inf_view.drag_ghost.is_none() {
+                            inf_view.drag_ghost = Some(DragState {
+                                initial_model: analysis.model().clone(),
+                                initial_selection: inf_view.selection.clone(),
+                                offset: glm::zero(),
+                            });
+                        }
+                        let ghost = inf_view.drag_ghost.as_mut().unwrap();
+
+                        match typ {
+                            MoveType::Continuous => {
+                                ghost.offset += delta;
+                            },
+                            MoveType::Grid(p) => {
+                                ghost.offset = p + delta;
+                            },
+                        }
+                        
+                        let (nm, ns) = apply_move_selection(&ghost.initial_model, &ghost.initial_selection, ghost.offset);
+                        (nm, ns, ghost.initial_selection.clone(), ghost.offset)
+                    };
+
+                    if let MoveType::Grid(_) = typ {
+                        inf_view.action = Action::Normal(NormalState::DragMove(MoveType::Grid(final_offset)));
                     }
+
+                    analysis.set_model(new_model, Some(EditClass::MoveObjects(initial_selection)));
+                    analysis.override_edit_class(EditClass::MoveObjects(new_selection.clone()));
+                    inf_view.selection = new_selection;
+
                 } else {
+                    // Finalize movement
+                    if let Some(_ghost) = inf_view.drag_ghost.take() {
+                        // Already updated in the last dragging frame
+                    }
                     inf_view.action = Action::Normal(NormalState::Default);
                 }
-            }
+            },
             NormalState::Default => {
                 if !(*io).KeyCtrl && igIsItemHovered(0) && igIsMouseDragging(0,-1.0) {
                     if let Some((r,_)) = analysis.get_closest(
@@ -164,11 +192,23 @@ fn interact_normal(config :&Config, analysis :&mut Analysis,
                         inf_view.action = Action::Normal(NormalState::SelectWindow(a));
                     }
                 } else {
-                    if igIsItemHovered(0) && igIsMouseReleased(0) {
-                        if !(*io).KeyShift { inf_view.selection.clear(); }
+                    if igIsItemHovered(0) && igIsMouseReleased(0) && !igIsMouseDragging(0, -1.0) {
                         if let Some((r,_)) = analysis.get_closest(
                                 inf_view.view.screen_to_world_ptc(draw.mouse)) {
-                            inf_view.selection.insert(r);
+                            if (*io).KeyShift || (*io).KeyCtrl {
+                                if inf_view.selection.contains(&r) {
+                                    inf_view.selection.remove(&r);
+                                } else {
+                                    inf_view.selection.insert(r);
+                                }
+                            } else {
+                                inf_view.selection.clear();
+                                inf_view.selection.insert(r);
+                            }
+                        } else {
+                            if !((*io).KeyShift || (*io).KeyCtrl) {
+                                inf_view.selection.clear();
+                            }
                         }
                     }
                 }
@@ -178,40 +218,152 @@ fn interact_normal(config :&Config, analysis :&mut Analysis,
 
 }
 
-pub fn set_selection_window(inf_view :&mut InfView, analysis :&Analysis, a :ImVec2, b :ImVec2) {
+pub fn set_selection_window(inf_view :&mut InfView, analysis :&Analysis, a :ImVec2, b :ImVec2, shift: bool, ctrl: bool) {
     let s = analysis.get_rect(inf_view.view.screen_to_world_ptc(a),
-                         inf_view.view.screen_to_world_ptc(b))
-                .into_iter().collect();
-    inf_view.selection = s;
+                         inf_view.view.screen_to_world_ptc(b));
+    if shift || ctrl {
+        for r in s {
+            inf_view.selection.insert(r);
+        }
+    } else {
+        inf_view.selection = s.into_iter().collect();
+    }
 }
 
-pub fn move_selected_objects(analysis :&mut Analysis, inf_view :&mut InfView, delta :PtC) {
-    let mut model = analysis.model().clone();
-    let mut changed_ptas = Vec::new();
-    for id in inf_view.selection.iter() {
-        match id {
-            Ref::Object(pta) => {
-                let mut obj = model.objects.get_mut(pta).unwrap().clone();
-                obj.move_to(&model, obj.loc + delta);
-                let new_pta = round_coord(obj.loc);
-                model.objects.remove(pta);
-                model.objects.insert(new_pta,obj);
-                if *pta != new_pta { changed_ptas.push((*pta,new_pta)); }
-            },
-            _ => {},
+pub fn move_selection(analysis: &mut Analysis, inf_view: &mut InfView, delta: PtC) {
+    let (model, selection) = apply_move_selection(analysis.model(), &inf_view.selection, delta);
+    let selection_before = inf_view.selection.clone();
+    inf_view.selection = selection;
+    analysis.set_model(model, Some(EditClass::MoveObjects(selection_before)));
+    analysis.override_edit_class(EditClass::MoveObjects(inf_view.selection.clone()));
+}
+
+pub fn apply_move_selection(base_model: &Model, base_selection: &std::collections::HashSet<Ref>, delta: PtC) -> (Model, std::collections::HashSet<Ref>) {
+    let is_grid_locked = base_selection.iter().any(|r| matches!(r, Ref::Node(_)) || matches!(r, Ref::LineSeg(_,_)));
+    let delta = if is_grid_locked {
+        glm::vec2(delta.x.round(), delta.y.round())
+    } else {
+        delta
+    };
+    let mut model = base_model.clone();
+
+    // 1. Identify all points that belong to the selection (and thus should move)
+    let mut moving_points = im::HashSet::new();
+    for &r in base_selection {
+        match r {
+            Ref::Node(p) => { moving_points.insert(p); }
+            Ref::LineSeg(p1, p2) => {
+                moving_points.insert(p1);
+                moving_points.insert(p2);
+            }
+            _ => {}
         }
     }
 
-    let selection_before = inf_view.selection.clone();
-
-    for (a,b) in changed_ptas {
-        model_rename_object(&mut model,a,b);
-        inf_view.selection.remove(&Ref::Object(a));
-        inf_view.selection.insert(Ref::Object(b));
+    // 2. Map of old points to new coordinates
+    let mut point_map = im::HashMap::new();
+    for &p in &moving_points {
+        let new_p = glm::vec2((p.x as f32 + delta.x).round() as i32, 
+                             (p.y as f32 + delta.y).round() as i32);
+        point_map.insert(p, new_p);
     }
 
-    analysis.set_model(model, Some(EditClass::MoveObjects(selection_before)));
-    analysis.override_edit_class(EditClass::MoveObjects(inf_view.selection.clone()));
+    // 3. Update linesegs (DETACHMENT LOGIC)
+    let mut new_linesegs = im::HashSet::new();
+    for &(p1, p2) in base_model.linesegs.iter() {
+        if base_selection.contains(&Ref::LineSeg(p1, p2)) {
+            // This line is selected, it moves to its new endpoints
+            let np1 = point_map.get(&p1).cloned().unwrap_or(p1);
+            let np2 = point_map.get(&p2).cloned().unwrap_or(p2);
+            if np1 != np2 { new_linesegs.insert(util::order_ivec(np1, np2)); }
+        } else {
+            // This line is NOT selected, it stays at its original position
+            new_linesegs.insert((p1, p2));
+        }
+    }
+    model.linesegs = new_linesegs;
+
+    // 4. Update objects
+    let mut new_objects = im::HashMap::new();
+    let mut changed_ptas = Vec::new();
+    for (pta, obj) in base_model.objects.iter() {
+        let pta = *pta;
+        if base_selection.contains(&Ref::Object(pta)) {
+            let mut obj = obj.clone();
+            obj.move_to(&model, obj.loc + delta);
+            let new_pta = round_coord(obj.loc);
+            new_objects.insert(new_pta, obj);
+            if pta != new_pta { changed_ptas.push((pta, new_pta)); }
+        } else {
+            new_objects.insert(pta, obj.clone());
+        }
+    }
+    model.objects = new_objects;
+
+    // 5. Update node_data (DETACHMENT LOGIC)
+    let mut new_node_data = im::HashMap::new();
+    // Copy all unselected nodes (or nodes that still have unselected things attached)
+    for (p, data) in base_model.node_data.iter() {
+        let p = *p;
+        new_node_data.insert(p, data.clone());
+    }
+
+    // Move selected node data
+    for &r in base_selection {
+        if let Ref::Node(p) = r {
+            if let Some(data) = base_model.node_data.get(&p) {
+                let np = *point_map.get(&p).unwrap_or(&p);
+                // If it moved, we remove from old and put in new.
+                // But wait, if it's detached, we should keep the OLD one if unselected lines still use it.
+                // Since we already filled new_node_data with all original nodes,
+                // we only need to "move" it if it moved.
+                if np != p {
+                    // Remove from old location IF it's not used by any unselected lines
+                    // Actually, to make it simple: if the Node itself was selected, 
+                    // the USER wants the "Node" entity to move.
+                    new_node_data = new_node_data.without(&p);
+                    new_node_data.insert(np, data.clone());
+                }
+            }
+        }
+    }
+    model.node_data = new_node_data;
+
+    // 6. Update references in dispatches and plans
+    for &r in base_selection {
+        if let Ref::Node(a) = r {
+            if let Some(&b) = point_map.get(&a) {
+                if a != b { model_rename_node(&mut model, a, b); }
+            }
+        }
+    }
+    for (a, b) in &changed_ptas {
+        model_rename_object(&mut model, *a, *b);
+    }
+
+    // 7. Update selection to reflect new coordinates
+    let mut new_selection = std::collections::HashSet::new();
+    for &r in base_selection {
+        match r {
+            Ref::Node(p) => { 
+                new_selection.insert(Ref::Node(*point_map.get(&p).unwrap_or(&p))); 
+            }
+            Ref::LineSeg(p1, p2) => {
+                let np1 = point_map.get(&p1).unwrap_or(&p1);
+                let np2 = point_map.get(&p2).unwrap_or(&p2);
+                new_selection.insert(Ref::LineSeg(*np1, *np2));
+            }
+            Ref::Object(p) => {
+                let mut final_p = p;
+                for (old_pta, new_pta) in &changed_ptas {
+                    if p == *old_pta { final_p = *new_pta; break; }
+                }
+                new_selection.insert(Ref::Object(final_p));
+            }
+        }
+    }
+    
+    (model, new_selection)
 }
 
 fn interact_drawing(config :&Config, analysis :&mut Analysis, inf_view :&mut InfView, 
@@ -569,7 +721,7 @@ fn context_menu_single(analysis :&mut Analysis,
 }
 
 
-fn delete_selection(analysis :&mut Analysis, inf_view :&mut InfView) {
+pub fn delete_selection(analysis :&mut Analysis, inf_view :&mut InfView) {
     let mut new_model = analysis.model().clone();
     for x in inf_view.selection.drain() {
         new_model.delete(x);

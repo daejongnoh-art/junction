@@ -69,13 +69,22 @@ pub fn base(config :&Config, analysis :&Analysis, inf_view :&InfView,
 
         let color_line = config.color_u32(RailUIColorName::CanvasTrack);
         let color_line_selected = config.color_u32(RailUIColorName::CanvasTrackSelected);
+        let color_glow = (config.color_u32(RailUIColorName::CanvasSelectionWindow) & 0x00FFFFFF) | 0x80000000; // Semi-transparent glow
         for l in &m.linesegs {
-            let p1 = inf_view.view.world_pt_to_screen(l.0);
-            let p2 = inf_view.view.world_pt_to_screen(l.1);
             let selected = inf_view.selection.contains(&Ref::LineSeg(l.0,l.1));
             let preview = sel_window
-                .map(|(a,b)| util::point_in_rect(p1,a,b) || util::point_in_rect(p2,a,b))
+                .map(|(a,b)| util::point_in_rect(inf_view.view.world_pt_to_screen(l.0),a,b) || 
+                             util::point_in_rect(inf_view.view.world_pt_to_screen(l.1),a,b))
                 .unwrap_or(false) ;
+
+            if selected {
+                let p1 = inf_view.view.world_pt_to_screen(l.0);
+                let p2 = inf_view.view.world_pt_to_screen(l.1);
+                ImDrawList_AddLine(draw.draw_list, draw.pos + p1, draw.pos + p2, color_glow, 6.0);
+            }
+
+            let p1 = inf_view.view.world_pt_to_screen(l.0);
+            let p2 = inf_view.view.world_pt_to_screen(l.1);
             let col = if selected || preview { color_line_selected } else { color_line };
             ImDrawList_AddLine(draw.draw_list, draw.pos + p1, draw.pos + p2, col, 2.5);
         }
@@ -91,15 +100,20 @@ pub fn base(config :&Config, analysis :&Analysis, inf_view :&InfView,
                 let col = if selected || preview { color_node_selected } 
                             else { color_node };
 
+                if selected {
+                    let p = draw.pos + inf_view.view.world_pt_to_screen(*pt0);
+                    ImDrawList_AddCircle(draw.draw_list, p, 12.0, color_glow, 16, 2.0);
+                }
+
                 let pt :PtC = vec2(pt0.x as _ ,pt0.y as _ );
                 let tangent :PtC = vec2(vc.x as _ ,vc.y as _ );
                 match t {
                     NDType::OpenEnd => {
                         for angle in &[-45.0,45.0] {
                             ImDrawList_AddLine(draw.draw_list,
-                               draw.pos + inf_view.view.world_ptc_to_screen(pt),
-                               draw.pos + inf_view.view.world_ptc_to_screen(pt) 
-                                + util::to_imvec(8.0*rotate_vec2(&normalize(&tangent),radians(&vec1(*angle)).x)), col, 2.5);
+                                draw.pos + inf_view.view.world_ptc_to_screen(pt),
+                                draw.pos + inf_view.view.world_ptc_to_screen(pt) 
+                                 + util::to_imvec(8.0*rotate_vec2(&normalize(&tangent),radians(&vec1(*angle)).x)), col, 2.5);
                         }
                     },
                     NDType::Cont => {
@@ -170,7 +184,6 @@ pub fn base(config :&Config, analysis :&Analysis, inf_view :&InfView,
             }
         }
 
-
         let color_obj = config.color_u32(RailUIColorName::CanvasSymbol);
         let color_obj_selected = config.color_u32(RailUIColorName::CanvasSymbolSelected);
 
@@ -179,6 +192,12 @@ pub fn base(config :&Config, analysis :&Analysis, inf_view :&InfView,
             let preview = sel_window.map(|(a,b)| 
                      util::point_in_rect(inf_view.view.
                              world_ptc_to_screen(unround_coord(*pta)),a,b)).unwrap_or(false);
+            
+            if selected {
+                let p = draw.pos + inf_view.view.world_ptc_to_screen(unround_coord(*pta));
+                ImDrawList_AddCircle(draw.draw_list, p, 15.0, color_glow, 16, 2.0);
+            }
+
             let col = if selected || preview { color_obj_selected } else { color_obj };
             let empty = vec![];
             let state = object_states.get(pta).unwrap_or(&empty);
