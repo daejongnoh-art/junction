@@ -192,8 +192,13 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>)  {
 }
 
 
+#[derive(Debug, Clone, Copy)]
+pub enum RailObject {
+    Signal(railmlio::model::SignalType),
+}
+
 pub fn convert_railplot(topo :railmlio::topo::Topological) 
-    -> Result<railplotlib::model::SchematicGraph<()>, ImportState> {
+    -> Result<railplotlib::model::SchematicGraph<RailObject>, ImportState> {
 
     use railmlio::topo;
     use railplotlib::model as plot;
@@ -234,42 +239,55 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
             debug!("Node connections {:?}", node_connections);
 
             let mut km0 : HashMap<NodeId, (isize, f64)> = HashMap::new();
-            km0.insert(start_node,(1,0.0));
-            debug!("start node {:?}", start_node);
-            let (start_track,start_trackend) = node_connections.get(&(start_node, topo::Port::Single))
-                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
-            let start_l = topo.tracks[*start_track].length;
-            let other_node_port = track_connections.get(&(*start_track,start_trackend.opposite()))
-                .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+            let mut component_offset = 0.0;
 
-            let mut stack = vec![(*other_node_port, start_l, 1)];
+            let mut node_indices : Vec<usize> = (0..topo.nodes.len()).collect();
+            node_indices.sort_by_key(|&idx| !matches!(topo.nodes[idx], 
+                topo::TopoNode::BufferStop | topo::TopoNode::OpenEnd | topo::TopoNode::MacroscopicNode));
 
-            while let Some(((node,port),pos,dir)) = stack.pop() {
+            for &start_candidate in &node_indices {
+                if km0.contains_key(&start_candidate) { continue; }
 
-                let sw_factor = if matches!(port, topo::Port::Trunk) { 1 } else { -1 };
-                if let Some((node_dir,pos)) = km0.get(&node) {
-                    if (*node_dir)*sw_factor != dir {
-                        return Err(ImportState::SourceFileError(format!(
-        "Inconsistent directions on tracks, need to insert mileage direction change.")));
-                    } else { continue;  }
+                // Start BFS from here
+                let mut start_track_info = None;
+                for port in [topo::Port::Single, topo::Port::Trunk, topo::Port::Crossing(topo::AB::A, 0), topo::Port::Crossing(topo::AB::A, 1)] {
+                    if let Some(conn) = node_connections.get(&(start_candidate, port)) {
+                        start_track_info = Some((port, conn));
+                        break;
+                    }
                 }
 
-                km0.insert(node,(sw_factor*dir,pos));
+                if let Some((start_port, (start_track, start_trackend))) = start_track_info {
+                    km0.insert(start_candidate, (1, component_offset));
+                    let start_l = topo.tracks[*start_track].length;
+                    let other_node_port = track_connections.get(&(*start_track, start_trackend.opposite())).unwrap();
 
-                    debug!("Iterating ports");
-                for (other_port,next_dir) in port.other_ports() {
-                    debug!(" port");
-                    let dir = dir*next_dir;
-                    debug!("    Going to  {:?}", (other_port,dir));
-                    let (track_idx,end) = node_connections.get(&(node,other_port))
-                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
-                    let l = topo.tracks[*track_idx].length;
-                    debug!("    Track to  {:?}", (track_idx,end,l));
-                    let other_node_port = track_connections.get(&(*track_idx,end.opposite()))
-                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
-                    debug!("    ... other node  {:?}", (other_node_port));
+                    let mut stack = vec![(*other_node_port, component_offset + start_l, 1)];
+                    let mut max_pos = component_offset + start_l;
 
-                    stack.push((*other_node_port, pos + (dir as f64)*l, dir));
+                    while let Some(((node, port), pos, dir)) = stack.pop() {
+                        let sw_factor = if matches!(port, topo::Port::Trunk | topo::Port::Crossing(topo::AB::A, _)) { 1 } else { -1 };
+                        if let Some((node_dir, existing_pos)) = km0.get(&node) {
+                            if (*node_dir) * sw_factor != dir {
+                                // warn instead of error?
+                                continue;
+                            } else { continue; }
+                        }
+
+                        km0.insert(node, (sw_factor * dir, pos));
+                        if pos > max_pos { max_pos = pos; }
+
+                        for (other_port, next_dir) in port.other_ports() {
+                            let next_dir_val = dir * next_dir;
+                            if let Some((track_idx, end)) = node_connections.get(&(node, other_port)) {
+                                let l = topo.tracks[*track_idx].length;
+                                if let Some(target) = track_connections.get(&(*track_idx, end.opposite())) {
+                                    stack.push((*target, pos + (next_dir_val as f64) * l, next_dir_val));
+                                }
+                            }
+                        }
+                    }
+                    component_offset = max_pos + 100.0;
                 }
             }
 
@@ -316,6 +334,7 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                             plot::Shape::Switch(plot::Side::Left, to_dir(dir)),
                         topo::TopoNode::Switch(topo::Side::Right) => 
                             plot::Shape::Switch(plot::Side::Right, to_dir(dir)),
+                        topo::TopoNode::Crossing => plot::Shape::Crossing,
                         _ => unimplemented!(),
                     }
                 });
@@ -362,14 +381,16 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                     std::mem::swap(&mut na, &mut nb);
                 }
 
-
                 let convert_port = |(n,p) :(usize,topo::Port)| {
                     match p {
                         topo::Port::Trunk => plot::Port::Trunk,
                         topo::Port::Left => plot::Port::Left,
                         topo::Port::Right => plot::Port::Right,
-                        topo::Port::Single => if matches!(model.nodes[n].shape, plot::Shape::Begin) {
-                            plot::Port::Out } else { plot::Port::In },
+                        topo::Port::Single => if km0[&n].0 == 1 { plot::Port::Out } else { plot::Port::In },
+                        topo::Port::Crossing(topo::AB::A, 0) => plot::Port::OutLeft,
+                        topo::Port::Crossing(topo::AB::B, 0) => plot::Port::InLeft,
+                        topo::Port::Crossing(topo::AB::A, 1) => plot::Port::OutRight,
+                        topo::Port::Crossing(topo::AB::B, 1) => plot::Port::InRight,
                         _ => unimplemented!(),
                 }};
 
@@ -381,8 +402,16 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                 let key = (a.clone(), b.clone());
                 if !edges_done.contains(&key) {
                     edges_done.insert(key);
-                    debug!("Edge {} {:?} {:?}", model.edges.len(), a,b);
-                    model.edges.push(plot::Edge { a,b, objects :Vec::new() });
+                    let mut objects = Vec::new();
+                    for s in &topo.tracks[track_idx].objects.signals {
+                        objects.push((plot::Symbol {
+                            pos: s.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Signal(s.r#type)));
+                    }
+                    model.edges.push(plot::Edge { a, b, objects });
                 }
             }
 
@@ -400,28 +429,23 @@ pub fn round_pt_tol((x,y) :(f64,f64)) -> Result<Pt,()> {
     Ok(glm::vec2(x.round() as _, (-20.0 + y.round()) as _))
 }
 
-pub fn convert_junction(plot :railplotlib::model::SchematicOutput<()>) -> Result<Model, ImportState> {
+pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>) -> Result<Model, ImportState> {
     debug!("Starting conversion of railplotlib schematic output");
-    for (e,pts) in &plot.lines {
-        debug!("Line {:?}", pts);
-        let pts = pts.iter().map(|x| round_pt_tol(*x)).collect::<Result<Vec<_>,()>>()
-            .map_err(|_| ImportState::PlotError(format!("Solution contains point not on grid")))?;
-        for (p1,p2) in pts.iter().zip(pts.iter().skip(1)) {
-            let segs = line_segments(*p1,*p2).unwrap();
-            debug!("Segments {:?}", segs);
-        }
-    }
-
+    
     let mut model :Model = Default::default();
 
     for (n,pt) in plot.nodes {
         let pt = round_pt_tol(pt)
             .map_err(|_| ImportState::PlotError(format!("Solution contains point not on grid, {:?}", pt)))?;
-        // use railplotlib::model::Shape;
-        //model.node_data.insert(pt,match n.shape {
-            //Shape::Begin | Shape::End =>
-        //});
-        // TODO
+        use railplotlib::model::Shape;
+        model.node_data.insert(pt, match n.shape {
+            Shape::Begin => NDType::OpenEnd,
+            Shape::End => NDType::BufferStop,
+            Shape::Switch(railplotlib::model::Side::Left, _) => NDType::Sw(model::Side::Left),
+            Shape::Switch(railplotlib::model::Side::Right, _) => NDType::Sw(model::Side::Right),
+            Shape::Crossing => NDType::Crossing(CrossingType::Crossover),
+            _ => NDType::Err,
+        });
     }
 
     for (e,pts) in plot.lines {
@@ -436,8 +460,38 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<()>) -> Result
         }
     }
 
-    Ok(model)
+    for (obj, pts) in plot.symbols {
+        let p_res1 = round_pt_tol(pts.0);
+        let p_res2 = round_pt_tol(pts.1);
+        if p_res1.is_err() || p_res2.is_err() { continue; }
+        let (p1, p2) = (p_res1.unwrap(), p_res2.unwrap());
 
+        let loc = crate::document::infview::unround_coord(p1).lerp(&crate::document::infview::unround_coord(p2), 0.5);
+        let tangent : Pt = p2 - p1;
+        
+        let mut functions = Vec::new();
+        match obj {
+            RailObject::Signal(t) => {
+                use crate::document::objects::{Function, Object};
+                match t {
+                    railmlio::model::SignalType::Distant => {
+                        functions.push(Function::MainSignal { has_distant: true });
+                    },
+                    _ => {
+                        functions.push(Function::MainSignal { has_distant: false });
+                    }
+                }
+                
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+        }
+    }
+
+    Ok(model)
 }
 
 pub fn line_segments(a :Pt, b :Pt) -> Result<Vec<(Pt,Pt)>, ()> {
@@ -455,6 +509,37 @@ pub fn line_segments(a :Pt, b :Pt) -> Result<Vec<(Pt,Pt)>, ()> {
         x = y;
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_nest_sample_import() {
+        let filename = "railML/IS NEST view/2024-07-19_railML_SimpleExample_v13_NEST_railML2.5.xml".to_string();
+        let (tx, rx) = std::sync::mpsc::channel();
+        
+        load_railml_file(filename, tx);
+
+        let mut available_model = None;
+        while let Ok(state) = rx.recv() {
+            match state {
+                ImportState::Available(model) => {
+                    available_model = Some(model);
+                    break;
+                }
+                ImportState::SourceFileError(e) => panic!("Source file error: {}", e),
+                ImportState::PlotError(e) => panic!("Plot error: {}", e),
+                _ => {}
+            }
+        }
+
+        let model = available_model.expect("Model should be available");
+        assert!(model.node_data.len() > 0);
+        assert!(model.linesegs.len() > 0);
+        println!("NEST sample import successful. Nodes: {}, Segments: {}", model.node_data.len(), model.linesegs.len());
+    }
 }
 
 

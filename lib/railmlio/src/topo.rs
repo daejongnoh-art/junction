@@ -56,7 +56,7 @@ impl Port {
             Port::Left => vec![(Port::Right,-1), (Port::Trunk,1)],
             Port::Right => vec![(Port::Left,-1), (Port::Trunk,1)],
             Port::Single => vec![],
-            Port::Crossing(_,_) => unimplemented!(), 
+            Port::Crossing(ab, i) => vec![(Port::Crossing(ab.opposite(), *i), 1)],
             Port::ContA => vec![(Port::ContB,1)],
             Port::ContB => vec![(Port::ContA,1)],
         }
@@ -88,7 +88,7 @@ pub enum TopoNode {
     OpenEnd,
     MacroscopicNode, // TODO preserve names for boundaries?
     Switch(Side),
-    Crossing(()), // TODO crossing type
+    Crossing,
     Continuation,
 }
 
@@ -165,7 +165,28 @@ pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
                 _ => Err(TopoConvErr::SwitchConnectionTooMany(id)),
             }
         },
-        Switch::Crossing { .. } => unimplemented!(),
+        Switch::Crossing { id, pos, connections, .. } => {
+            match connections.as_slice() {
+                &[] => Err(TopoConvErr::SwitchConnectionMissing(id)),
+                &[ref connection] =>  {
+                    Ok(
+                        TopoSwitchInfo {
+                            connref: (connection.id.clone(), connection.r#ref.clone()),
+                            deviating_side: Side::Left, // Dummy for crossing
+                            switch_geometry: Side::Left, // Dummy for crossing
+                            pos: pos.offset,
+                            dir: match connection.orientation { 
+                                ConnectionOrientation::Outgoing => AB::A,
+                                ConnectionOrientation::Incoming => AB::B,
+                                _ => { return Err(TopoConvErr::SwitchOrientationInvalid(id.clone())); },
+                            },
+                        }
+                    )
+
+                },
+                _ => Err(TopoConvErr::SwitchConnectionTooMany(id)),
+            }
+        },
     }
 }
 
@@ -192,16 +213,32 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
             track_end(track.begin.connection, (track_idx, AB::A), &mut topo, &mut named_track_ports);
             track.switches.sort_by_key(|s| match s { 
                 Switch::Switch { pos, .. } | Switch::Crossing { pos, .. } => OrderedFloat(pos.offset) });
-
             for sw in track.switches {
-                debug!("Switch info a. {:?} ", sw);
+                let is_crossing = matches!(sw, Switch::Crossing { .. });
                 let sw_info = switch_info(sw)?;
                 debug!("Switch info b. {:?}", sw_info);
                 topo.tracks[track_idx].length = sw_info.pos - current_offset;
 
-                let nd = new_node(&mut topo, TopoNode::Switch(sw_info.switch_geometry));
-                named_node_ports.insert(sw_info.connref, (nd, sw_info.deviating_side.to_port()));
-                let (mut a_port, mut b_port) = (Port::Trunk, sw_info.deviating_side.opposite().to_port());
+                let nd = if is_crossing {
+                    new_node(&mut topo, TopoNode::Crossing)
+                } else {
+                    new_node(&mut topo, TopoNode::Switch(sw_info.switch_geometry))
+                };
+
+                let (mut a_port, mut b_port) = if is_crossing {
+                    (Port::Crossing(AB::A, 0), Port::Crossing(AB::B, 0))
+                } else {
+                    (Port::Trunk, sw_info.deviating_side.opposite().to_port())
+                };
+
+                let deviating_port = if is_crossing {
+                    Port::Crossing(sw_info.dir.opposite(), 1)
+                } else {
+                    sw_info.deviating_side.to_port()
+                };
+
+                named_node_ports.insert(sw_info.connref, (nd, deviating_port));
+
                 if sw_info.dir == AB::B { std::mem::swap(&mut a_port, &mut b_port); }
 
                 topo.connections.push(((track_idx,AB::B), (nd, a_port)));

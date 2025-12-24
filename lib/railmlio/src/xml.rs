@@ -57,8 +57,40 @@ fn parse_track(track :&xml::Node) -> Result<Track, DocErr> {
 }
 
 fn parse_objects(track :&xml::Node) -> Result<Objects, DocErr> {
-    Ok(Objects::empty()) // TODO
+    let mut signals = Vec::new();
+    if let Some(ocs) = track.children().find(|c| c.has_tag_name("ocsElements")) {
+        if let Some(ss) = ocs.children().find(|c| c.has_tag_name("signals")) {
+            for s in ss.children().filter(|c| c.has_tag_name("signal")) {
+                signals.push(parse_signal(&s)?);
+            }
+        }
+    }
+    Ok(Objects {
+        signals,
+        balises: Vec::new(),
+    })
 }
+
+fn parse_signal(s :&xml::Node) -> Result<Signal, DocErr> {
+    Ok(Signal {
+        id: s.attribute("id").ok_or(DocErr::AttributeMissing("id", s.range().start))?.to_string(),
+        pos: parse_position(s)?,
+        name: s.attribute("name").map(|x| x.to_string()),
+        dir: match s.attribute("dir") {
+            Some("up") => TrackDirection::Up,
+            _ => TrackDirection::Down,
+        },
+        sight: s.attribute("sight").and_then(|x| x.parse().ok()),
+        r#type: match s.attribute("type") {
+            Some("distant") => SignalType::Distant,
+            Some("repeater") => SignalType::Repeater,
+            Some("combined") => SignalType::Combined,
+            Some("shunting") => SignalType::Shunting,
+            _ => SignalType::Main,
+        },
+    })
+}
+
 
 fn parse_switches(topo :&xml::Node) -> Result<Vec<Switch>, DocErr> {
     let mut result = Vec::new();
@@ -149,7 +181,27 @@ fn parse_orientation(x :&str, pos :usize) -> Result<ConnectionOrientation, DocEr
 }
 
 fn parse_crossing(sw :&xml::Node) -> Result<Switch, DocErr> {
-    unimplemented!()
+    Ok(Switch::Crossing {
+        id: sw.attribute("id").ok_or(DocErr::AttributeMissing("id", sw.range().start))?.to_string(),
+        pos: parse_position(sw)?,
+        track_continue_course: match sw.attribute("trackContinueCourse") {
+            Some(course) => Some(parse_course(course, sw.range().start)?),
+            None => None,
+        },
+        track_continue_radius: match sw.attribute("trackContinueRadius") {
+            Some(rad) => Some(rad.parse::<f64>().map_err(|_e| DocErr::NumberError(sw.range().start))?),
+            None => None,
+        },
+        normal_position: match sw.attribute("normalPosition") {
+            Some(course) => Some(parse_course(course, sw.range().start)?),
+            None => None,
+        },
+        length: match sw.attribute("length") {
+            Some(length) => Some(length.parse::<f64>().map_err(|_e| DocErr::NumberError(sw.range().start))?),
+            None => None,
+        },
+        connections: parse_switch_connections(sw)?,
+    })
 }
 
 fn parse_track_node(node :&xml::Node) -> Result<Node, DocErr> {

@@ -138,15 +138,15 @@ impl Objects {
 
 #[derive(Debug)]
 pub struct Signal {
-    id: Id,
-    pos :Position,
-    name :Option<String>,
-    dir :TrackDirection,
-    sight :Option<f64>,
-    r#type :SignalType,
+    pub id: Id,
+    pub pos :Position,
+    pub name :Option<String>,
+    pub dir :TrackDirection,
+    pub sight :Option<f64>,
+    pub r#type :SignalType,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum SignalType { Main, Distant, Repeater, Combined, Shunting }
 #[derive(Debug)]
 pub enum SignalFunction { Exit, Home, Blocking, Intermediate }
