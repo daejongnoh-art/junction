@@ -215,11 +215,174 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
         Estimated,
     }
 
-    let method = MileageMethod::Estimated;
+    // prefer absolute positions when present; fall back otherwise
+    let has_abs = topo.tracks.iter().any(|t| t.offset != 0.0 || t.length > 0.0);
+    let method = if has_abs { MileageMethod::FromFile } else { MileageMethod::Estimated };
 
     match method {
         MileageMethod::FromFile => {
-            unimplemented!()
+            // Use absPos on track ends/switches to set km0 directly.
+            let mut model = plot::SchematicGraph {
+                nodes: Vec::new(),
+                edges: Vec::new(),
+                main_tracks_edges: Vec::new(),
+            };
+
+            fn to_dir(dir :topo::AB) -> plot::Dir { 
+                match dir {
+                    topo::AB::A => plot::Dir::Up,
+                    topo::AB::B => plot::Dir::Down,
+                }
+            }
+
+            // nodes: track ends, switches, crossings, continuations
+            let mut node_map: HashMap<usize, usize> = HashMap::new();
+            for (node_idx,node_type) in topo.nodes.iter().enumerate() {
+                let km0 = 0.0; // will adjust from track offsets
+                if let topo::TopoNode::Continuation = node_type { continue; }
+                let model_idx = model.nodes.len();
+                model.nodes.push(plot::Node {
+                    name: format!("n{}", node_idx),
+                    pos: km0,
+                    shape: match node_type {
+                        topo::TopoNode::BufferStop | 
+                        topo::TopoNode::OpenEnd | 
+                        topo::TopoNode::MacroscopicNode => plot::Shape::Begin, // may flip to End later
+                        topo::TopoNode::Switch(topo::Side::Left) => 
+                            plot::Shape::Switch(plot::Side::Left, plot::Dir::Up), // dir adjusted later
+                        topo::TopoNode::Switch(topo::Side::Right) => 
+                            plot::Shape::Switch(plot::Side::Right, plot::Dir::Up), // dir adjusted later
+                        topo::TopoNode::Crossing => plot::Shape::Crossing,
+                        topo::TopoNode::Continuation => plot::Shape::Continuation,
+                    }
+                });
+                node_map.insert(node_idx, model_idx);
+            }
+
+            let track_connections :HashMap<(usize,topo::AB),(usize,topo::Port)> = 
+                topo.connections.iter().cloned().collect();
+            let node_connections :HashMap<(usize,topo::Port),(usize,topo::AB)> = 
+                topo.connections.iter().map(|(a,b)| (*b,*a)).collect();
+
+            let mut edges_done = HashSet::new();
+            let mut node_pos: HashMap<usize, f64> = HashMap::new();
+
+            for (track_idx,track) in topo.tracks.iter().enumerate() {
+                let mut na = track_connections.get(&(track_idx,topo::AB::A))
+                    .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                let mut nb = track_connections.get(&(track_idx,topo::AB::B))
+                    .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+
+                fn cont_opposite(p :topo::Port) -> topo::Port {
+                    match p {
+                        topo::Port::ContA => topo::Port::ContB,
+                        topo::Port::ContB => topo::Port::ContA,
+                        x => x,
+                    }
+                }
+
+                while let topo::Port::ContA | topo::Port::ContB = na.1 {
+                    let (ti,tab) = node_connections.get(&(na.0, cont_opposite(na.1)))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                    na = track_connections.get(&(*ti,tab.opposite()))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                }
+                while let topo::Port::ContA | topo::Port::ContB = nb.1 {
+                    let (ti,tab) = node_connections.get(&(nb.0, cont_opposite(nb.1)))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                    nb = track_connections.get(&(*ti,tab.opposite()))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                }
+
+                let convert_port = |(n,p) :(usize,topo::Port), is_lower: bool| {
+                    match p {
+                        topo::Port::Trunk => plot::Port::Trunk,
+                        topo::Port::Left => plot::Port::Left,
+                        topo::Port::Right => plot::Port::Right,
+                        topo::Port::Single => if is_lower { plot::Port::Out } else { plot::Port::In },
+                        topo::Port::Crossing(topo::AB::A, 0) => plot::Port::OutLeft,
+                        topo::Port::Crossing(topo::AB::B, 0) => plot::Port::InLeft,
+                        topo::Port::Crossing(topo::AB::A, 1) => plot::Port::OutRight,
+                        topo::Port::Crossing(topo::AB::B, 1) => plot::Port::InRight,
+                        _ => plot::Port::Out,
+                }};
+
+                let pa = convert_port(*na, true);
+                let pb = convert_port(*nb, false);
+                let mut a = (format!("n{}", na.0), pa);
+                let mut b = (format!("n{}", nb.0), pb);
+
+                // use abs positions: track.offset is from topo conversion
+                let mut pos_a = track.offset;
+                let mut pos_b = track.offset + track.length;
+                if pos_a > pos_b {
+                    std::mem::swap(&mut pos_a, &mut pos_b);
+                    std::mem::swap(&mut a, &mut b);
+                }
+
+                let key = (a.clone(), b.clone());
+                if !edges_done.contains(&key) {
+                    edges_done.insert(key.clone());
+                    let mut objects = Vec::new();
+                    for s in &topo.tracks[track_idx].objects.signals {
+                        objects.push((plot::Symbol {
+                            pos: s.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Signal(s.r#type)));
+                    }
+                    if let Some(&mi) = node_map.get(&na.0) {
+                        model.nodes[mi].pos = pos_a;
+                        node_pos.insert(na.0, pos_a);
+                    }
+                    if let Some(&mi) = node_map.get(&nb.0) {
+                        model.nodes[mi].pos = pos_b;
+                        node_pos.insert(nb.0, pos_b);
+                    }
+                    model.edges.push(plot::Edge { a, b, objects });
+                }
+            }
+
+            // flip boundary node shapes based on mileage ordering
+            let mut higher_count: HashMap<usize, usize> = HashMap::new();
+            let mut lower_count: HashMap<usize, usize> = HashMap::new();
+            for edge in &model.edges {
+                let idx_a: usize = edge.a.0.trim_start_matches('n').parse().unwrap_or(0);
+                let idx_b: usize = edge.b.0.trim_start_matches('n').parse().unwrap_or(0);
+                if let (Some(&ma), Some(&mb)) = (node_map.get(&idx_a), node_map.get(&idx_b)) {
+                    let pa = model.nodes[ma].pos;
+                    let pb = model.nodes[mb].pos;
+                    if pa < pb {
+                        *higher_count.entry(ma).or_insert(0) += 1;
+                        *lower_count.entry(mb).or_insert(0) += 1;
+                    } else if pb < pa {
+                        *higher_count.entry(mb).or_insert(0) += 1;
+                        *lower_count.entry(ma).or_insert(0) += 1;
+                    }
+                }
+            }
+            for (idx, node) in model.nodes.iter_mut().enumerate() {
+                let hi = higher_count.get(&idx).cloned().unwrap_or(0);
+                let lo = lower_count.get(&idx).cloned().unwrap_or(0);
+                match node.shape {
+                    plot::Shape::Begin | plot::Shape::End => {
+                        if hi == 0 && lo > 0 {
+                            node.shape = plot::Shape::End;
+                        } else if hi > 0 && lo == 0 {
+                            node.shape = plot::Shape::Begin;
+                        }
+                    },
+                    plot::Shape::Switch(side, _) => {
+                        // set direction based on majority: Up if most edges go to higher mileage
+                        let dir = if hi >= lo { plot::Dir::Up } else { plot::Dir::Down };
+                        node.shape = plot::Shape::Switch(side, dir);
+                    },
+                    _ => {},
+                }
+            }
+
+            Ok(model)
         },
         MileageMethod::Estimated => {
             // start from any single node

@@ -24,7 +24,7 @@ pub struct Topological {
 pub struct TopoTrack {
     pub objects :Objects,
     pub length: f64,
-    pub offset :f64,
+    pub offset :f64, // absolute mileage at track start if available
 }
 
 #[derive(Copy,Clone,PartialEq,Eq,Hash)]
@@ -228,13 +228,34 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
 
     if let Some(inf) = doc.infrastructure {
         for mut track in inf.tracks {
+            let mut current_offset = 0.0;
+            // infer absolute start: prefer begin.absPos, else any element with absPos - pos, else 0
+            let inferred_abs = track.begin.pos.mileage
+                .or(track.end.pos.mileage)
+                .or_else(|| track.objects.signals.iter()
+                    .find_map(|s| s.pos.mileage.map(|m| m - s.pos.offset)))
+                .or_else(|| track.track_elements.platform_edges.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.track_elements.speed_changes.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.track_elements.level_crossings.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.objects.train_detectors.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.objects.track_circuit_borders.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.objects.derailers.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .or_else(|| track.objects.train_protection_elements.iter()
+                    .find_map(|p| p.pos.mileage.map(|m| m - p.pos.offset)))
+                .unwrap_or(0.0);
+            let mut current_abs = inferred_abs;
+
             let mut track_idx = new_track(&mut topo, TopoTrack {
                 objects: Objects::empty(),
-                offset: 0.0,
+                offset: current_abs,
                 length: 0.0,
             });
-
-            let mut current_offset = 0.0;
 
             track_end(track.begin.connection, (track_idx, AB::A), &mut topo, &mut named_track_ports);
             track.switches.sort_by_key(|s| match s { 
@@ -244,6 +265,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 let sw_info = switch_info(sw)?;
                 debug!("Switch info b. {:?}", sw_info);
                 topo.tracks[track_idx].length = sw_info.pos - current_offset;
+                current_abs += topo.tracks[track_idx].length;
 
                 let nd = if is_crossing {
                     new_node(&mut topo, TopoNode::Crossing)
@@ -271,7 +293,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 
                 track_idx = new_track(&mut topo, TopoTrack {
                     objects: Objects::empty(),
-                    offset: sw_info.pos,
+                    offset: current_abs,
                     length: 0.0
                 });
                 topo.connections.push(((track_idx,AB::A), (nd, b_port)));

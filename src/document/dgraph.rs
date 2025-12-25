@@ -284,28 +284,48 @@ impl DGraphBuilder {
             match node {
                 NDType::BufferStop => {},
                 NDType::OpenEnd => {
-                    self.dgraph.nodes[ports[&(*pt, Port::End)]].edges =
-                        rolling_inf::Edges::ModelBoundary;
-                    node_ids.insert(ports[&(*pt,Port::End)], *pt);
+                    // Some imports may have stored endpoints without explicit End; fall back to Trunk/Left/Right.
+                    if let Some(port_id) = ports.get(&(*pt, Port::End))
+                        .or_else(|| ports.get(&(*pt, Port::Trunk)))
+                        .or_else(|| ports.get(&(*pt, Port::Left)))
+                        .or_else(|| ports.get(&(*pt, Port::Right)))
+                        .cloned() {
+                        self.dgraph.nodes[port_id].edges = rolling_inf::Edges::ModelBoundary;
+                        node_ids.insert(port_id, *pt);
+                    } else {
+                        println!("WARNING: endpoint port not found for {:?}", pt);
+                    }
                 },
                 NDType::Cont => {
-                    self.connect_linear(ports[&(*pt, Port::ContA)],
-                                        ports[&(*pt, Port::ContB)], 0.0);
+                    if let (Some(a), Some(b)) = (ports.get(&(*pt, Port::ContA)), ports.get(&(*pt, Port::ContB))) {
+                        self.connect_linear(*a,*b, 0.0);
+                    } else {
+                        println!("WARNING: continuation ports missing for {:?}", pt);
+                    }
                 },
                 NDType::Sw(side) => {
+                    let l = match ports.get(&(*pt,Port::Left)) {
+                        Some(x) => *x, None => { println!("WARNING: switch left port missing for {:?}", pt); continue; }
+                    };
+                    let r = match ports.get(&(*pt,Port::Right)) {
+                        Some(x) => *x, None => { println!("WARNING: switch right port missing for {:?}", pt); continue; }
+                    };
+                    let t = match ports.get(&(*pt,Port::Trunk)) {
+                        Some(x) => *x, None => { println!("WARNING: switch trunk port missing for {:?}", pt); continue; }
+                    };
                     let sw_obj = self.new_object(rolling_inf::StaticObject::Switch {
-                        left_link:  (ports[&(*pt,Port::Left)], 0.0),
-                        right_link: (ports[&(*pt,Port::Right)], 0.0),
+                        left_link:  (l, 0.0),
+                        right_link: (r, 0.0),
                         branch_side: side.as_switch_position(),
                     });
 
                     switch_ids.insert(sw_obj, *pt);
 
-                    self.dgraph.nodes[ports[&(*pt, Port::Left)]].edges  = 
-                        rolling_inf::Edges::Single(ports[&(*pt,Port::Trunk)], 0.0);
-                    self.dgraph.nodes[ports[&(*pt, Port::Right)]].edges = 
-                        rolling_inf::Edges::Single(ports[&(*pt,Port::Trunk)], 0.0);
-                    self.dgraph.nodes[ports[&(*pt, Port::Trunk)]].edges =
+                    self.dgraph.nodes[l].edges  = 
+                        rolling_inf::Edges::Single(t, 0.0);
+                    self.dgraph.nodes[r].edges = 
+                        rolling_inf::Edges::Single(t, 0.0);
+                    self.dgraph.nodes[t].edges =
                         rolling_inf::Edges::Switchable(sw_obj);
                 },
                 NDType::Crossing(type_) => {
