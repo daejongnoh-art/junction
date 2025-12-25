@@ -120,6 +120,7 @@ pub enum TopoConvErr {
     SwitchCourseUnknown(String),
     SwitchOrientationInvalid(String),
     UnmatchedConnection(String,String),
+    TrackContinuationMismatch(String,String),
 }
 
 #[derive(Debug)]
@@ -162,7 +163,32 @@ pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
                     )
 
                 },
-                _ => Err(TopoConvErr::SwitchConnectionTooMany(id)),
+                // railML 2.5 can list both trunk and deviating connection; use the first as reference
+                &[ref connection, ..] => {
+                    let sw_course = connection.course
+                        .or(track_continue_course.and_then(|c| c.opposite()))
+                        .ok_or(TopoConvErr::SwitchCourseUnknown(id.clone()))?;
+
+                    let deviating_side = sw_course.to_side().unwrap();
+                    let switch_geometry = if connection.radius.unwrap_or(0.0) > 
+                                            track_continue_radius.unwrap_or(std::f64::INFINITY) {
+                        sw_course.opposite().unwrap().to_side().unwrap()
+                    } else { sw_course.to_side().unwrap() };
+
+                    Ok(
+                        TopoSwitchInfo {
+                            connref: (connection.id.clone(), connection.r#ref.clone()),
+                            deviating_side: deviating_side,
+                            switch_geometry: switch_geometry,
+                            pos: pos.offset,
+                            dir: match connection.orientation { 
+                                ConnectionOrientation::Outgoing => AB::A,
+                                ConnectionOrientation::Incoming => AB::B,
+                                _ => { return Err(TopoConvErr::SwitchOrientationInvalid(id.clone())); },
+                            },
+                        }
+                    )
+                },
             }
         },
         Switch::Crossing { id, pos, connections, .. } => {
@@ -258,9 +284,9 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
     }
 
     // Match track ports with node ports.
-    println!("now matching named node track ports");
-    println!("node ports {:?}", named_node_ports);
-    println!("track ports {:?}", named_track_ports);
+    debug!("now matching named node track ports");
+    debug!("node ports {:?}", named_node_ports);
+    debug!("track ports {:?}", named_track_ports);
 
     for ((c,r),nd_port) in named_node_ports {
         let x = (r,c);
@@ -269,17 +295,18 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
         topo.connections.push((tr_port,nd_port));
     }
 
-    // TODO track contiunations,i .e. connetions track->track.
+    // track continuations i.e. connections track->track.
 
     while named_track_ports.len() > 0 {
         let key = named_track_ports.keys().next().unwrap().clone();
         let ((c1,c2),(t1_idx,ab1)) = named_track_ports.remove_entry(&key).unwrap();
-        let (t2_idx,ab2) = named_track_ports.remove(&(c2.clone(),c1.clone()))
-            .ok_or(TopoConvErr::UnmatchedConnection(c1,c2))?;
-
-        let n = new_node(&mut topo, TopoNode::Continuation);
-        topo.connections.push(((t1_idx,ab1),(n,Port::ContA)));
-        topo.connections.push(((t2_idx,ab2),(n,Port::ContB)));
+        if let Some((t2_idx,ab2)) = named_track_ports.remove(&(c2.clone(),c1.clone())) {
+            let n = new_node(&mut topo, TopoNode::Continuation);
+            topo.connections.push(((t1_idx,ab1),(n,Port::ContA)));
+            topo.connections.push(((t2_idx,ab2),(n,Port::ContB)));
+        } else {
+            return Err(TopoConvErr::TrackContinuationMismatch(c1, c2));
+        }
     }
 
     debug!("CONNECTIONS {:?}", topo.connections);

@@ -35,7 +35,7 @@ pub struct OrganizationalUnit {
     pub code: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Infrastructure {
     pub tracks: Vec<Track>,
     pub track_groups: Vec<TrackGroup>,
@@ -43,34 +43,34 @@ pub struct Infrastructure {
     pub states: Vec<State>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TrackGroup {
     pub id: Id,
     pub name: Option<String>,
     pub track_refs: Vec<TrackRef>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TrackRef {
     pub r#ref: IdRef,
     pub sequence: Option<usize>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Ocp {
     pub id: Id,
     pub name: Option<String>,
     pub r#type: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct State {
     pub id: Id,
     pub disabled: Option<bool>,
     pub status: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Track {
     pub id: Id,
     pub code: Option<String>,
@@ -85,7 +85,7 @@ pub struct Track {
     pub objects: Objects,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TrackElements {
     pub platform_edges: Vec<PlatformEdge>,
     pub speed_changes: Vec<SpeedChange>,
@@ -102,7 +102,7 @@ impl TrackElements {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlatformEdge {
     pub id: Id,
     pub name: Option<String>,
@@ -113,7 +113,7 @@ pub struct PlatformEdge {
     pub length: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpeedChange {
     pub id: Id,
     pub pos: Position,
@@ -122,7 +122,7 @@ pub struct SpeedChange {
     pub signalised: Option<bool>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LevelCrossing {
     pub id: Id,
     pub pos: Position,
@@ -130,14 +130,14 @@ pub struct LevelCrossing {
     pub angle: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     pub id: Id,
     pub pos: Position,
     pub connection: TrackEndConnection,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TrackEndConnection {
     Connection(Id, IdRef),
     BufferStop,
@@ -145,7 +145,7 @@ pub enum TrackEndConnection {
     MacroscopicNode(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Switch {
     Switch {
         id: Id,
@@ -196,7 +196,7 @@ impl SwitchConnectionCourse {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ConnectionOrientation {
     Incoming,
     Outgoing,
@@ -205,7 +205,7 @@ pub enum ConnectionOrientation {
     Other,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SwitchConnection {
     pub id: Id,
     pub r#ref: IdRef,
@@ -222,7 +222,7 @@ pub struct Position {
     pub mileage: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Objects {
     pub signals: Vec<Signal>,
     pub balises: Vec<Balise>,

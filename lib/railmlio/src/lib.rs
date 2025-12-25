@@ -31,7 +31,7 @@ mod tests {
 
         let data = std::fs::read_to_string(path).expect("sample railml 2.5 not found");
         let railml = xml::parse_railml(&data).expect("railml 2.5 parse failed");
-        let infra = railml.infrastructure.expect("infrastructure missing");
+        let infra = railml.infrastructure.clone().expect("infrastructure missing");
 
         assert!(railml.metadata.is_some(), "metadata should be parsed");
         assert!(infra.tracks.len() >= 7, "tracks should be loaded");
@@ -60,5 +60,12 @@ mod tests {
         assert!(signal_count > 0, "should parse signals");
         assert!(detector_count > 0, "should parse train detectors");
         assert!(platform_count > 0, "should parse platform edges");
+
+        // topo conversion should succeed and include all connections
+        let topo = topo::convert_railml_topo(railml).expect("topo conversion failed");
+        assert!(
+            topo.connections.len() > 0 && topo.nodes.len() > 0,
+            "topology should have nodes and connections"
+        );
     }
 }
