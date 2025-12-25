@@ -19,6 +19,7 @@ pub struct ImportWindow {
     state :ImportState,
     thread :Option<mpsc::Receiver<ImportState>>,
     thread_pool :BackgroundJobs,
+    auto_scale :bool,
 }
 
 impl ImportWindow {
@@ -28,6 +29,7 @@ impl ImportWindow {
             state: ImportState::ChooseFile,
             thread: None,
             thread_pool:thread_pool,
+            auto_scale: true,
         }
     }
 }
@@ -64,6 +66,10 @@ impl ImportWindow {
         widgets::next_window_center_when_appearing();
         igBegin(const_cstr!("Import from railML file").as_ptr(), &mut self.open as _, 0 as _);
 
+        let mut auto_scale = self.auto_scale;
+        igCheckbox(const_cstr!("Auto-scale small layouts").as_ptr(), &mut auto_scale);
+        self.auto_scale = auto_scale;
+
         match &self.state {
             ImportState::ChooseFile => {
                 if igButton(const_cstr!("Browse for file...").as_ptr(),
@@ -94,7 +100,8 @@ impl ImportWindow {
         info!("Starting background loading of railml from file {:?}", filename);
         let (tx,rx) = mpsc::channel();
         self.thread = Some(rx);
-        self.thread_pool.execute(|| { load_railml_file(filename, tx); });
+        let auto_scale = self.auto_scale;
+        self.thread_pool.execute(move || { load_railml_file(filename, tx, auto_scale); });
     }
 
     pub fn close(&mut self) {
@@ -104,7 +111,7 @@ impl ImportWindow {
     }
 }
 
-pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>)  {
+pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_scale: bool)  {
     // outline of steps
     // 1. read file 
     // 2. convert to railml
@@ -179,7 +186,7 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>)  {
     if tx.send(ImportState::Ping).is_err() { return; }
 
     info!("Found model");
-    let model = match convert_junction(plot) {
+    let model = match convert_junction(plot, auto_scale) {
         Ok(m) => m,
         Err(e) => {
             let _ = tx.send(e);
@@ -586,35 +593,43 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
 
 pub fn round_pt_tol((x,y) :(f64,f64)) -> Result<Pt,()> {
     use nalgebra_glm as glm;
-    let tol = 0.05;
+    // Accept solver output that is close (within tol) to integer grid and snap it.
+    let tol = 0.6;
     if (x.round() - x).abs() > tol { return Err(()); }
     if (y.round() - y).abs() > tol { return Err(()); }
     Ok(glm::vec2(x.round() as _, (-20.0 + y.round()) as _))
 }
 
-pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>) -> Result<Model, ImportState> {
+pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, auto_scale: bool) -> Result<Model, ImportState> {
     debug!("Starting conversion of railplotlib schematic output");
 
     // Heuristic scaling: if solver output is very small, scale up to improve visibility.
     let mut plot = plot;
-    if let Some(max_pos) = plot.nodes.values().map(|n| n.pos.abs()).max_by(|a,b| a.total_cmp(b)) {
-        if max_pos > 0.0 && max_pos < 50.0 {
-            let scale = 50.0 / max_pos;
-            debug!("Scaling plot output by factor {}", scale);
-            for n in plot.nodes.values_mut() {
-                n.pos *= scale;
-            }
-            for (_e,pts) in plot.lines.iter_mut() {
-                for p in pts.iter_mut() {
-                    p.x *= scale;
-                    p.y *= scale;
+    if auto_scale {
+        use std::cmp::Ordering;
+        let max_pos = plot.nodes.iter()
+            .map(|(_,pt)| pt.0.abs().max(pt.1.abs()))
+            .max_by(|a,b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
+        if let Some(max_pos) = max_pos {
+            if max_pos > 0.0 && max_pos < 50.0 {
+                let scale = 50.0 / max_pos;
+                debug!("Scaling plot output by factor {}", scale);
+                for (_n, pt) in plot.nodes.iter_mut() {
+                    pt.0 *= scale;
+                    pt.1 *= scale;
                 }
-            }
-            for (_obj, sym) in plot.symbols.iter_mut() {
-                sym.0.x *= scale;
-                sym.0.y *= scale;
-                sym.1.x *= scale;
-                sym.1.y *= scale;
+                for (_e,pts) in plot.lines.iter_mut() {
+                    for p in pts.iter_mut() {
+                        p.0 *= scale;
+                        p.1 *= scale;
+                    }
+                }
+                for (_obj, sym) in plot.symbols.iter_mut() {
+                    sym.0.0 *= scale;
+                    sym.0.1 *= scale;
+                    sym.1.0 *= scale;
+                    sym.1.1 *= scale;
+                }
             }
         }
     }
@@ -639,10 +654,12 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>) -
         let pts = pts.into_iter().map(|x| round_pt_tol(x)).collect::<Result<Vec<_>,()>>()
             .map_err(|_| ImportState::PlotError(format!("Solution contains point not on grid")))?;
         for (p1,p2) in pts.iter().zip(pts.iter().skip(1)) {
-            let segs = line_segments(*p1,*p2)
-                .map_err(|_| ImportState::PlotError(format!("Line segment conversion failed")))?;
-            for (p1,p2) in segs {
-                model.linesegs.insert((p1,p2));
+            let segs = line_segments(*p1,*p2).or_else(|_| manhattan_segments(*p1,*p2));
+            let segs = segs.unwrap_or_default();
+            for (mut a,mut b) in segs {
+                // Normalize direction: sort endpoints to avoid duplicate/overlap assertions.
+                if a > b { std::mem::swap(&mut a,&mut b); }
+                model.linesegs.insert((a,b));
             }
         }
     }
@@ -688,13 +705,25 @@ pub fn line_segments(a :Pt, b :Pt) -> Result<Vec<(Pt,Pt)>, ()> {
     if diff == glm::zero() { return Err(()); }
     let segs = diff.x.abs().max(diff.y.abs());
     let step_vector = glm::vec2(diff.x.signum(), diff.y.signum());
-    assert_eq!(a + segs*step_vector, b);
+    if a + segs*step_vector != b {
+        return Err(());
+    }
     let mut x = a;
     for i in 0..segs {
         let y = x+step_vector;
         out.push((x,y));
         x = y;
     }
+    Ok(out)
+}
+
+/// Fallback for non 45/90 degree lines: route Manhattan style.
+pub fn manhattan_segments(a: Pt, b: Pt) -> Result<Vec<(Pt,Pt)>, ()> {
+    let mid1 = Pt::new(b.x, a.y);
+    if mid1 == a || mid1 == b { return Err(()); }
+    let mut out = Vec::new();
+    out.extend(line_segments(a, mid1)?);
+    out.extend(line_segments(mid1, b)?);
     Ok(out)
 }
 
@@ -707,7 +736,7 @@ mod tests {
         let filename = "railML/IS NEST view/2024-07-19_railML_SimpleExample_v13_NEST_railML2.5.xml".to_string();
         let (tx, rx) = std::sync::mpsc::channel();
         
-        load_railml_file(filename, tx);
+        load_railml_file(filename, tx, true);
 
         let mut available_model = None;
         while let Ok(state) = rx.recv() {
