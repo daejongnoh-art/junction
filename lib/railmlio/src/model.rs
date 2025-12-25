@@ -27,12 +27,15 @@ pub struct Metadata {
     pub dc_description: Option<String>,
     pub dc_rights: Option<String>,
     pub organizational_units: Vec<OrganizationalUnit>,
+    pub version: Option<String>,
 }
 
 #[derive(Debug)]
 pub struct OrganizationalUnit {
     pub id: Id,
     pub code: Option<String>,
+    pub name: Option<String>,
+    pub contact: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,6 +67,7 @@ pub struct Ocp {
     pub id: Id,
     pub name: Option<String>,
     pub r#type: Option<String>,
+    pub geo_coord: Option<String>,
 }
 
 #[derive(Debug, Clone)]

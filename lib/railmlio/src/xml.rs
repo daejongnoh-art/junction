@@ -53,6 +53,8 @@ fn parse_metadata(root: &xml::Node) -> Result<Metadata, DocErr> {
             organizational_units.push(OrganizationalUnit {
                 id: iu.attribute("id").unwrap_or_default().to_string(),
                 code: iu.attribute("code").map(|x| x.to_string()),
+                name: iu.attribute("name").map(|x| x.to_string()),
+                contact: iu.attribute("contact").map(|x| x.to_string()),
             });
         }
     }
@@ -67,6 +69,7 @@ fn parse_metadata(root: &xml::Node) -> Result<Metadata, DocErr> {
         dc_description: text_of("description"),
         dc_rights: text_of("rights"),
         organizational_units,
+        version: md.attribute("version").map(|x| x.to_string()),
     })
 }
 
@@ -143,6 +146,7 @@ fn parse_ocp(node: &xml::Node) -> Result<Ocp, DocErr> {
             .to_string(),
         name: node.attribute("name").map(|x| x.to_string()),
         r#type: node.attribute("type").map(|x| x.to_string()),
+        geo_coord: node.attribute("geoCoord").map(|x| x.to_string()),
     })
 }
 
