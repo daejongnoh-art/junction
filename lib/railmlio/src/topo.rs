@@ -2,7 +2,7 @@
 
 use ordered_float::OrderedFloat;
 use crate::model::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use log::*;
 
 
@@ -23,6 +23,7 @@ pub struct Topological {
 #[derive(Debug)]
 pub struct TopoTrack {
     pub objects :Objects,
+    pub track_elements :TrackElements,
     pub length: f64,
     pub offset :f64, // absolute mileage at track start if available
 }
@@ -121,6 +122,7 @@ pub enum TopoConvErr {
     SwitchOrientationInvalid(String),
     UnmatchedConnection(String,String),
     TrackContinuationMismatch(String,String),
+    TrackEndpointMissing(usize, AB),
 }
 
 #[derive(Debug)]
@@ -251,8 +253,11 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 .unwrap_or(0.0);
             let mut current_abs = inferred_abs;
 
+            let mut init_objects = Objects::empty();
+            init_objects.train_protection_element_groups = track.objects.train_protection_element_groups.clone();
             let mut track_idx = new_track(&mut topo, TopoTrack {
-                objects: Objects::empty(),
+                objects: init_objects,
+                track_elements: TrackElements::empty(),
                 offset: current_abs,
                 length: 0.0,
             });
@@ -268,6 +273,16 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
             tcbs.sort_by_key(|d| OrderedFloat(d.pos.offset));
             let mut ders = track.objects.derailers.clone();
             ders.sort_by_key(|d| OrderedFloat(d.pos.offset));
+            let mut tpes = track.objects.train_protection_elements.clone();
+            tpes.sort_by_key(|e| OrderedFloat(e.pos.offset));
+            let mut pes = track.track_elements.platform_edges.clone();
+            pes.sort_by_key(|p| OrderedFloat(p.pos.offset));
+            let mut scs = track.track_elements.speed_changes.clone();
+            scs.sort_by_key(|s| OrderedFloat(s.pos.offset));
+            let mut lcs = track.track_elements.level_crossings.clone();
+            lcs.sort_by_key(|l| OrderedFloat(l.pos.offset));
+            let mut css = track.track_elements.cross_sections.clone();
+            css.sort_by_key(|c| OrderedFloat(c.pos.offset));
 
             let mut push_segment_objects = |seg: &mut TopoTrack, start: f64, end: f64| {
                 while let Some(s) = sigs.first() {
@@ -303,6 +318,41 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                         let mut d = ders.remove(0);
                         d.pos.offset -= start;
                         seg.objects.derailers.push(d);
+                    } else { break; }
+                }
+                while let Some(e) = tpes.first() {
+                    if e.pos.offset <= end {
+                        let mut e = tpes.remove(0);
+                        e.pos.offset -= start;
+                        seg.objects.train_protection_elements.push(e);
+                    } else { break; }
+                }
+                while let Some(p) = pes.first() {
+                    if p.pos.offset <= end {
+                        let mut p = pes.remove(0);
+                        p.pos.offset -= start;
+                        seg.track_elements.platform_edges.push(p);
+                    } else { break; }
+                }
+                while let Some(s) = scs.first() {
+                    if s.pos.offset <= end {
+                        let mut s = scs.remove(0);
+                        s.pos.offset -= start;
+                        seg.track_elements.speed_changes.push(s);
+                    } else { break; }
+                }
+                while let Some(l) = lcs.first() {
+                    if l.pos.offset <= end {
+                        let mut l = lcs.remove(0);
+                        l.pos.offset -= start;
+                        seg.track_elements.level_crossings.push(l);
+                    } else { break; }
+                }
+                while let Some(c) = css.first() {
+                    if c.pos.offset <= end {
+                        let mut c = css.remove(0);
+                        c.pos.offset -= start;
+                        seg.track_elements.cross_sections.push(c);
                     } else { break; }
                 }
             };
@@ -344,6 +394,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 
                 track_idx = new_track(&mut topo, TopoTrack {
                     objects: Objects::empty(),
+                    track_elements: TrackElements::empty(),
                     offset: current_abs,
                     length: 0.0
                 });
@@ -386,6 +437,19 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
     debug!("CONNECTIONS {:?}", topo.connections);
     for c in &topo.connections {
         debug!("{:?}", c);
+    }
+
+    // Ensure each track has both endpoints connected.
+    let mut track_endpoints: HashSet<(usize, AB)> = HashSet::new();
+    for (track_end, _node_end) in &topo.connections {
+        track_endpoints.insert(*track_end);
+    }
+    for (idx, _track) in topo.tracks.iter().enumerate() {
+        for side in [AB::A, AB::B] {
+            if !track_endpoints.contains(&(idx, side)) {
+                return Err(TopoConvErr::TrackEndpointMissing(idx, side));
+            }
+        }
     }
 
     Ok(topo)

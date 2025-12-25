@@ -108,6 +108,18 @@ impl DGraphBuilder {
                         Function::Derailer => {
                             // Derailer does not affect rolling infra; ignore for now.
                         },
+                        Function::TrainProtectionElement => {
+                            // Train protection element does not affect rolling infra; ignore for now.
+                        },
+                        Function::TrainProtectionGroup => {
+                            // Train protection group does not affect rolling infra; ignore for now.
+                        },
+                        Function::PlatformEdge
+                        | Function::SpeedChange
+                        | Function::LevelCrossing
+                        | Function::CrossSection => {
+                            // Track elements not part of rolling infra; ignore.
+                        },
                         Function::MainSignal { has_distant, .. }=> { 
                             let c = if matches!(dir,Some(AB::B)) { cursor.reverse(&dg.dgraph) } else { cursor };
                             signal_cursors.insert(id,c); 

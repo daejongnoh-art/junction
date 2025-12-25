@@ -76,7 +76,13 @@ pub fn object_menu(analysis :&mut Analysis, pta :PtA) -> Option<()> {
             Function::Detector => { widgets::show_text("Detector"); },
             Function::TrackCircuitBorder => { widgets::show_text("Track circuit border"); },
             Function::Derailer => { widgets::show_text("Derailer"); },
+            Function::TrainProtectionElement => { widgets::show_text("Train protection element"); },
+            Function::TrainProtectionGroup => { widgets::show_text("Train protection group"); },
             Function::Balise => { widgets::show_text("Balise"); },
+            Function::PlatformEdge => { widgets::show_text("Platform edge"); },
+            Function::SpeedChange => { widgets::show_text("Speed change"); },
+            Function::LevelCrossing => { widgets::show_text("Level crossing"); },
+            Function::CrossSection => { widgets::show_text("Cross section"); },
             Function::MainSignal { has_distant, kind } => {
                 widgets::show_text(&format!("Signal ({:?})", kind));
                 if matches!(kind, SignalKind::Main | SignalKind::Combined) {

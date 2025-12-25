@@ -148,6 +148,7 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
             return;
         },
     };
+    validate_topo_positions(&topomodel);
     if tx.send(ImportState::Ping).is_err() { return; }
     info!("Converted to topomodel");
 
@@ -238,7 +239,44 @@ pub enum RailObject {
     Detector,
     TrackCircuitBorder,
     Derailer,
+    TrainProtectionElement,
+    TrainProtectionGroup,
     Balise,
+    PlatformEdge,
+    SpeedChange,
+    LevelCrossing,
+    CrossSection,
+}
+
+fn validate_topo_positions(topo: &railmlio::topo::Topological) {
+    let eps = 1e-6;
+    let mut issues = 0usize;
+    for (idx, track) in topo.tracks.iter().enumerate() {
+        if track.length < -eps {
+            warn!("Track {} has negative length {}", idx, track.length);
+            issues += 1;
+        }
+        let len = track.length.max(0.0);
+        let mut check = |name: &str, offset: f64| {
+            if offset < -eps || offset > len + eps {
+                warn!("Track {} {} offset out of range: {} (len {})", idx, name, offset, len);
+                issues += 1;
+            }
+        };
+        for s in &track.objects.signals { check("signal", s.pos.offset); }
+        for b in &track.objects.balises { check("balise", b.pos.offset); }
+        for d in &track.objects.train_detectors { check("detector", d.pos.offset); }
+        for d in &track.objects.track_circuit_borders { check("tcb", d.pos.offset); }
+        for d in &track.objects.derailers { check("derailer", d.pos.offset); }
+        for e in &track.objects.train_protection_elements { check("tpe", e.pos.offset); }
+        for p in &track.track_elements.platform_edges { check("platform", p.pos.offset); }
+        for s in &track.track_elements.speed_changes { check("speed", s.pos.offset); }
+        for l in &track.track_elements.level_crossings { check("level_crossing", l.pos.offset); }
+        for c in &track.track_elements.cross_sections { check("cross_section", c.pos.offset); }
+    }
+    if issues > 0 {
+        warn!("Topological position validation reported {} issues", issues);
+    }
 }
 
 pub fn convert_railplot(topo :&railmlio::topo::Topological) 
@@ -409,6 +447,46 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             origin: 0.0,
                             level: 1,
                         }, RailObject::Derailer));
+                    }
+                    for e in &topo.tracks[track_idx].objects.train_protection_elements {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + e.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::TrainProtectionElement));
+                    }
+                    for p in &topo.tracks[track_idx].track_elements.platform_edges {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + p.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::PlatformEdge));
+                    }
+                    for s in &topo.tracks[track_idx].track_elements.speed_changes {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + s.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::SpeedChange));
+                    }
+                    for l in &topo.tracks[track_idx].track_elements.level_crossings {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + l.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::LevelCrossing));
+                    }
+                    for c in &topo.tracks[track_idx].track_elements.cross_sections {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + c.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::CrossSection));
                     }
                     for b in &topo.tracks[track_idx].objects.balises {
                         objects.push((plot::Symbol {
@@ -599,6 +677,72 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
             }
 
             let mut edges_done = HashSet::new();
+            let mut track_start_pos: Vec<Option<f64>> = vec![None; topo.tracks.len()];
+            for (track_idx, _) in topo.tracks.iter().enumerate() {
+                let mut na = track_connections.get(&(track_idx,topo::AB::A))
+                    .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                let mut nb = track_connections.get(&(track_idx,topo::AB::B))
+                    .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                fn cont_opposite(p :topo::Port) -> topo::Port {
+                    match p {
+                        topo::Port::ContA => topo::Port::ContB,
+                        topo::Port::ContB => topo::Port::ContA,
+                        x => x,
+                    }
+                }
+                while let topo::Port::ContA | topo::Port::ContB = na.1 {
+                    let (ti,tab) = node_connections.get(&(na.0, cont_opposite(na.1)))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                    na = track_connections.get(&(*ti,tab.opposite()))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                }
+                while let topo::Port::ContA | topo::Port::ContB = nb.1 {
+                    let (ti,tab) = node_connections.get(&(nb.0, cont_opposite(nb.1)))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                    nb = track_connections.get(&(*ti,tab.opposite()))
+                        .ok_or(ImportState::SourceFileError(format!("Inconsistent connections.")))?;
+                }
+                let pa = node_pos_map.get(&format!("n{}", na.0)).cloned().unwrap_or(0.0);
+                let pb = node_pos_map.get(&format!("n{}", nb.0)).cloned().unwrap_or(0.0);
+                track_start_pos[track_idx] = Some(pa.min(pb));
+            }
+
+            let mut element_pos: HashMap<String, (usize, f64)> = HashMap::new();
+            for (track_idx, track) in topo.tracks.iter().enumerate() {
+                if let Some(start) = track_start_pos[track_idx] {
+                    for e in &track.objects.train_protection_elements {
+                        element_pos.entry(e.id.clone())
+                            .or_insert((track_idx, start + e.pos.offset));
+                    }
+                }
+            }
+            let mut group_by_track: HashMap<usize, Vec<f64>> = HashMap::new();
+            for track in topo.tracks.iter() {
+                for g in &track.objects.train_protection_element_groups {
+                    for r in &g.element_refs {
+                        if let Some((tidx, pos)) = element_pos.get(r) {
+                            group_by_track.entry(*tidx).or_default().push(*pos);
+                        }
+                    }
+                }
+            }
+            let mut element_pos: HashMap<String, (usize, f64)> = HashMap::new();
+            for (track_idx, track) in topo.tracks.iter().enumerate() {
+                for e in &track.objects.train_protection_elements {
+                    element_pos.entry(e.id.clone())
+                        .or_insert((track_idx, track.offset + e.pos.offset));
+                }
+            }
+            let mut group_by_track: HashMap<usize, Vec<f64>> = HashMap::new();
+            for track in topo.tracks.iter() {
+                for g in &track.objects.train_protection_element_groups {
+                    for r in &g.element_refs {
+                        if let Some((tidx, pos)) = element_pos.get(r) {
+                            group_by_track.entry(*tidx).or_default().push(*pos);
+                        }
+                    }
+                }
+            }
 
             for (track_idx,_) in topo.tracks.iter().enumerate() {
                 let mut na = track_connections.get(&(track_idx,topo::AB::A))
@@ -689,6 +833,66 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             origin: 0.0,
                             level: 1,
                         }, RailObject::Derailer));
+                    }
+                    for e in &topo.tracks[track_idx].objects.train_protection_elements {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + e.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::TrainProtectionElement));
+                    }
+                    if let Some(group_positions) = group_by_track.get(&track_idx) {
+                        for pos in group_positions {
+                            objects.push((plot::Symbol {
+                                pos: *pos,
+                                width: 0.1,
+                                origin: 0.0,
+                                level: 1,
+                            }, RailObject::TrainProtectionGroup));
+                        }
+                    }
+                    if let Some(group_positions) = group_by_track.get(&track_idx) {
+                        for pos in group_positions {
+                            objects.push((plot::Symbol {
+                                pos: *pos,
+                                width: 0.1,
+                                origin: 0.0,
+                                level: 1,
+                            }, RailObject::TrainProtectionGroup));
+                        }
+                    }
+                    for p in &topo.tracks[track_idx].track_elements.platform_edges {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + p.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::PlatformEdge));
+                    }
+                    for s in &topo.tracks[track_idx].track_elements.speed_changes {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + s.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::SpeedChange));
+                    }
+                    for l in &topo.tracks[track_idx].track_elements.level_crossings {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + l.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::LevelCrossing));
+                    }
+                    for c in &topo.tracks[track_idx].track_elements.cross_sections {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + c.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::CrossSection));
                     }
                     for b in &topo.tracks[track_idx].objects.balises {
                         objects.push((plot::Symbol {
@@ -879,6 +1083,60 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
             RailObject::Derailer => {
                 use crate::document::objects::{Function, Object};
                 functions.push(Function::Derailer);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::TrainProtectionElement => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::TrainProtectionElement);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::TrainProtectionGroup => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::TrainProtectionGroup);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::PlatformEdge => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::PlatformEdge);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::SpeedChange => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::SpeedChange);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::LevelCrossing => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::LevelCrossing);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::CrossSection => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::CrossSection);
                 model.objects.insert(p1, Object {
                     loc,
                     tangent,

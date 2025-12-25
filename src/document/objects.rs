@@ -36,7 +36,13 @@ pub enum Function {
     Detector,
     TrackCircuitBorder,
     Derailer,
+    TrainProtectionElement,
+    TrainProtectionGroup,
     Balise,
+    PlatformEdge,
+    SpeedChange,
+    LevelCrossing,
+    CrossSection,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -58,7 +64,9 @@ impl Object {
                     if factor > 0.0 { self.tangent *= -1; }
                     self.loc = pt_on_line + offset;
             } else if self.functions.iter().find(|c| matches!(c,
-                Function::Detector | Function::TrackCircuitBorder | Function::Derailer | Function::Balise)).is_some() {
+                Function::Detector | Function::TrackCircuitBorder | Function::Derailer |
+                Function::TrainProtectionElement | Function::TrainProtectionGroup | Function::Balise |
+                Function::PlatformEdge | Function::SpeedChange | Function::LevelCrossing | Function::CrossSection)).is_some() {
                 self.loc = pt_on_line;
             }
 
@@ -96,8 +104,50 @@ impl Object {
                         ImDrawList_AddLine(draw_list, p - ImVec2 { x: s, y: -s },
                                            p + ImVec2 { x: s, y: -s }, c, 2.0);
                     },
+                    Function::TrainProtectionElement => {
+                        let s = scale * 0.7;
+                        let p1 = p + ImVec2 { x: 0.0, y: -s };
+                        let p2 = p + ImVec2 { x: -s, y: s };
+                        let p3 = p + ImVec2 { x: s, y: s };
+                        ImDrawList_AddLine(draw_list, p1, p2, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p2, p3, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p3, p1, c, 2.0);
+                    },
+                    Function::TrainProtectionGroup => {
+                        let s = scale * 0.9;
+                        let p1 = p + ImVec2 { x: 0.0, y: -s };
+                        let p2 = p + ImVec2 { x: -s, y: s };
+                        let p3 = p + ImVec2 { x: s, y: s };
+                        ImDrawList_AddTriangle(draw_list, p1, p2, p3, c, 2.0);
+                    },
                     Function::Balise => {
                         ImDrawList_AddCircleFilled(draw_list, p, scale * 0.6, c, 8);
+                    },
+                    Function::PlatformEdge => {
+                        let s = scale * 1.2;
+                        ImDrawList_AddLine(draw_list, p - ImVec2 { x: s, y: 0.0 },
+                                           p + ImVec2 { x: s, y: 0.0 }, c, 2.5);
+                    },
+                    Function::SpeedChange => {
+                        let s = scale * 0.8;
+                        let p1 = p + ImVec2 { x: 0.0, y: -s };
+                        let p2 = p + ImVec2 { x: -s, y: s };
+                        let p3 = p + ImVec2 { x: s, y: s };
+                        ImDrawList_AddLine(draw_list, p1, p2, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p2, p3, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p3, p1, c, 2.0);
+                    },
+                    Function::LevelCrossing => {
+                        let s = scale * 0.8;
+                        ImDrawList_AddLine(draw_list, p - ImVec2 { x: s, y: 0.0 },
+                                           p + ImVec2 { x: s, y: 0.0 }, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p - ImVec2 { x: 0.0, y: s },
+                                           p + ImVec2 { x: 0.0, y: s }, c, 2.0);
+                    },
+                    Function::CrossSection => {
+                        let s = scale * 0.6;
+                        ImDrawList_AddRect(draw_list, p - ImVec2 { x: s, y: s },
+                                           p + ImVec2 { x: s, y: s }, c, 0.0, 0, 1.5);
                     },
                     Function::MainSignal { has_distant, kind } => {
                         // base

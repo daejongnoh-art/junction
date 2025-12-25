@@ -194,8 +194,26 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
                         Function::Derailer => {
                             track_objs.push((pos,*id,Function::Derailer,None));
                         },
+                        Function::TrainProtectionElement => {
+                            track_objs.push((pos,*id,Function::TrainProtectionElement,None));
+                        },
+                        Function::TrainProtectionGroup => {
+                            track_objs.push((pos,*id,Function::TrainProtectionGroup,None));
+                        },
                         Function::Balise => {
                             track_objs.push((pos,*id,Function::Balise,None));
+                        }
+                        Function::PlatformEdge => {
+                            track_objs.push((pos,*id,Function::PlatformEdge,None));
+                        },
+                        Function::SpeedChange => {
+                            track_objs.push((pos,*id,Function::SpeedChange,None));
+                        },
+                        Function::LevelCrossing => {
+                            track_objs.push((pos,*id,Function::LevelCrossing,None));
+                        },
+                        Function::CrossSection => {
+                            track_objs.push((pos,*id,Function::CrossSection,None));
                         }
                     }
                 }

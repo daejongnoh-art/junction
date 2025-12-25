@@ -108,7 +108,14 @@ fn convert_signals(topo :&Topology, dgraph :&dgraph::DGraph,
                         design.push((track_idx, *pos, Function::Detector, None));
                     }
                 },
-                Function::TrackCircuitBorder | Function::Derailer => {
+                Function::TrackCircuitBorder
+                | Function::Derailer
+                | Function::TrainProtectionElement
+                | Function::TrainProtectionGroup
+                | Function::PlatformEdge
+                | Function::SpeedChange
+                | Function::LevelCrossing
+                | Function::CrossSection => {
                     // Not handled by signal optimizer; ignore for now.
                 },
                 Function::Balise => {
