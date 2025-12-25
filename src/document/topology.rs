@@ -278,7 +278,14 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
             },
             cs if cs.len() == 3 => {
                 let rec = try_recognize_switch_node(p, cs, |t,p| settr(t,Some(p)), |p,n,q| { locx.insert(p,(n,q)); });
-                if rec.is_err() { ok = false; }
+                if rec.is_err() {
+                    // Fallback: map as trunk = first, left = second, right = third to avoid missing ports.
+                    settr(cs[0].0, Some((p, Port::Trunk)));
+                    settr(cs[1].0, Some((p, Port::Left)));
+                    settr(cs[2].0, Some((p, Port::Right)));
+                    locx.insert(p, (NDType::Sw(Side::Left), cs[1].1 - p));
+                    ok = true;
+                }
             },
             cs if cs.len() == 4 => {
                 let rec = try_recognize_crossing_node(p, cs, |t,p| settr(t,Some(p)), |p,n,q| { locx.insert(p,(n,q)); });

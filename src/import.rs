@@ -594,7 +594,31 @@ pub fn round_pt_tol((x,y) :(f64,f64)) -> Result<Pt,()> {
 
 pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>) -> Result<Model, ImportState> {
     debug!("Starting conversion of railplotlib schematic output");
-    
+
+    // Heuristic scaling: if solver output is very small, scale up to improve visibility.
+    let mut plot = plot;
+    if let Some(max_pos) = plot.nodes.values().map(|n| n.pos.abs()).max_by(|a,b| a.total_cmp(b)) {
+        if max_pos > 0.0 && max_pos < 50.0 {
+            let scale = 50.0 / max_pos;
+            debug!("Scaling plot output by factor {}", scale);
+            for n in plot.nodes.values_mut() {
+                n.pos *= scale;
+            }
+            for (_e,pts) in plot.lines.iter_mut() {
+                for p in pts.iter_mut() {
+                    p.x *= scale;
+                    p.y *= scale;
+                }
+            }
+            for (_obj, sym) in plot.symbols.iter_mut() {
+                sym.0.x *= scale;
+                sym.0.y *= scale;
+                sym.1.x *= scale;
+                sym.1.y *= scale;
+            }
+        }
+    }
+
     let mut model :Model = Default::default();
 
     for (n,pt) in plot.nodes {
