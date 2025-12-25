@@ -144,8 +144,33 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
         None
     };
 
+    fn find_closest_lineseg_global(model: &Model, pt: PtC) -> Option<((Pt, Pt), f32, (f32, f32))> {
+        let mut best = None;
+        let mut best_dist = std::f32::INFINITY;
+        let mut next_dist = std::f32::INFINITY;
+        let mut best_param = 0.0;
+        for (a, b) in model.linesegs.iter() {
+            let (d, param) = dist_to_line_sqr(
+                pt,
+                glm::vec2(a.x as f32, a.y as f32),
+                glm::vec2(b.x as f32, b.y as f32),
+            );
+            if d < best_dist {
+                next_dist = best_dist;
+                best_dist = d;
+                best_param = param;
+                best = Some((*a, *b));
+            } else if d < next_dist {
+                next_dist = d;
+            }
+        }
+        best.map(|seg| (seg, best_param, (best_dist, next_dist)))
+    }
+
     for (id,Object { loc, functions, .. }) in model.objects.iter() {
-        if let Some((pt,param,_)) = model.get_closest_lineseg(*loc) {
+        let closest = model.get_closest_lineseg(*loc)
+            .or_else(|| find_closest_lineseg_global(model, *loc));
+        if let Some((pt,param,_)) = closest {
             if let Some((track_idx,pos_a, pos_b, dir)) = get_from_piece_map((pt.0.x,pt.0.y), (pt.1.x,pt.1.y)) {
                 let pos = glm::lerp_scalar(pos_a, pos_b, param as f64);
                 let pt = if dir > 0 { pt } else { (pt.1,pt.0) }; // reverse line if track direction is not
@@ -157,11 +182,20 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
                         Function::Detector => {
                             track_objs.push((pos,*id,Function::Detector,None));
                         },
-                        Function::MainSignal { has_distant } => {
+                        Function::MainSignal { has_distant, kind } => {
                             
                             // TODO this seems unnecessary when we can simply copy the `Function`s.
-                            track_objs.push((pos,*id, Function::MainSignal { has_distant: *has_distant },
+                            track_objs.push((pos,*id, Function::MainSignal { has_distant: *has_distant, kind: *kind },
                                              Some(get_dir_from_side(&pt, *loc))));
+                        },
+                        Function::TrackCircuitBorder => {
+                            track_objs.push((pos,*id,Function::TrackCircuitBorder,None));
+                        },
+                        Function::Derailer => {
+                            track_objs.push((pos,*id,Function::Derailer,None));
+                        },
+                        Function::Balise => {
+                            track_objs.push((pos,*id,Function::Balise,None));
                         }
                     }
                 }

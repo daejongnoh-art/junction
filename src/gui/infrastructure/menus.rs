@@ -74,13 +74,18 @@ pub fn object_menu(analysis :&mut Analysis, pta :PtA) -> Option<()> {
     for f in obj.functions.iter() {
         match f {
             Function::Detector => { widgets::show_text("Detector"); },
-            Function::MainSignal { has_distant } => {
-                widgets::show_text("Main signal");
-                let mut has_distant = *has_distant;
-                unsafe {
-                    igCheckbox(const_cstr!("Distant signal").as_ptr(), &mut has_distant);
-                    if igIsItemEdited() {
-                        set_distant = Some(has_distant);
+            Function::TrackCircuitBorder => { widgets::show_text("Track circuit border"); },
+            Function::Derailer => { widgets::show_text("Derailer"); },
+            Function::Balise => { widgets::show_text("Balise"); },
+            Function::MainSignal { has_distant, kind } => {
+                widgets::show_text(&format!("Signal ({:?})", kind));
+                if matches!(kind, SignalKind::Main | SignalKind::Combined) {
+                    let mut has_distant = *has_distant;
+                    unsafe {
+                        igCheckbox(const_cstr!("Distant signal").as_ptr(), &mut has_distant);
+                        if igIsItemEdited() {
+                            set_distant = Some(has_distant);
+                        }
                     }
                 }
             }
@@ -88,7 +93,8 @@ pub fn object_menu(analysis :&mut Analysis, pta :PtA) -> Option<()> {
     }
     if let Some(d) = set_distant {
         analysis.edit_model(|new| {
-            new.objects.get_mut(&pta).unwrap().functions = vec![Function::MainSignal { has_distant: d }];
+            let kind = if d { SignalKind::Combined } else { SignalKind::Main };
+            new.objects.get_mut(&pta).unwrap().functions = vec![Function::MainSignal { has_distant: d, kind }];
             None
         });
     }

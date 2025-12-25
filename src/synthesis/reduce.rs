@@ -108,6 +108,12 @@ fn convert_signals(topo :&Topology, dgraph :&dgraph::DGraph,
                         design.push((track_idx, *pos, Function::Detector, None));
                     }
                 },
+                Function::TrackCircuitBorder | Function::Derailer => {
+                    // Not handled by signal optimizer; ignore for now.
+                },
+                Function::Balise => {
+                    // Not handled by signal optimizer; ignore for now.
+                },
             }
         }
     }

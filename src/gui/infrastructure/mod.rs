@@ -603,7 +603,7 @@ fn object_select(inf_view :&mut InfView) {
                         Object {
                             loc: glm::vec2(0.0, 0.0),
                             tangent: glm::vec2(1,0),
-                            functions: vec![Function::MainSignal { has_distant: false}],
+                            functions: vec![Function::MainSignal { has_distant: false, kind: SignalKind::Main }],
                         }
                         ));
             } 

@@ -27,7 +27,10 @@ pub fn initial_design(topo :&Topology) -> Design {
                         for c in cur_move(topo, Cursor { tr: track_idx, pos: *pos, dir: *dir}, l) {
                             // signals now implies a co-located detector
                             //objects.push((c.tr,c.pos,Function::Detector,None));
-                            objects.push((c.tr,c.pos,Function::MainSignal { has_distant: true },Some(c.dir.other())));
+                            objects.push((c.tr, c.pos, Function::MainSignal {
+                                has_distant: true,
+                                kind: SignalKind::Main,
+                            }, Some(c.dir.other())));
                         }
                     }
                 },

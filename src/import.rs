@@ -151,7 +151,7 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
     if tx.send(ImportState::Ping).is_err() { return; }
     info!("Converted to topomodel");
 
-    let plotmodel = match convert_railplot(topomodel) {
+    let plotmodel = match convert_railplot(&topomodel) {
         Ok(m) => m,
         Err(e) => {
             let _ = tx.send(e);
@@ -161,7 +161,7 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
     if tx.send(ImportState::Ping).is_err() { return; }
     info!("Converted to plotmodel");
 
-    let solver = railplotlib::solvers::LevelsSatSolver {
+    let new_solver = || railplotlib::solvers::LevelsSatSolver {
         criteria: vec![
             railplotlib::solvers::Goal::Bends,
             railplotlib::solvers::Goal::Height,
@@ -172,17 +172,50 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
         nodes_distinct: false,
     };
     use railplotlib::solvers::SchematicSolver;
+    let mut solver = new_solver();
 
+
+    let fallback_plot = simple_layout_from(&plotmodel);
 
     info!("Starting solver");
     info!("plot model {:#?}", plotmodel);
-    let plot = match solver.solve(plotmodel) {
+    let mut plot = match solver.solve(plotmodel) {
         Ok(m) => m,
         Err(e) => {
-            let _ = tx.send(ImportState::PlotError(format!("Plotting error: {:?}", e)));
-            return;
+            warn!("Solver failed (FromFile): {:?}, retrying Estimated", e);
+            let mut solver = new_solver();
+            let est_plotmodel = match convert_railplot_estimated(&topomodel) {
+                Ok(m) => m,
+                Err(err) => {
+                    let _ = tx.send(err);
+                    return;
+                },
+            };
+            let fallback = simple_layout_from(&est_plotmodel);
+            match solver.solve(est_plotmodel) {
+                Ok(m2) => m2,
+                Err(e2) => {
+                    warn!("Solver failed (Estimated): {:?}, using simple layout fallback", e2);
+                    match convert_junction(fallback, auto_scale) {
+                        Ok(m) => {
+                            let _ = tx.send(ImportState::Available(m));
+                        },
+                        Err(err) => { let _ = tx.send(err); }
+                    }
+                    return;
+                },
+            }
         },
     };
+    let y_min = plot.nodes.iter().map(|(_,pt)| pt.1).fold(f64::INFINITY, f64::min);
+    let y_max = plot.nodes.iter().map(|(_,pt)| pt.1).fold(f64::NEG_INFINITY, f64::max);
+    let y_range = y_max - y_min;
+    let has_switch = plot.nodes.iter().any(|(n,_)| matches!(n.shape,
+        railplotlib::model::Shape::Switch(_,_) | railplotlib::model::Shape::Crossing));
+    if has_switch && y_range < 0.5 {
+        warn!("Solver output is degenerate (flat); using fallback layout");
+        plot = fallback_plot;
+    }
     if tx.send(ImportState::Ping).is_err() { return; }
 
     info!("Found model");
@@ -201,10 +234,24 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
 
 #[derive(Debug, Clone, Copy)]
 pub enum RailObject {
-    Signal(railmlio::model::SignalType),
+    Signal { r#type: railmlio::model::SignalType, dir: Option<railmlio::model::TrackDirection> },
+    Detector,
+    TrackCircuitBorder,
+    Derailer,
+    Balise,
 }
 
-pub fn convert_railplot(topo :railmlio::topo::Topological) 
+pub fn convert_railplot(topo :&railmlio::topo::Topological) 
+    -> Result<railplotlib::model::SchematicGraph<RailObject>, ImportState> {
+    convert_railplot_with_method(topo, false)
+}
+
+pub fn convert_railplot_estimated(topo :&railmlio::topo::Topological) 
+    -> Result<railplotlib::model::SchematicGraph<RailObject>, ImportState> {
+    convert_railplot_with_method(topo, true)
+}
+
+pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_estimated: bool) 
     -> Result<railplotlib::model::SchematicGraph<RailObject>, ImportState> {
 
     use railmlio::topo;
@@ -222,9 +269,9 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
         Estimated,
     }
 
-    // prefer absolute positions when present; fall back otherwise
+    // prefer absolute positions when present; fall back otherwise, unless force_estimated
     let has_abs = topo.tracks.iter().any(|t| t.offset != 0.0 || t.length > 0.0);
-    let method = if has_abs { MileageMethod::FromFile } else { MileageMethod::Estimated };
+    let method = if force_estimated { MileageMethod::Estimated } else if has_abs { MileageMethod::FromFile } else { MileageMethod::Estimated };
 
     match method {
         MileageMethod::FromFile => {
@@ -333,11 +380,43 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                     let mut objects = Vec::new();
                     for s in &topo.tracks[track_idx].objects.signals {
                         objects.push((plot::Symbol {
-                            pos: s.pos.offset,
+                            pos: pos_a + s.pos.offset,
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Signal(s.r#type)));
+                        }, RailObject::Signal { r#type: s.r#type, dir: Some(s.dir) }));
+                    }
+                    for d in &topo.tracks[track_idx].objects.train_detectors {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Detector));
+                    }
+                    for d in &topo.tracks[track_idx].objects.track_circuit_borders {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::TrackCircuitBorder));
+                    }
+                    for d in &topo.tracks[track_idx].objects.derailers {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Derailer));
+                    }
+                    for b in &topo.tracks[track_idx].objects.balises {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + b.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Balise));
                     }
                     if let Some(&mi) = node_map.get(&na.0) {
                         model.nodes[mi].pos = pos_a;
@@ -514,6 +593,11 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                 debug!("Node {} {:?}", i, n);
             }
 
+            let mut node_pos_map: HashMap<String, f64> = HashMap::new();
+            for n in &model.nodes {
+                node_pos_map.insert(n.name.clone(), n.pos);
+            }
+
             let mut edges_done = HashSet::new();
 
             for (track_idx,_) in topo.tracks.iter().enumerate() {
@@ -573,13 +657,46 @@ pub fn convert_railplot(topo :railmlio::topo::Topological)
                 if !edges_done.contains(&key) {
                     edges_done.insert(key);
                     let mut objects = Vec::new();
+                    let pos_a = node_pos_map.get(&a.0).cloned().unwrap_or(0.0);
                     for s in &topo.tracks[track_idx].objects.signals {
                         objects.push((plot::Symbol {
-                            pos: s.pos.offset,
+                            pos: pos_a + s.pos.offset,
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Signal(s.r#type)));
+                        }, RailObject::Signal { r#type: s.r#type, dir: Some(s.dir) }));
+                    }
+                    for d in &topo.tracks[track_idx].objects.train_detectors {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Detector));
+                    }
+                    for d in &topo.tracks[track_idx].objects.track_circuit_borders {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::TrackCircuitBorder));
+                    }
+                    for d in &topo.tracks[track_idx].objects.derailers {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + d.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Derailer));
+                    }
+                    for b in &topo.tracks[track_idx].objects.balises {
+                        objects.push((plot::Symbol {
+                            pos: pos_a + b.pos.offset,
+                            width: 0.1,
+                            origin: 0.0,
+                            level: 1,
+                        }, RailObject::Balise));
                     }
                     model.edges.push(plot::Edge { a, b, objects });
                 }
@@ -603,7 +720,7 @@ pub fn round_pt_tol((x,y) :(f64,f64)) -> Result<Pt,()> {
 pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, auto_scale: bool) -> Result<Model, ImportState> {
     debug!("Starting conversion of railplotlib schematic output");
 
-    // Heuristic scaling: if solver output is very small, scale up to improve visibility.
+    // Heuristic scaling: scale up tiny outputs and scale down huge outputs to keep grid reasonable.
     let mut plot = plot;
     if auto_scale {
         use std::cmp::Ordering;
@@ -611,8 +728,14 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
             .map(|(_,pt)| pt.0.abs().max(pt.1.abs()))
             .max_by(|a,b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
         if let Some(max_pos) = max_pos {
-            if max_pos > 0.0 && max_pos < 50.0 {
-                let scale = 50.0 / max_pos;
+            let scale = if max_pos > 0.0 && max_pos < 50.0 {
+                50.0 / max_pos
+            } else if max_pos > 500.0 {
+                500.0 / max_pos
+            } else {
+                1.0
+            };
+            if (scale - 1.0).abs() > f64::EPSILON {
                 debug!("Scaling plot output by factor {}", scale);
                 for (_n, pt) in plot.nodes.iter_mut() {
                     pt.0 *= scale;
@@ -650,6 +773,13 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
         });
     }
 
+    let mut plot_segments: Vec<((f64, f64), (f64, f64))> = Vec::new();
+    for (_e, pts) in &plot.lines {
+        for (p1, p2) in pts.iter().zip(pts.iter().skip(1)) {
+            plot_segments.push((*p1, *p2));
+        }
+    }
+
     for (e,pts) in plot.lines {
         let pts = pts.into_iter().map(|x| round_pt_tol(x)).collect::<Result<Vec<_>,()>>()
             .map_err(|_| ImportState::PlotError(format!("Solution contains point not on grid")))?;
@@ -666,26 +796,98 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
 
     for (obj, pts) in plot.symbols {
         let p_res1 = round_pt_tol(pts.0);
-        let p_res2 = round_pt_tol(pts.1);
-        if p_res1.is_err() || p_res2.is_err() { continue; }
-        let (p1, p2) = (p_res1.unwrap(), p_res2.unwrap());
+        if p_res1.is_err() { continue; }
+        let p1 = p_res1.unwrap();
 
-        let loc = crate::document::infview::unround_coord(p1).lerp(&crate::document::infview::unround_coord(p2), 0.5);
-        let tangent : Pt = p2 - p1;
+        let mut best_tangent: Option<Pt> = None;
+        let mut best_dist = f64::INFINITY;
+        for (a, b) in &plot_segments {
+            let (x0, y0) = (a.0, a.1);
+            let (x1, y1) = (b.0, b.1);
+            let (px, py) = (pts.0 .0, pts.0 .1);
+            let dx = x1 - x0;
+            let dy = y1 - y0;
+            let len2 = dx * dx + dy * dy;
+            if len2 < f64::EPSILON { continue; }
+            let t = ((px - x0) * dx + (py - y0) * dy) / len2;
+            let t = t.max(0.0).min(1.0);
+            let projx = x0 + t * dx;
+            let projy = y0 + t * dy;
+            let dist = (px - projx) * (px - projx) + (py - projy) * (py - projy);
+            if dist < best_dist {
+                best_dist = dist;
+                let adx = dx.abs();
+                let ady = dy.abs();
+                let tangent = if adx >= ady {
+                    nalgebra_glm::vec2(dx.signum() as i32, if adx == ady { dy.signum() as i32 } else { 0 })
+                } else {
+                    nalgebra_glm::vec2(if adx == ady { dx.signum() as i32 } else { 0 }, dy.signum() as i32)
+                };
+                best_tangent = Some(tangent);
+            }
+        }
+
+        let tvec = best_tangent.unwrap_or_else(|| {
+            nalgebra_glm::vec2((pts.1 .0).signum() as i32, (pts.1 .1).signum() as i32)
+        });
+        let loc = nalgebra_glm::vec2(p1.x as f32, p1.y as f32);
+        let tangent: Pt = if tvec == nalgebra_glm::zero() { nalgebra_glm::vec2(1, 0) } else { tvec };
         
         let mut functions = Vec::new();
         match obj {
-            RailObject::Signal(t) => {
+            RailObject::Signal { r#type: t, dir } => {
                 use crate::document::objects::{Function, Object};
-                match t {
-                    railmlio::model::SignalType::Distant => {
-                        functions.push(Function::MainSignal { has_distant: true });
-                    },
-                    _ => {
-                        functions.push(Function::MainSignal { has_distant: false });
-                    }
+                let kind = match t {
+                    railmlio::model::SignalType::Main => crate::document::objects::SignalKind::Main,
+                    railmlio::model::SignalType::Distant => crate::document::objects::SignalKind::Distant,
+                    railmlio::model::SignalType::Combined => crate::document::objects::SignalKind::Combined,
+                    railmlio::model::SignalType::Repeater => crate::document::objects::SignalKind::Repeater,
+                    railmlio::model::SignalType::Shunting => crate::document::objects::SignalKind::Shunting,
+                };
+                let has_distant = matches!(kind,
+                    crate::document::objects::SignalKind::Combined |
+                    crate::document::objects::SignalKind::Distant);
+                functions.push(Function::MainSignal { has_distant, kind });
+                let mut tangent = tangent;
+                if matches!(dir, Some(railmlio::model::TrackDirection::Down)) {
+                    tangent = -tangent;
                 }
-                
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::Detector => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::Detector);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::TrackCircuitBorder => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::TrackCircuitBorder);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::Derailer => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::Derailer);
+                model.objects.insert(p1, Object {
+                    loc,
+                    tangent,
+                    functions,
+                });
+            }
+            RailObject::Balise => {
+                use crate::document::objects::{Function, Object};
+                functions.push(Function::Balise);
                 model.objects.insert(p1, Object {
                     loc,
                     tangent,
@@ -725,6 +927,138 @@ pub fn manhattan_segments(a: Pt, b: Pt) -> Result<Vec<(Pt,Pt)>, ()> {
     out.extend(line_segments(a, mid1)?);
     out.extend(line_segments(mid1, b)?);
     Ok(out)
+}
+
+/// Simple layout fallback: straight lines between nodes, y by node index.
+fn simple_layout_from(plotmodel: &railplotlib::model::SchematicGraph<RailObject>) -> railplotlib::model::SchematicOutput<RailObject> {
+    use ordered_float::OrderedFloat;
+    use std::collections::{BTreeMap, VecDeque};
+    use railplotlib::model::Port;
+
+    let mut node_index = HashMap::new();
+    for (idx, n) in plotmodel.nodes.iter().enumerate() {
+        node_index.insert(n.name.clone(), idx);
+    }
+
+    let mut adjacency: Vec<Vec<(usize, Port)>> = vec![Vec::new(); plotmodel.nodes.len()];
+    for e in &plotmodel.edges {
+        if let (Some(&a_idx), Some(&b_idx)) = (node_index.get(&e.a.0), node_index.get(&e.b.0)) {
+            adjacency[a_idx].push((b_idx, e.a.1));
+            adjacency[b_idx].push((a_idx, e.b.1));
+        }
+    }
+
+    fn port_offset(port: Port) -> f64 {
+        match port {
+            Port::Left | Port::InLeft | Port::OutLeft => -2.0,
+            Port::Right | Port::InRight | Port::OutRight => 2.0,
+            _ => 0.0,
+        }
+    }
+
+    let mut order: Vec<usize> = (0..plotmodel.nodes.len()).collect();
+    order.sort_by(|a, b| {
+        plotmodel.nodes[*a]
+            .pos
+            .partial_cmp(&plotmodel.nodes[*b].pos)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| plotmodel.nodes[*a].name.cmp(&plotmodel.nodes[*b].name))
+    });
+
+    let mut y_levels: Vec<Option<f64>> = vec![None; plotmodel.nodes.len()];
+    for &start in &order {
+        if y_levels[start].is_some() {
+            continue;
+        }
+        y_levels[start] = Some(0.0);
+        let mut queue = VecDeque::new();
+        queue.push_back(start);
+        while let Some(idx) = queue.pop_front() {
+            let y = y_levels[idx].unwrap_or(0.0);
+            for (next, port) in adjacency[idx].iter().cloned() {
+                if y_levels[next].is_none() {
+                    y_levels[next] = Some(y + port_offset(port));
+                    queue.push_back(next);
+                }
+            }
+        }
+    }
+
+    let mut by_pos: BTreeMap<OrderedFloat<f64>, Vec<usize>> = BTreeMap::new();
+    for (idx, n) in plotmodel.nodes.iter().enumerate() {
+        by_pos.entry(OrderedFloat(n.pos)).or_default().push(idx);
+    }
+    for (_pos, mut idxs) in by_pos {
+        if idxs.len() <= 1 {
+            continue;
+        }
+        idxs.sort_by(|a, b| y_levels[*a].unwrap_or(0.0).partial_cmp(&y_levels[*b].unwrap_or(0.0))
+            .unwrap_or(std::cmp::Ordering::Equal));
+        let base = y_levels[idxs[0]].unwrap_or(0.0);
+        let all_same = idxs.iter().all(|i| (y_levels[*i].unwrap_or(0.0) - base).abs() < 0.1);
+        if all_same {
+            let count = idxs.len() as f64;
+            let center = (count - 1.0) / 2.0;
+            for (i, idx) in idxs.into_iter().enumerate() {
+                let offset = (i as f64 - center) * 1.0;
+                y_levels[idx] = Some(base + offset);
+            }
+        }
+    }
+
+    let mut nodes = Vec::new();
+    let mut node_pos = HashMap::new();
+    for (idx, n) in plotmodel.nodes.iter().enumerate() {
+        let pt = (n.pos, y_levels[idx].unwrap_or(0.0));
+        nodes.push((n.clone(), pt));
+        node_pos.insert(n.name.clone(), pt);
+    }
+
+    let mut lines = Vec::new();
+    for e in &plotmodel.edges {
+        let mut a_pos = *node_pos.get(&e.a.0).unwrap_or(&(0.0, 0.0));
+        let mut b_pos = *node_pos.get(&e.b.0).unwrap_or(&(0.0, 0.0));
+        if b_pos.0 < a_pos.0 {
+            std::mem::swap(&mut a_pos, &mut b_pos);
+        }
+        let mut pts = vec![a_pos];
+        if (a_pos.0 - b_pos.0).abs() > f64::EPSILON && (a_pos.1 - b_pos.1).abs() > f64::EPSILON {
+            pts.push((b_pos.0, a_pos.1));
+        }
+        pts.push(b_pos);
+        lines.push((e.clone(), pts));
+    }
+
+    let mut symbols = Vec::new();
+    for e in &plotmodel.edges {
+        let mut a_pos = *node_pos.get(&e.a.0).unwrap_or(&(0.0, 0.0));
+        let mut b_pos = *node_pos.get(&e.b.0).unwrap_or(&(0.0, 0.0));
+        if b_pos.0 < a_pos.0 {
+            std::mem::swap(&mut a_pos, &mut b_pos);
+        }
+        let dx = b_pos.0 - a_pos.0;
+        let dy = b_pos.1 - a_pos.1;
+        let len = (dx * dx + dy * dy).sqrt();
+        let tvec = if len > f64::EPSILON {
+            (dx / len, dy / len)
+        } else {
+            (1.0, 0.0)
+        };
+        for (sym, obj) in &e.objects {
+            let pos = if dx.abs() > f64::EPSILON {
+                let t = ((sym.pos - a_pos.0) / dx).max(0.0).min(1.0);
+                (a_pos.0 + dx * t, a_pos.1)
+            } else if dy.abs() > f64::EPSILON {
+                let t = (sym.pos / dy.abs()).max(0.0).min(1.0);
+                (a_pos.0, a_pos.1 + dy.signum() * dy.abs() * t)
+            } else {
+                a_pos
+            };
+            symbols.push((*obj, (pos, tvec)));
+        }
+    }
+
+    railplotlib::model::SchematicOutput { nodes, lines, symbols }
 }
 
 #[cfg(test)]

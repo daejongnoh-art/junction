@@ -257,6 +257,56 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 length: 0.0,
             });
 
+            // prepare sorted objects for this track
+            let mut sigs = track.objects.signals.clone();
+            sigs.sort_by_key(|s| OrderedFloat(s.pos.offset));
+            let mut bals = track.objects.balises.clone();
+            bals.sort_by_key(|b| OrderedFloat(b.pos.offset));
+            let mut dets = track.objects.train_detectors.clone();
+            dets.sort_by_key(|d| OrderedFloat(d.pos.offset));
+            let mut tcbs = track.objects.track_circuit_borders.clone();
+            tcbs.sort_by_key(|d| OrderedFloat(d.pos.offset));
+            let mut ders = track.objects.derailers.clone();
+            ders.sort_by_key(|d| OrderedFloat(d.pos.offset));
+
+            let mut push_segment_objects = |seg: &mut TopoTrack, start: f64, end: f64| {
+                while let Some(s) = sigs.first() {
+                    if s.pos.offset <= end {
+                        let mut s = sigs.remove(0);
+                        s.pos.offset -= start;
+                        seg.objects.signals.push(s);
+                    } else { break; }
+                }
+                while let Some(b) = bals.first() {
+                    if b.pos.offset <= end {
+                        let mut b = bals.remove(0);
+                        b.pos.offset -= start;
+                        seg.objects.balises.push(b);
+                    } else { break; }
+                }
+                while let Some(d) = dets.first() {
+                    if d.pos.offset <= end {
+                        let mut d = dets.remove(0);
+                        d.pos.offset -= start;
+                        seg.objects.train_detectors.push(d);
+                    } else { break; }
+                }
+                while let Some(t) = tcbs.first() {
+                    if t.pos.offset <= end {
+                        let mut t = tcbs.remove(0);
+                        t.pos.offset -= start;
+                        seg.objects.track_circuit_borders.push(t);
+                    } else { break; }
+                }
+                while let Some(d) = ders.first() {
+                    if d.pos.offset <= end {
+                        let mut d = ders.remove(0);
+                        d.pos.offset -= start;
+                        seg.objects.derailers.push(d);
+                    } else { break; }
+                }
+            };
+
             track_end(track.begin.connection, (track_idx, AB::A), &mut topo, &mut named_track_ports);
             track.switches.sort_by_key(|s| match s { 
                 Switch::Switch { pos, .. } | Switch::Crossing { pos, .. } => OrderedFloat(pos.offset) });
@@ -266,6 +316,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 debug!("Switch info b. {:?}", sw_info);
                 topo.tracks[track_idx].length = sw_info.pos - current_offset;
                 current_abs += topo.tracks[track_idx].length;
+                push_segment_objects(&mut topo.tracks[track_idx], current_offset, sw_info.pos);
 
                 let nd = if is_crossing {
                     new_node(&mut topo, TopoNode::Crossing)
@@ -302,6 +353,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
 
             track_end(track.end.connection, (track_idx, AB::B), &mut topo, &mut named_track_ports);
             topo.tracks[track_idx].length = track.end.pos.offset - current_offset;
+            push_segment_objects(&mut topo.tracks[track_idx], current_offset, track.end.pos.offset);
         }
     }
 

@@ -99,7 +99,16 @@ impl DGraphBuilder {
                             detector_ids.insert(a,id);
                             detector_ids.insert(b,id);
                         },
-                        Function::MainSignal { has_distant }=> { 
+                        Function::TrackCircuitBorder => {
+                            let (a,b) = cursor.nodes(&dg.dgraph);
+                            detector_nodes.insert((a,b));
+                            detector_ids.insert(a,id);
+                            detector_ids.insert(b,id);
+                        },
+                        Function::Derailer => {
+                            // Derailer does not affect rolling infra; ignore for now.
+                        },
+                        Function::MainSignal { has_distant, .. }=> { 
                             let c = if matches!(dir,Some(AB::B)) { cursor.reverse(&dg.dgraph) } else { cursor };
                             signal_cursors.insert(id,c); 
 
@@ -107,6 +116,9 @@ impl DGraphBuilder {
                                   rolling_inf::StaticObject::Signal { has_distant: has_distant });
                             static_signals.insert(id, obj);
                             object_ids.insert(obj, id);
+                        },
+                        Function::Balise => {
+                            // Balise does not affect rolling infra; ignore for now.
                         },
                     }
                     last_pos = pos;

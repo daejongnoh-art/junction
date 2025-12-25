@@ -21,7 +21,23 @@ pub struct Object {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[derive(Serialize,Deserialize)]
-pub enum Function { MainSignal { has_distant :bool }, Detector }
+pub enum SignalKind {
+    Main,
+    Distant,
+    Combined,
+    Repeater,
+    Shunting,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize,Deserialize)]
+pub enum Function {
+    MainSignal { has_distant: bool, kind: SignalKind },
+    Detector,
+    TrackCircuitBorder,
+    Derailer,
+    Balise,
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ObjectState { SignalStop, SignalProceed, DistantStop, DistantProceed }
@@ -41,7 +57,8 @@ impl Object {
                     let offset = 0.25*normal*factor;
                     if factor > 0.0 { self.tangent *= -1; }
                     self.loc = pt_on_line + offset;
-            } else if self.functions.iter().find(|c| matches!(c, Function::Detector)).is_some() {
+            } else if self.functions.iter().find(|c| matches!(c,
+                Function::Detector | Function::TrackCircuitBorder | Function::Derailer | Function::Balise)).is_some() {
                 self.loc = pt_on_line;
             }
 
@@ -67,28 +84,45 @@ impl Object {
                     Function::Detector => {
                         ImDrawList_AddLine(draw_list, p - normal, p + normal, c, 2.0);
                     },
-                    Function::MainSignal { has_distant } => {
+                    Function::TrackCircuitBorder => {
+                        let s = scale * 0.8;
+                        ImDrawList_AddRect(draw_list, p - ImVec2 { x: s, y: s },
+                                           p + ImVec2 { x: s, y: s }, c, 0.0, 0, 2.0);
+                    },
+                    Function::Derailer => {
+                        let s = scale * 0.7;
+                        ImDrawList_AddLine(draw_list, p - ImVec2 { x: s, y: s },
+                                           p + ImVec2 { x: s, y: s }, c, 2.0);
+                        ImDrawList_AddLine(draw_list, p - ImVec2 { x: s, y: -s },
+                                           p + ImVec2 { x: s, y: -s }, c, 2.0);
+                    },
+                    Function::Balise => {
+                        ImDrawList_AddCircleFilled(draw_list, p, scale * 0.6, c, 8);
+                    },
+                    Function::MainSignal { has_distant, kind } => {
                         // base
                         ImDrawList_AddLine(draw_list, p + normal, p - normal, c, 2.0);
 
-                        let stem = if *has_distant { 2.0 } else { 1.0 };
+                        let draw_main = matches!(kind, SignalKind::Main | SignalKind::Combined | SignalKind::Repeater | SignalKind::Shunting);
+                        let draw_distant = matches!(kind, SignalKind::Distant | SignalKind::Combined) || *has_distant;
+                        let stem = if draw_distant { 2.0 } else { 1.0 };
                         ImDrawList_AddLine(draw_list, p, p + stem*tangent, c, 2.0);
 
                         for s in state.iter() {
                             match s {
-                                ObjectState::SignalStop => {
+                                ObjectState::SignalStop if draw_main => {
                                     let c = config.color_u32(RailUIColorName::CanvasSignalStop);
                                     ImDrawList_AddCircleFilled(draw_list, p + stem*tangent + tangent, scale, c, 8);
                                 },
-                                ObjectState::SignalProceed => {
+                                ObjectState::SignalProceed if draw_main => {
                                     let c = config.color_u32(RailUIColorName::CanvasSignalProceed);
                                     ImDrawList_AddCircleFilled(draw_list, p + stem*tangent + tangent, scale, c, 8);
                                 },
-                                ObjectState::DistantStop if *has_distant => {
+                                ObjectState::DistantStop if draw_distant => {
                                     let c = config.color_u32(RailUIColorName::CanvasSignalStop);
                                     ImDrawList_AddCircleFilled(draw_list, p + 1.5*tangent + normal, scale*0.8, c, 8);
                                 },
-                                ObjectState::DistantProceed => {
+                                ObjectState::DistantProceed if draw_distant => {
                                     let c = config.color_u32(RailUIColorName::CanvasSignalProceed);
                                     ImDrawList_AddCircleFilled(draw_list, p + 1.5*tangent + normal, scale*0.8, c, 8);
                                 },
@@ -97,11 +131,27 @@ impl Object {
                         }
 
                         // distant
-                        if *has_distant {
+                        if draw_distant {
                             ImDrawList_AddCircle(draw_list, p + 1.5*tangent + normal, scale*0.8, c, 8, 2.0);
                         }
                         // main signal
-                        ImDrawList_AddCircle(draw_list, p + stem*tangent + tangent, scale, c, 8, 2.0);
+                        if draw_main {
+                            match kind {
+                                SignalKind::Shunting => {
+                                    let s = scale * 0.8;
+                                    ImDrawList_AddRect(draw_list,
+                                        p + stem*tangent + tangent - ImVec2 { x: s, y: s },
+                                        p + stem*tangent + tangent + ImVec2 { x: s, y: s },
+                                        c, 0.0, 0, 2.0);
+                                }
+                                SignalKind::Repeater => {
+                                    ImDrawList_AddCircle(draw_list, p + stem*tangent + tangent, scale*0.7, c, 8, 2.0);
+                                }
+                                _ => {
+                                    ImDrawList_AddCircle(draw_list, p + stem*tangent + tangent, scale, c, 8, 2.0);
+                                }
+                            }
+                        }
                     },
                 }
 
