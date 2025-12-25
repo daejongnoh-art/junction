@@ -47,6 +47,9 @@ pub struct Infrastructure {
 pub struct TrackGroup {
     pub id: Id,
     pub name: Option<String>,
+    pub infrastructure_manager_ref: Option<String>,
+    pub line_category: Option<String>,
+    pub line_type: Option<String>,
     pub track_refs: Vec<TrackRef>,
 }
 
@@ -90,6 +93,7 @@ pub struct TrackElements {
     pub platform_edges: Vec<PlatformEdge>,
     pub speed_changes: Vec<SpeedChange>,
     pub level_crossings: Vec<LevelCrossing>,
+    pub cross_sections: Vec<CrossSection>,
 }
 
 impl TrackElements {
@@ -98,6 +102,7 @@ impl TrackElements {
             platform_edges: Vec::new(),
             speed_changes: Vec::new(),
             level_crossings: Vec::new(),
+            cross_sections: Vec::new(),
         }
     }
 }
@@ -128,6 +133,15 @@ pub struct LevelCrossing {
     pub pos: Position,
     pub protection: Option<String>,
     pub angle: Option<f64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CrossSection {
+    pub id: Id,
+    pub name: Option<String>,
+    pub ocp_ref: Option<String>,
+    pub pos: Position,
+    pub section_type: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -256,6 +270,9 @@ pub struct Signal {
     pub sight: Option<f64>,
     pub r#type: SignalType,
     pub function: Option<SignalFunction>,
+    pub code: Option<String>,
+    pub switchable: Option<bool>,
+    pub ocp_station_ref: Option<String>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -286,6 +303,7 @@ pub enum TrackDirection {
 pub struct Balise {
     pub id: Id,
     pub pos: Position,
+    pub name: Option<String>,
 }
 
 #[derive(Debug, Clone)]

@@ -128,6 +128,9 @@ fn parse_track_group(node: &xml::Node) -> Result<TrackGroup, DocErr> {
             .ok_or(DocErr::AttributeMissing("id", node.range().start))?
             .to_string(),
         name: node.attribute("name").map(|x| x.to_string()),
+        infrastructure_manager_ref: node.attribute("infrastructureManagerRef").map(|x| x.to_string()),
+        line_category: node.attribute("lineCategory").map(|x| x.to_string()),
+        line_type: node.attribute("type").map(|x| x.to_string()),
         track_refs,
     })
 }
@@ -189,13 +192,18 @@ fn parse_track(track: &xml::Node) -> Result<Track, DocErr> {
                 .ok_or(DocErr::ElementMissing("trackEnd", topo.range().start))?,
         )?,
         switches: parse_switches(&topo)?,
-        track_elements: parse_track_elements(track)?,
+        track_elements: parse_track_elements(track, &topo)?,
         objects: parse_objects(track)?,
     })
 }
 
-fn parse_track_elements(track: &xml::Node) -> Result<TrackElements, DocErr> {
+fn parse_track_elements(track: &xml::Node, topo: &xml::Node) -> Result<TrackElements, DocErr> {
     let mut res = TrackElements::empty();
+    if let Some(cs) = topo.children().find(|c| c.has_tag_name("crossSections")) {
+        for c in cs.children().filter(|c| c.has_tag_name("crossSection")) {
+            res.cross_sections.push(parse_cross_section(&c)?);
+        }
+    }
     if let Some(te) = track.children().find(|c| c.has_tag_name("trackElements")) {
         if let Some(pes) = te.children().find(|c| c.has_tag_name("platformEdges")) {
             for p in pes.children().filter(|c| c.has_tag_name("platformEdge")) {
@@ -214,6 +222,16 @@ fn parse_track_elements(track: &xml::Node) -> Result<TrackElements, DocErr> {
         }
     }
     Ok(res)
+}
+
+fn parse_cross_section(node: &xml::Node) -> Result<CrossSection, DocErr> {
+    Ok(CrossSection {
+        id: node.attribute("id").ok_or(DocErr::AttributeMissing("id", node.range().start))?.to_string(),
+        name: node.attribute("name").map(|x| x.to_string()),
+        ocp_ref: node.attribute("ocpRef").map(|x| x.to_string()),
+        pos: parse_position(node)?,
+        section_type: node.attribute("type").map(|x| x.to_string()),
+    })
 }
 
 fn parse_platform_edge(node: &xml::Node) -> Result<PlatformEdge, DocErr> {
@@ -261,7 +279,7 @@ fn parse_level_crossing(node: &xml::Node) -> Result<LevelCrossing, DocErr> {
 
 fn parse_objects(track: &xml::Node) -> Result<Objects, DocErr> {
     let mut signals = Vec::new();
-    let balises = Vec::new();
+    let mut balises = Vec::new();
     let mut train_detectors = Vec::new();
     let mut track_circuit_borders = Vec::new();
     let mut derailers = Vec::new();
@@ -286,6 +304,11 @@ fn parse_objects(track: &xml::Node) -> Result<Objects, DocErr> {
                 .filter(|c| c.has_tag_name("trackCircuitBorder"))
             {
                 track_circuit_borders.push(parse_track_circuit_border(&tcb)?);
+            }
+        }
+        if let Some(bs) = ocs.children().find(|c| c.has_tag_name("balises")) {
+            for b in bs.children().filter(|c| c.has_tag_name("balise")) {
+                balises.push(parse_balise(&b)?);
             }
         }
         if let Some(der) = ocs.children().find(|c| c.has_tag_name("derailers")) {
@@ -347,6 +370,9 @@ fn parse_signal(s: &xml::Node) -> Result<Signal, DocErr> {
             Some(_) => Some(SignalFunction::Other),
             None => None,
         },
+        code: s.attribute("code").map(|x| x.to_string()),
+        switchable: s.attribute("switchable").and_then(|v| v.parse::<bool>().ok()),
+        ocp_station_ref: s.attribute("ocpStationRef").map(|x| x.to_string()),
     })
 }
 
@@ -407,6 +433,17 @@ fn parse_train_protection_element(node: &xml::Node) -> Result<TrainProtectionEle
         system: node
             .attribute("trainProtectionSystem")
             .map(|v| v.to_string()),
+    })
+}
+
+fn parse_balise(node: &xml::Node) -> Result<Balise, DocErr> {
+    Ok(Balise {
+        id: node
+            .attribute("id")
+            .ok_or(DocErr::AttributeMissing("id", node.range().start))?
+            .to_string(),
+        pos: parse_position(node)?,
+        name: node.attribute("name").map(|x| x.to_string()),
     })
 }
 
