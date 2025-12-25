@@ -1,6 +1,7 @@
 pub mod model;
 pub mod topo;
 pub mod xml;
+pub mod write;
 
 #[cfg(test)]
 mod tests {

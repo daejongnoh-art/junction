@@ -6,6 +6,7 @@ use crate::app::*;
 use crate::document::Document;
 use crate::gui;
 use crate::file;
+use crate::export;
 use crate::gui::widgets;
 
 pub fn load(app :&mut App) {
@@ -80,7 +81,9 @@ pub fn main_menu(app :&mut App) {
                 }
 
                 if igMenuItemBool(const_cstr!("Export to railML...").as_ptr(), std::ptr::null(), false, true) {
-                    // TODO 
+                    if let Err(e) = export::export_railml_interactive(app.document.analysis.model()) {
+                        error!("Error exporting railML: {}", e);
+                    }
                 }
 
                 widgets::sep();

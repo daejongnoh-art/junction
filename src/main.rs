@@ -5,6 +5,7 @@ mod file;
 mod gui;
 mod util;
 mod import;
+mod export;
 
 mod synthesis;
 
