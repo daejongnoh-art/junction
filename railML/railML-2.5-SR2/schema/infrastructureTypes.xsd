@@ -1,0 +1,3289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2022 rel. 2 (x64) (http://www.altova.com) by  (railML.org) -->
+<!-- $Id$ -->
+<xs:schema
+  xmlns:rail="https://www.railml.org/schemas/2021"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xml="http://www.w3.org/XML/1998/namespace"
+  targetNamespace="https://www.railml.org/schemas/2021"
+  elementFormDefault="qualified"
+  version="2.5">
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of attribute groups, simple and complex types, used by infrastructure sub schema (IS)</xs:documentation>
+  </xs:annotation>
+  <xs:include schemaLocation="railwayUnits.xsd"/>
+  <xs:include schemaLocation="railwayBaseTypes.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/03/xml.xsd"/>
+  <xs:complexType name="tBasePlacedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="geoCoord" type="rail:tGeoCoord" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:geoCoord</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aRelPosition"/>
+        <xs:attributeGroup ref="rail:aAbsPosition"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPlacedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tBasePlacedElement">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled pieces of infrastructure.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPlacedElementWithLength">
+    <xs:complexContent>
+      <xs:extension base="rail:tBasePlacedElement">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStatesWithLength" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled pieces of infrastructure with length values</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states_(with_length)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="length" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>length along the track in meters</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOrientedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attributeGroup ref="rail:aOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOrientedElementWithLength">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElementWithLength">
+        <xs:attributeGroup ref="rail:aOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tDelimitedOrientedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attributeGroup ref="rail:aDelimitedOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tDelimitedOrientedElementDeprecated">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attributeGroup ref="rail:aDelimitedOrientationDeprecated"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tDelimitedOrientedElementWithLength">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElementWithLength">
+        <xs:attributeGroup ref="rail:aDelimitedOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tDelimitedOrientedElementWithLengthDeprecated">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElementWithLength">
+        <xs:attributeGroup ref="rail:aDelimitedOrientationDeprecated"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tStrictOrientedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attributeGroup ref="rail:aStrictOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tStrictOrientedElementWithLength">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElementWithLength">
+        <xs:attributeGroup ref="rail:aStrictOrientation"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tGeoCoord">
+    <xs:attribute name="coord" type="rail:tCoordinateList" use="required"/>
+    <xs:attribute name="extraHeight" type="xs:double"/>
+    <xs:attribute name="epsgCode" type="xs:anyURI"/>
+    <xs:attribute name="heightEpsgCode" type="xs:anyURI"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aRelPosition">
+    <xs:attribute name="pos" type="rail:tLengthM" use="required">
+      <xs:annotation>
+        <xs:documentation>relative position on the track. all pos values of a track are expected to be continuous. When subtracting any two pos values of a track the result is the distance between the two points on the track.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aOrientation">
+    <xs:attribute name="dir" type="rail:tLaxDirection">
+      <xs:annotation>
+        <xs:documentation>a direction, which allows for all direction attributes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aDelimitedOrientation">
+    <xs:attribute name="dir" type="rail:tDelimitedDirection">
+      <xs:annotation>
+        <xs:documentation>a limited direction, which allows only for "up", "down" and "unknown"</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aDelimitedOrientationDeprecated">
+    <xs:attribute name="dir" type="rail:tDelimitedDirection">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED! (a limited direction, which allows only for "up", "down" and "unknown")</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aStrictOrientation">
+    <xs:attribute name="dir" type="rail:tStrictDirection">
+      <xs:annotation>
+        <xs:documentation>a strict direction, which allows only for "up" and "down"</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aAbsPosition">
+    <xs:attribute name="absPos" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>mileage value on the track. in contrast to the pos value the absPos value is not necessarily continuous. This means that the difference between two absPos values of a track can not be assumed to be the distance between the two points on the track.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="absPosOffset" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED, not needed, not used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tPropPassengerInfo">
+    <xs:sequence>
+      <xs:element name="mediaResources" type="rail:tMediaResources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>container for media resources connected with the infrastructure element such as announcement or special text fragments. Theses fragments are usually used to replace placeholders in announcements or special texts.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:mediaResources</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tMediaResources">
+    <xs:sequence>
+      <xs:element name="textFragments" type="rail:tMediaTextFragments" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>container for text fragments to be used for placeholder replacement</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:textFragments</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="audioFragments" type="rail:tMediaAudioFragments" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>container for audio fragments to be used for placeholder replacement</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:audioFragments</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tMediaTextFragments">
+    <xs:sequence>
+      <xs:element name="textFragment" type="rail:tInfoText" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>text fragments used for placeholder replacements in special texts</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:textFragment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tMediaAudioFragments">
+    <xs:sequence>
+      <xs:element name="audioFragment" type="rail:tMediaAudioFragment" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>allows to specify audio fragments to be used for placeholder replacements in announcements</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:audioFragment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tMediaAudioFragment">
+    <xs:sequence>
+      <xs:element name="textToSpeechTemplate" type="rail:tInfoTextBase" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>allows to specify text to speech templates to be used for placeholder replacements in text-to-speech based announcements. This is managed separately from text fragments for special text placeholder replacement as text to speech templates usually contain special characters for encoding special phonetics, especially when dealing with location names.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:textToSpeechTemplate</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="code" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>for typical, specific abbreviations, used in different systems with the same understanding</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="xml:lang"/>
+  </xs:complexType>
+  <xs:complexType name="tStatesWithLength">
+    <xs:sequence>
+      <xs:element name="state" type="rail:tStateWithLength" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>This is to define disabled/enabled infrastructure pieces with a given time frame for a certain length.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:state_(with_length)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tStateWithLength">
+    <xs:complexContent>
+      <xs:extension base="rail:tState">
+        <xs:sequence>
+          <xs:element name="from" type="rail:tLocation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>starting point where the 'state' takes place, e.g. kilometric position</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:from_state</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="to" type="rail:tLocation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>end point where the 'state' takes place, e.g. kilometric position</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:to_state</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLocation">
+    <xs:sequence>
+      <xs:element name="geoCoord" type="rail:tGeoCoord" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>location described by geographic coordinates</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:geoCoord</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="ocpRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>location described by the reference to a well-known 'operation or control point' defined in the same railML file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:aRelPosition"/>
+    <xs:attributeGroup ref="rail:aAbsPosition"/>
+  </xs:complexType>
+  <xs:complexType name="tRuleCodeElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrientedElement">
+        <xs:attribute name="ruleCode" type="rail:tElementDescription">
+          <xs:annotation>
+            <xs:documentation>Code for this element in the rule book, combination of letters and numbers and space allowed, e.g. Ne5, GA, SFRS/E</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOcpArea">
+    <xs:attribute name="name" type="rail:tGenericName"/>
+    <xs:attribute name="number" type="rail:tPositiveCounter"/>
+    <xs:attribute name="zip" type="xs:string"/>
+  </xs:complexType>
+  <xs:simpleType name="tSimultaneousEntry">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="yes"/>
+          <xs:enumeration value="no"/>
+          <xs:enumeration value="partial"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tOcpRelationNode">
+    <xs:attribute name="line" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>name the incoming/outgoing line (segment)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ocp" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>name the neighbouring OCP</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tOcpRelationDelayTime">
+    <xs:attribute name="value" type="xs:duration" use="required">
+      <xs:annotation>
+        <xs:documentation>the average delay time is given in xs:duration format</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="tOcpRelationType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="direct"/>
+          <xs:enumeration value="changeDrivingDirection"/>
+          <xs:enumeration value="crossesContraflowTraffic"/>
+          <xs:enumeration value="requiresShunting"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tRelationPriority">
+    <xs:restriction base="xs:long">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tOcpRelation">
+    <xs:sequence>
+      <xs:element name="from" type="rail:tOcpRelationNode">
+        <xs:annotation>
+          <xs:documentation>specifying the incoming direction</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:from_relation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="to" type="rail:tOcpRelationNode">
+        <xs:annotation>
+          <xs:documentation>specifying the outgoing direction</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:to_relation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="averageDelayTime" type="rail:tOcpRelationDelayTime" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>specify the average delay time due to waiting, shunting or other reasons</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:averageDelayTime</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="type" type="rail:tOcpRelationType" use="required">
+      <xs:annotation>
+        <xs:documentation>specify the type of connection</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="priority" type="rail:tRelationPriority">
+      <xs:annotation>
+        <xs:documentation>priority of a relation between 1 (high) and 255 (low)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tOcpPropOperational">
+    <xs:attribute name="operationalType" type="rail:tOcpOperationalType"/>
+    <xs:attribute name="trafficType" type="rail:tOcpTrafficType"/>
+    <xs:attribute name="orderChangeable" type="xs:boolean" default="false"/>
+    <xs:attribute name="ensuresTrainSequence" type="xs:boolean" default="true"/>
+    <xs:attribute name="remoteControlled" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>specify whether the OCP is remotely controlled by a TMS or CTC</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="simultaneousEntry" type="rail:tSimultaneousEntry">
+      <xs:annotation>
+        <xs:documentation>describes the pattern for a simultaneous entry into the OCP</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tOcpPropEquipmentSummary">
+    <xs:attribute name="signalBox" type="rail:tInterlockingTypes"/>
+    <xs:attribute name="powerstation" type="xs:boolean" default="false"/>
+    <xs:attribute name="hasHomeSignals" type="xs:boolean" default="false"/>
+    <xs:attribute name="hasStarterSignals" type="xs:boolean" default="false"/>
+    <xs:attribute name="hasSwitches" type="xs:boolean" default="false"/>
+  </xs:complexType>
+  <xs:complexType name="tTrackRefInGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementRefInGroup"/>
+      <!-- Possible trackGroup-specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOcpPropService">
+    <xs:attribute name="passenger" type="xs:boolean" default="false"/>
+    <xs:attribute name="service" type="xs:boolean" default="false"/>
+    <xs:attribute name="ship" type="xs:boolean" default="false"/>
+    <xs:attribute name="bus" type="xs:boolean" default="false"/>
+    <xs:attribute name="airport" type="xs:boolean" default="false"/>
+    <xs:attribute name="tariffpoint" type="xs:boolean" default="false"/>
+    <xs:attribute name="goodsLoading" type="xs:boolean" default="false"/>
+    <xs:attribute name="goodsSiding" type="xs:boolean" default="false"/>
+    <xs:attribute name="goodsIntermodal" type="xs:boolean" default="false"/>
+    <xs:attribute name="goodsMarshalling" type="xs:boolean" default="false"/>
+  </xs:complexType>
+  <xs:complexType name="tOcpTsi">
+    <xs:annotation>
+      <xs:documentation>DEPRECATED. Use register entry "PrimaryLocationCode" instead.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="country" type="rail:tTwoDigits"/>
+    <xs:attribute name="location" type="rail:tFiveDigits"/>
+    <xs:attribute name="check" type="rail:tOneDigit"/>
+    <!-- more attributes can be added here later -->
+  </xs:complexType>
+  <xs:complexType name="tOcpPropOther">
+    <xs:attribute name="frontier" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED, because usage unclear.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="chargeFrontier" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED, because usage unclear.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="status" type="rail:tInfrastructureStatus" default="operational">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED! Please use new optional child element "states" instead; defines the status of the OCP in terms of availability for operation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="tOcpManMode">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="manned"/>
+          <xs:enumeration value="unmanned"/>
+          <xs:enumeration value="off"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tOcpUptime">
+    <xs:complexContent>
+      <xs:extension base="rail:tTimeSpan">
+        <xs:attribute name="mode" type="rail:tOcpManMode" use="required"/>
+        <xs:attribute name="operatingPeriodRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to the operating period defined in the timetable part</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="endDayOffset" type="xs:unsignedLong">
+          <xs:annotation>
+            <xs:documentation>define an offset greater than 0 if the end of the time span is not on the same day like the begin of the time span</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOperationControlPoint">
+    <xs:complexContent>
+      <xs:extension base="rail:tOcpWithIDAndName">
+        <xs:sequence>
+          <xs:element name="controllerRef" type="rail:tElementRefInGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference from OCP to a Controller</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:controllerRef_ocp</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="number" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use the 'designator' with its parameters 'register' and 'entry' instead</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="abbrevation" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use the 'designator' with its parameters 'register' and 'entry' instead</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="timezone" type="rail:tTimeZone"/>
+        <xs:attribute name="parentOcpRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>references the one and only parent ocp of this ocp</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOcpWithIDAndName">
+    <xs:annotation>
+      <xs:documentation>generic base type, used for inheritance of many railML types</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tAdditionalName">
+        <xs:sequence>
+          <xs:element name="additionalName" type="rail:tAdditionalOcpName" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>additional names and its according descriptions to be provided in other languages, dialects, encodings...</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:additionalName_ocp</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>provide an extension point for non-railML elements in foreign namespace</xs:documentation>
+            </xs:annotation>
+          </xs:any>
+        </xs:sequence>
+        <xs:attribute name="id" type="rail:tGenericID" use="required">
+          <xs:annotation>
+            <xs:documentation>XML-file-wide unique identity is required for later referencing that element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="code" type="rail:tGenericName">
+          <xs:annotation>
+            <xs:documentation>for typical, specific abbreviations, used in different systems with the same understanding</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="rail:tOcpNameType">
+          <xs:annotation>
+            <xs:documentation>type of the ocp name</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tAdditionalOcpName">
+    <xs:attribute name="name" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>should be interpreted in its elements' context (e.g. track/name, vehicle/name)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="rail:tElementDescription">
+      <xs:annotation>
+        <xs:documentation>should be interpreted in its elements' context, substantiates the name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="xml:lang">
+      <xs:annotation>
+        <xs:documentation>natural language identification according to https://www.w3.org/TR/xml/#sec-lang-tag; should always be given</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tOcpNameType">
+      <xs:annotation>
+        <xs:documentation>type of the ocp name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:anyAttribute">
+      <xs:annotation>
+        <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <xs:simpleType name="tOcpNameType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="operationalName"/>
+          <xs:enumeration value="trafficName"/>
+          <xs:enumeration value="localName"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tOcpOperationalType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="station">
+            <xs:annotation>
+              <xs:documentation>a usual station for beginning, ending, overtaking of trains with passing tracks, ... </xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="depot">
+            <xs:annotation>
+              <xs:documentation>a train depot</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="stoppingPoint">
+            <xs:annotation>
+              <xs:documentation>an ocp without signals, switches, addtional tracks where trains start, stop or end e. g. for passenger exchange</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="crossover">
+            <xs:annotation>
+              <xs:documentation>a connection between two tracks of a double-track line </xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="junction">
+            <xs:annotation>
+              <xs:documentation>joining/splitting of two lines</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="blockPost">
+            <xs:annotation>
+              <xs:documentation>a (mainly staffed) ocp with signals where the train spacing is monitored</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="blockSignal">
+            <xs:annotation>
+              <xs:documentation>an ocp consisting of a block signal for train spacing only, mainly unstaffed and automated operating</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="siding">
+            <xs:annotation>
+              <xs:documentation>an ocp to collect and deliver of cargo waggons to build trains, but not for train operation</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tOcpTrafficType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="passenger"/>
+          <xs:enumeration value="freight"/>
+          <xs:enumeration value="shunting"/>
+          <xs:enumeration value="operational"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tOcpAdditionalName">
+    <xs:annotation>
+      <xs:documentation>This type is only used by the deprecated element "additionalName" in "propOther". Please use "additionalName" in "ocp" instead.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="value" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This element has been deprecated, and is only kept for backward compatibility. Please use attribute "name" in element "additionalName" in "ocp" instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tOcpNameType">
+      <xs:annotation>
+        <xs:documentation>This element has been deprecated, and is only kept for backward compatibility. The element "additionalName" in "ocp" provides the same attribute.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="xml:lang">
+      <xs:annotation>
+        <xs:documentation>This element has been deprecated, and is only kept for backward compatibility. The element "additionalName" in "ocp" provides the same attribute.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:simpleType name="tControllerType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none"/>
+          <xs:enumeration value="singleElement"/>
+          <xs:enumeration value="local"/>
+          <xs:enumeration value="regional"/>
+          <xs:enumeration value="crossRegional"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tControllerTechnologyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="manual"/>
+      <xs:enumeration value="mechanical"/>
+      <xs:enumeration value="electro-mechanical"/>
+      <xs:enumeration value="electrical"/>
+      <xs:enumeration value="electronic"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="aController">
+    <xs:attribute name="parentControllerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to parent controller</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="model" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(product) name of the controller</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tControllerType">
+      <xs:annotation>
+        <xs:documentation>type of controller regarding its complexity and responsibility</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="technologyType" type="rail:tControllerTechnologyType">
+      <xs:annotation>
+        <xs:documentation>technology that the controller is based on</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="swVersion" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>controller software version</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="routeSetTime" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>Time for the route to be set by the CTC and interlocking. This is from the command is given by the dispatcher at the CTC/OCS terminal and to the signal light lights up or the movement authority is displayed in the MMI in the CAB.</xs:documentation>
+        <xs:documentation>See https://www.w3.org/TR/xmlschema-2/#duration</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/IS:controller</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="typicalThrowTime" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>typicalThrowTime is defined as the average time from when signal is given from controller (interlocking), switch is unlocked, blades are switching, locked and controlled and new position is indicated in controller. Forum: consider moving this to controller or switchPointMachineType for generic value or beeing able to set an individual value per switch/crossing?</xs:documentation>
+        <xs:documentation>See https://www.w3.org/TR/xmlschema-2/#duration</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/IS:controller</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tController">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:annotation>
+          <xs:documentation>controller element, e.g. interlocking</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled controllers</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="ocpRef" type="rail:tElementRefInGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference from a controller to an OCP</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:ocpRef_controller</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trackVacancyDetectionArea" type="rail:tTrackVacancyDetectionArea" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>defining the track vacancy detection areas controlled by this controller</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:trackVacancyDetectionArea</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="localOperationArea" type="rail:tLocalOperationArea" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>defining the local operation areas controlled by this controller</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:localOperationArea</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="workZone" type="rail:tWorkZone" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>defining work zones that are controlled by the controller</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:workZone</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aController"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aOcpRef">
+    <xs:attribute name="ocpStationRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference on ocp element, e.g. station</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="controllerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference on controller element, e.g. interlocking</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aOwner">
+    <xs:attribute name="ownerName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED, use infrastructureManagerRef instead to refer to a listed infrastructureManager</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="uic-no" type="rail:tPositiveCounter"/>
+    <xs:attribute name="infrastructureManagerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the infrastructure manager entry</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tOwner">
+    <xs:attributeGroup ref="rail:aOwner"/>
+  </xs:complexType>
+  <xs:complexType name="tOwnerChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attributeGroup ref="rail:aOwner"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tClearanceManaging">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="sight"/>
+          <xs:enumeration value="time"/>
+          <xs:enumeration value="blocking"/>
+          <xs:enumeration value="LZB-blocking"/>
+          <xs:enumeration value="absBrakeDist"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tOperationMode">
+    <xs:attributeGroup ref="rail:aOperationMode"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aOperationMode">
+    <xs:attribute name="modeLegislative" type="xs:string" use="required"/>
+    <xs:attribute name="modeExecutive" type="xs:string" use="required"/>
+    <xs:attribute name="clearanceManaging" type="rail:tClearanceManaging"/>
+  </xs:attributeGroup>
+  <xs:complexType name="tOperationModeChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tStrictOrientedElement">
+        <xs:attributeGroup ref="rail:aOperationMode"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aTrainProtection">
+    <xs:attribute name="monitoring" type="rail:tTrainProtectionMonitoring" default="none"/>
+    <xs:attribute name="medium" type="rail:tTrainProtectionMedium"/>
+    <xs:attribute name="trainProtectionSystem" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>definition of the national train protection system, which is installed at the track</xs:documentation>
+        <xs:documentation>use value from the separate code definition file 'TrainProtectionSystems.xml'/trainProtectionSystemsAtTrack</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tTrainProtection">
+    <xs:attributeGroup ref="rail:aTrainProtection"/>
+  </xs:complexType>
+  <xs:complexType name="tTrainProtectionChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tStrictOrientedElement">
+        <xs:attributeGroup ref="rail:aTrainProtection"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tTrainProtectionElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrientedElement">
+        <xs:attributeGroup ref="rail:aTrainProtection"/>
+        <xs:attribute name="system" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use the enumeration parameter trainProtectionSystem instead</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="model" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tTrainProtectionElementGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="trainProtectionElementRef" type="rail:tElementWithReference" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:trainProtectionElementRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tMaxTrainCurrentType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="driving"/>
+      <xs:enumeration value="standstill"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tMaxTrainCurrentValidFor">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="train"/>
+      <xs:enumeration value="pantograph"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tElectrification">
+    <xs:sequence>
+      <xs:element name="maxTrainCurrent" type="rail:tMaxTrainCurrent" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>maximum allowed train current</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:maxTrainCurrent</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="rail:aElectrification"/>
+  </xs:complexType>
+  <xs:complexType name="tMaxTrainCurrent">
+    <xs:attribute name="maxCurrent" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>maximum allowed current for the train in Ampere</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tMaxTrainCurrentType">
+      <xs:annotation>
+        <xs:documentation>type of operation for maximum train current: standstill or driving</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="validFor" type="rail:tMaxTrainCurrentValidFor">
+      <xs:annotation>
+        <xs:documentation>application of maximum train current: train or pantograph</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:anyAttribute"/>
+  </xs:complexType>
+  <xs:simpleType name="tElectrificationType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none">
+            <xs:annotation>
+              <xs:documentation>Non-electrified track requiring vehicles with independent self-contained propulsion</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="overhead">
+            <xs:annotation>
+              <xs:documentation>Catenary electrification</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3rdRail">
+            <xs:annotation>
+              <xs:documentation>This is a conductor placed along or between the rails. For example, it is used by Network Rail.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="sideRail">
+            <xs:annotation>
+              <xs:documentation>This is a rail for power supply conducted by pick-up shoe. For example, it is used by Berlin S-Bahn.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aElectrification">
+    <xs:attribute name="type" type="rail:tElectrificationType" default="none">
+      <xs:annotation>
+        <xs:documentation>Specifies the type of electrification.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="voltage" type="rail:tVoltageVolt" default="0">
+      <xs:annotation>
+        <xs:documentation>Contact line voltage in volts.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="frequency" type="rail:tFrequencyHertz" default="0">
+      <xs:annotation>
+        <xs:documentation>This is the frequency in Hertz of a track circuit. For DC track circuits this shall be set to zero. Omitting this value shall be interpreted as not applicable.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tElectrificationChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:sequence>
+          <xs:element name="maxTrainCurrent" type="rail:tMaxTrainCurrent" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>maximum allowed train current</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:maxTrainCurrent</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aElectrification"/>
+        <xs:attribute name="vMax" type="rail:tSpeedKmPerHour">
+          <xs:annotation>
+            <xs:documentation>provides information about the permissible technical maximum speed for the implemented electrification system.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="isolatedSection" type="xs:boolean" default="false">
+          <xs:annotation>
+            <xs:documentation>fishplate joint, which may be glued, ensuring insulation of a rail with respect to the adjacent rail. Definition source is IEC 60050:821-03-16.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tEpsgCode">
+    <xs:attributeGroup ref="rail:aEpsgCode"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aEpsgCode">
+    <xs:attribute name="default" type="xs:anyURI" use="required"/>
+    <xs:attribute name="extraHeight" type="xs:anyURI"/>
+  </xs:attributeGroup>
+  <xs:complexType name="tGauge">
+    <xs:attributeGroup ref="rail:aGauge"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aGauge">
+    <xs:attribute name="value" type="rail:tLengthMM" default="1435"/>
+  </xs:attributeGroup>
+  <xs:complexType name="tTrainRadioAttributes">
+    <xs:attributeGroup ref="rail:aTrainRadioInfrastructure"/>
+  </xs:complexType>
+  <xs:complexType name="tGaugeChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attributeGroup ref="rail:aGauge"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tClearanceGaugeChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:sequence>
+          <xs:element name="clearanceGauge" type="rail:tClearanceGaugeType">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:clearanceGauge</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPowerTransmission">
+    <xs:attributeGroup ref="rail:aPowerTransmission"/>
+  </xs:complexType>
+  <xs:simpleType name="tPowerTransmissionType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="adhesion"/>
+          <xs:enumeration value="gearrack"/>
+          <xs:enumeration value="cable"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aPowerTransmission">
+    <xs:attribute name="type" type="rail:tPowerTransmissionType" default="adhesion"/>
+    <xs:attribute name="style" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:complexType name="tPowerTransmissionChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attributeGroup ref="rail:aPowerTransmission"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tAxleWeight">
+    <xs:attributeGroup ref="rail:aAxleWeight"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aAxleWeight">
+    <xs:attribute name="value" type="rail:tWeightTons" use="required"/>
+    <xs:attribute name="meterload" type="rail:tMeterloadTonsPerMeter"/>
+  </xs:attributeGroup>
+  <xs:complexType name="tAxleWeightChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attributeGroup ref="rail:aAxleWeight"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tMileageChangeDescr">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="overlapping"/>
+      <xs:enumeration value="missing"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tMileageChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="geoCoord" type="rail:tGeoCoord" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:geoCoord</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="absPosIn" type="rail:tLengthM" use="required"/>
+        <xs:attribute name="absPosInOffset" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: not needed, not used</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" type="rail:tMileageChangeDescr" use="required"/>
+        <xs:attribute name="absPos" type="rail:tLengthM" use="required"/>
+        <xs:attribute name="pos" type="rail:tLengthM" use="required"/>
+        <xs:attribute name="absDir" type="rail:tMileageDirection">
+          <xs:annotation>
+            <xs:documentation>defining a change direction for the mileageChange with values "raising" or "falling"</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="dir" type="rail:tStrictDirection">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use the new attribute absDir instead to define the mileage's change direction</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tSwitchType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="ordinarySwitch"/>
+          <xs:enumeration value="insideCurvedSwitch"/>
+          <xs:enumeration value="outsideCurvedSwitch"/>
+          <xs:enumeration value="threeWaySwitch"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tCrossingType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="simpleCrossing"/>
+          <xs:enumeration value="simpleSwitchCrossing"/>
+          <xs:enumeration value="doubleSwitchCrossing"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tCommonSwitchAndCrossingData">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attribute name="trackContinueCourse" type="rail:tCourse"/>
+        <xs:attribute name="trackContinueRadius" type="rail:tRadiusM"/>
+        <xs:attribute name="normalPosition" type="rail:tCourse"/>
+        <xs:attribute name="model" type="xs:string"/>
+        <xs:attribute name="length" type="rail:tLengthM"/>
+        <xs:attribute name="remoteOperated" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>position is operated from anywhere else, i.e. from signalbox or remote operator place but not directly at the switch/crossing</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="remoteIndicated" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>position is indicated at a remote place like within the signalbox or a remote operator place</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lockRef" type="rail:tGenericRef"/>
+        <xs:attribute name="clearancePosOffset" type="rail:tLengthM"/>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+        <xs:attributeGroup ref="rail:anyAttribute">
+          <xs:annotation>
+            <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSwitch">
+    <xs:complexContent>
+      <xs:extension base="rail:tCommonSwitchAndCrossingData">
+        <xs:attribute name="type" type="rail:tSwitchType"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tCrossing">
+    <xs:complexContent>
+      <xs:extension base="rail:tCommonSwitchAndCrossingData">
+        <xs:attribute name="type" type="rail:tCrossingType"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tBufferStop">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOpenEnd">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tMacroscopicNode">
+    <xs:annotation>
+      <xs:documentation>also "Star" or "Hub"</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="ocpRef" type="rail:tGenericRef" use="required"/>
+    <xs:attribute name="flowDirection" type="rail:tFlowDirection" default="both"/>
+  </xs:complexType>
+  <xs:simpleType name="tTrackType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="mainTrack">
+            <xs:annotation>
+              <xs:documentation>A main track is either an open track between operational points or the extension of an open track within an operational point. It typically connects stations and is used for planned train journeys (trains in commercial operation or trains being moved between operational points).</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="secondaryTrack">
+            <xs:annotation>
+              <xs:documentation>A secondary track is a track used for planned train journeys running in commercial operation or trains being moved between operational points, but it is not an open track between operational points or the extension of an open track.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="connectingTrack">
+            <xs:annotation>
+              <xs:documentation>Connecting tracks are typically very short and connect other tracks. Examples are short track sections connecting two tracks where switches allow to move from one track to the other. </xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="sidingTrack">
+            <xs:annotation>
+              <xs:documentation>Siding tracks are tracks that are not used for planned train journeys, except at the start and end of a train journey if the train is shunted to or from a parking spot.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="stationTrack">
+            <xs:annotation>
+              <xs:documentation>DEPRECATED; a track in a station, possibly with platforms</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tTrack">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStatesWithLength" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled pieces of a track</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states_(with_length)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="rail:tTrackType">
+          <xs:annotation>
+            <xs:documentation>This is a classification of the track. Possible values are: mainTrack, secondaryTrack, connectingTrack, sidingTrack and stationTrack (deprecated since 2.4)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="mainDir" type="rail:tExtendedDirection">
+          <xs:annotation>
+            <xs:documentation>main driving direction on the track</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="infraAttrGroupRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use sub-element infraAttrGroupRef instead.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tLineType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="mainLine"/>
+          <xs:enumeration value="secondaryLine"/>
+          <xs:enumeration value="branchLine"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aLine">
+    <xs:attribute name="type" type="rail:tLineType">
+      <xs:annotation>
+        <xs:documentation>distinguish between different line type: main line, secondary line...</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="infrastructureManagerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the infrastructure manager entry</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="lineCategory" type="rail:tLineClassificationType">
+      <xs:annotation>
+        <xs:documentation>the category of the line according to the EU regulation EN 15528 (other national values are also possible)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="belongsToParent" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the (one and only) parent line (section)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tLine">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled lines</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aLine"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLocallyControlledArea">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define disabled/enabled locally controlled areas</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="ocpRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED: use attribute 'ocpStationRef' or 'controllerRef' instead</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tTrackNode">
+    <xs:sequence>
+      <xs:element name="geoCoord" type="rail:tGeoCoord" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:geoCoord</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="rail:tGenericID" use="required"/>
+    <xs:attributeGroup ref="rail:aRelPosition"/>
+    <xs:attributeGroup ref="rail:aAbsPosition"/>
+  </xs:complexType>
+  <xs:complexType name="tConnectionData">
+    <xs:attribute name="id" type="rail:tGenericID" use="required"/>
+    <xs:attribute name="ref" type="rail:tGenericRef" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="tSwitchConnectionData">
+    <xs:complexContent>
+      <xs:extension base="rail:tConnectionData">
+        <xs:attributeGroup ref="rail:aConnectionData"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aConnectionData">
+    <xs:attribute name="course" type="rail:tCourse"/>
+    <xs:attribute name="radius" type="rail:tRadiusM"/>
+    <xs:attribute name="maxSpeed" type="rail:tSpeedKmPerHour"/>
+    <xs:attribute name="branchDist" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: use short 'track' instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="orientation" type="rail:tConnectionOrientation" use="required"/>
+    <xs:attribute name="passable" type="xs:boolean" default="true"/>
+  </xs:attributeGroup>
+  <xs:simpleType name="tConnectionOrientation">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="incoming"/>
+          <xs:enumeration value="outgoing"/>
+          <xs:enumeration value="rightAngled"/>
+          <xs:enumeration value="unknown"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tCourse">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="straight"/>
+          <xs:enumeration value="left"/>
+          <xs:enumeration value="right"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tCrossSectionBlockType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="station"/>
+          <xs:enumeration value="block"/>
+          <xs:enumeration value="autoblock"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tOcpCenterSide">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="left"/>
+      <xs:enumeration value="right"/>
+      <xs:enumeration value="above"/>
+      <xs:enumeration value="below"/>
+      <xs:enumeration value="ahead"/>
+      <xs:enumeration value="behind"/>
+      <xs:enumeration value="none"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tCrossSection">
+    <xs:complexContent>
+      <xs:extension base="rail:tPlacedElement">
+        <xs:attribute name="type" type="rail:tCrossSectionBlockType"/>
+        <xs:attribute name="ocpRef" type="rail:tGenericRef" use="required"/>
+        <xs:attribute name="ocpTrackID" type="xs:unsignedByte">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED since it is not needed anymore (for defining platforms, please use the platform element instead)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="dir" type="rail:tLaxDirection">
+          <xs:annotation>
+            <xs:documentation>DEPRECATED since it is not needed here.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ocpCenterSide" type="rail:tOcpCenterSide">
+          <xs:annotation>
+            <xs:documentation>relative direction starting from the relevant track towards the "operational center" of the OCP</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tBorderType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="tarif"/>
+          <xs:enumeration value="area"/>
+          <xs:enumeration value="state"/>
+          <xs:enumeration value="country"/>
+          <xs:enumeration value="station"/>
+          <xs:enumeration value="project"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tBorder">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElement">
+        <xs:attribute name="type" type="rail:tBorderType" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tBraking">
+    <xs:annotation>
+      <xs:documentation>parameters describing the train braking configuration</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aMinBasicBrakeAttributes"/>
+    <xs:attribute name="minimumBrakePercentage" type="rail:tBrakePercentage">
+      <xs:annotation>
+        <xs:documentation>minimum brake percentage of the train</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:attributeGroup name="aSpeed">
+    <xs:attribute name="trainCategory" type="rail:tTrainCategory">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED. Use the new attribute etcsTrainCategory in linked speedProfile instead.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="etcsTrainCategory" type="rail:tEtcsTrainCategory">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED. Use the new attribute etcsTrainCategory in linked speedProfile instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="profileRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to a speedProfile</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="status" type="xs:string"/>
+    <xs:attribute name="vMax" type="rail:tVMax" use="required">
+      <xs:annotation>
+        <xs:documentation>maximum allowed speed in km/h</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tVMax">
+    <xs:union memberTypes="rail:tSpeedKmPerHour">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="end">
+            <xs:annotation>
+              <xs:documentation>The value 'end' should be used for marking the end of temporary speed restrictions, otherwise define the next speed aspect.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tSpeedInfo">
+    <xs:attributeGroup ref="rail:aSpeed"/>
+  </xs:complexType>
+  <xs:simpleType name="tInfluence">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="increasing"/>
+          <xs:enumeration value="decreasing"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tOcpRefInGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementRefInGroup"/>
+      <!-- Possible ocpGroup-specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPath">
+    <xs:sequence>
+      <xs:element name="ocpRef" type="rail:tOcpRefInGroup" minOccurs="2" maxOccurs="2">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:ocpRef_path</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tSpeedProfile">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:annotation>
+          <xs:documentation>speed profile element that is referenced by speedChange elements</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="tilting" type="rail:tTilting" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>the tilting element contains parameters describing the required train tilting characteristics</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:tilting</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="braking" type="rail:tBraking" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>the braking element contains parameters describing the required train braking configuration</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:braking</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="path" type="rail:tPath" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>the path element indicates a train run between two neighbouring OCPs</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:path</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="basicSpeedProfile" type="xs:boolean" default="false">
+          <xs:annotation>
+            <xs:documentation>specify the speed profile being a basic speed profile</xs:documentation>
+            <xs:documentation>defines a "baseline speed value" that is valid for all trains if no other specific speed restrictions are given. The basic speed profile is always linked with @influence="increasing"</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="etcsTrainCategory" type="rail:tEtcsTrainCategory">
+          <xs:annotation>
+            <xs:documentation>the international train category number as specified on page 38 in ERA_ERTMS_040001 "Assignment of values to ETCS variables" v1.9 from 10/07/12</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="influence" type="rail:tInfluence" use="required">
+          <xs:annotation>
+            <xs:documentation>allows for overlaying speed profiles</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="maxAxleLoad" type="rail:tWeightTons">
+          <xs:annotation>
+            <xs:documentation>maximum axle load of the train in tons</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="maxMeterLoad" type="rail:tMeterloadTonsPerMeter">
+          <xs:annotation>
+            <xs:documentation>maximum meter load of the train in tons per meter</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="operatingPeriodRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to an operatingPeriod element from the timetable sub-schema</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aPeriodTimeSpan">
+          <xs:annotation>
+            <xs:documentation>Start and end time of the validity of the speed profile.</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+        <xs:attribute name="endDayOffset" type="xs:unsignedLong">
+          <xs:annotation>
+            <xs:documentation>The number of midnight overruns over which the speed profile is valid.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="trainProtectionSystem" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>defining the train protection system</xs:documentation>
+            <xs:documentation>use value from the separate code definition file 'TrainProtectionSystems.xml'/trainProtectionSystemsAtTrack</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="verbalConstraint" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>defining additional verbal constraints like certain train types</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tTrainRelation">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="headOfTrain"/>
+          <xs:enumeration value="midOfTrain"/>
+          <xs:enumeration value="endOfTrain"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tSpeedChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tStrictOrientedElement">
+        <xs:attributeGroup ref="rail:aSpeed"/>
+        <xs:attribute name="trainRelation" type="rail:tTrainRelation">
+          <xs:annotation>
+            <xs:documentation>Reference to the part of the train from where on the speed change is valid. Normally, a speed restriction that is higher than the train's current speed will be valid when the end of the train has passed the speed change while a speed restriction that is lower than the train's current speed will be valid already when the head of train passes the speedChange.</xs:documentation>
+            <xs:documentation>If the attribute is not given, it means that the information is not known.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="mandatoryStop" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>specifying the speedChange as a mandatory stop point, e.g. in front of a level crossing</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="signalised" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>indicates whether the speed aspect is shown next to the track by a signal or panel (true) or only in the "driver's timetable" (false)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tGradientChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tStrictOrientedElement">
+        <xs:attribute name="slope" type="rail:tGradientPromille" use="required"/>
+        <xs:attribute name="transitionLenght" type="rail:tLengthM"/>
+        <xs:attribute name="transitionRadius" type="rail:tRadiusM"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tCrossedElementType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="highway:cycleway">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:highway%3Dcycleway</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="highway:footway">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:highway%3Dfootway</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="highway:motorway">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:highway%3Dmotorway</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="highway:road">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:highway%3Droad</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="natural:peak">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:natural%3Dpeak</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="natural:ridge">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:natural%3Dridge</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="natural:valley">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:natural%3Dvalley</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="natural:water">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:natural%3Dwater</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="waterway:river">
+            <xs:annotation>
+              <xs:documentation>See https://wiki.openstreetmap.org/wiki/Tag:waterway%3Driver</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aCrossedElement">
+    <xs:attribute name="type" type="rail:tCrossedElementType" use="required">
+      <xs:annotation>
+        <xs:documentation>the type of element crossed by this element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="pos" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>the relative position of the center of the crossed element as distance from begin of track</xs:documentation>
+        <xs:documentation>this value must be within the position range of the parent element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tCrossedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aCrossedElement"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLevelCrossing">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attribute name="length" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>length of the level crossing from railway point of view</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="angle" type="rail:tAngleDegQuadrant">
+          <xs:annotation>
+            <xs:documentation>crossing angle between road and railway in degrees</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="protection" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>technical protection equipment at the level crossing</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="offset" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>describes how many meters of the @length value is before @pos. If @offset is not defined, by default @pos describes the geometric center of the level crossing.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tTunnelType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="natural stone"/>
+          <xs:enumeration value="quarrystone"/>
+          <xs:enumeration value="brick"/>
+          <xs:enumeration value="concrete"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tTunnel">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementWithLengthDeprecated">
+        <xs:attribute name="crossSection" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>The area of the tunnel cross section in square meters.</xs:documentation>
+            <xs:documentation>Attention: currently the units given for crossSection in railML is given in metres (tLengthM), but to be understood and used as square metres. This issue will be fixed in a future railML version.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="kind" type="rail:tTunnelType">
+          <xs:annotation>
+            <xs:documentation>specify whether the tunnel is made from bricks, concrete, etc.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="resistanceFactorPassenger" type="xs:double">
+          <xs:annotation>
+            <xs:documentation>the tunnel resistance factor in kg/m for passenger trains</xs:documentation>
+            <xs:documentation>Define this value only if @kind and @crossSection are not known.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="resistanceFactorFreight" type="xs:double">
+          <xs:annotation>
+            <xs:documentation>the tunnel resistance factor in kg/m for freight trains</xs:documentation>
+            <xs:documentation>Define this value only if @kind and @crossSection are not known.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tHorizontalCurveType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="TS_cubicParabola">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type cubic parabola</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_parabola4">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type 4th degree parabola</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_clothoide">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type clothoide</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_WienerBogen">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type Wiener Bogen</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_BlossBogen">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type Bloss Bogen</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_Sinusoide">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type Sinusoide</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="TS_Cosinusoide">
+            <xs:annotation>
+              <xs:documentation>begin of transition curve of type Cosinusoide</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="SC">
+            <xs:annotation>
+              <xs:documentation>end of transition curve (spiral - curve)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aRadiusChange">
+    <xs:attribute name="radius" type="rail:tRadiusM" use="required">
+      <xs:annotation>
+        <xs:documentation>The radius of the track in [m], which is either valid exactly at this point or from here until the next radiusChange element.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="superelevation" type="rail:tLengthMM">
+      <xs:annotation>
+        <xs:documentation>The superelevation of the track in [mm], which is either valid exactly at this point of from here until the next radiusChange element.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="geometryElementDescription" type="rail:tHorizontalCurveType">
+      <xs:annotation>
+        <xs:documentation>Specific geometric description either of this point or of the curve between this and the next radiusChange element (shall be used in particular for transition curves).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tRadiusChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attributeGroup ref="rail:aRadiusChange"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tBridge">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementWithLengthDeprecated">
+        <xs:attribute name="kind" type="xs:string"/>
+        <xs:attribute name="meterload" type="rail:tMeterloadTonsPerMeter"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tTrackCondition">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElement">
+        <xs:attribute name="length" type="rail:tLengthM"/>
+        <xs:attribute name="type" type="rail:tTrackConditionType"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tTrackConditionType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="nonStoppingArea"/>
+          <xs:enumeration value="lowerPantograph"/>
+          <xs:enumeration value="mainPowerSwitchOff"/>
+          <xs:enumeration value="radioHole"/>
+          <xs:enumeration value="airTightness"/>
+          <xs:enumeration value="noRegenerativeBrake"/>
+          <xs:enumeration value="noEddyCurrentBrake"/>
+          <xs:enumeration value="noMagneticShoeBrake"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tBaseServiceSection">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementWithLengthDeprecated">
+        <xs:attribute name="height" type="rail:tLengthMM">
+          <xs:annotation>
+            <xs:documentation>height above the rails in millimeters</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="side" type="rail:tSide">
+          <xs:annotation>
+            <xs:documentation>side as seen from the oriented track, e.g. left or right</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ocpRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to the OCP, where the platform edge / service section belongs to</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:anyAttribute"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPlatformEdge">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseServiceSection">
+        <xs:sequence>
+          <xs:element name="propPassengerInfo" type="rail:tPropPassengerInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>properties for passenger information systems</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:propPassengerInfo_platformEdge</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="parentPlatformEdgeRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a parent platform edge for grouping platform edge parts together</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tSide">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="left">
+        <xs:annotation>
+          <xs:documentation>left side, regarding the relative direction of the track from trackBegin to trackEnd</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="right">
+        <xs:annotation>
+          <xs:documentation>right side, regarding the relative direction of the track from trackBegin to trackEnd</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="above">
+        <xs:annotation>
+          <xs:documentation>above the track</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tRampType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="flat">
+            <xs:annotation>
+              <xs:documentation>a flat ramp</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="metalBridge">
+            <xs:annotation>
+              <xs:documentation>a metal bridge used as car ramp</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tServiceSection">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseServiceSection">
+        <xs:attribute name="parentServiceSectionRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a parent service section for grouping service section parts together</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ramp" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a ramp</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="maintenance" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a maintenance area</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="loadingFacility" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being equipped with loading facilities</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cleaning" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a cleaning area</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="fueling" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a fueling area</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="parking" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a parking area</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="preheating" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>defining the service section as being a preheating area</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rampType" type="rail:tRampType">
+          <xs:annotation>
+            <xs:documentation>specify the specific construction of the ramp</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignal">
+    <xs:complexContent>
+      <xs:extension base="rail:tRuleCodeElement">
+        <xs:sequence>
+          <xs:element name="speed" type="rail:tSignalSpeed" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a speed signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:speed_signal</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="etcs" type="rail:tSignalEtcs" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining an ETCS panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:etcs</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="levelCrossing" type="rail:tSignalLevelCrossing" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a level crossing signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:levelCrossing_signal</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainRadio" type="rail:tSignalTrainRadio" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a train radio signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:trainRadio_signal</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="catenary" type="rail:tSignalCatenary" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a catenary signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:catenary</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="line" type="rail:tSignalLine" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a line signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:line_signal</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="milepost" type="rail:tSignalMilepost" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a mileage signpost</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:milepost</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="braking" type="rail:tSignalBraking" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>sub-element for defining a braking signal or panel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:braking</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainProtectionElementGroupRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>sub-element for a reference to a trainProtectionElementGroup, which is connected to the signal's aspect</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:trainProtectionElementGroupRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="baliseGroupRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>sub-element for a reference to a baliseGroup, which is connected to the signal's aspect</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:baliseGroupRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aSignal"/>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalBase">
+    <xs:attribute name="switchable" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defining the signal to be switchable or fixed (panel)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:anyAttribute">
+      <xs:annotation>
+        <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <xs:complexType name="tSignalSpeed">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:sequence>
+          <xs:element name="speedChangeRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to a speed change</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:speedChangeRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="kind" type="rail:tSignalKind">
+          <xs:annotation>
+            <xs:documentation>speed signal/panel kind (announcement, execution)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="trainRelation" type="rail:tTrainRelation">
+          <xs:annotation>
+            <xs:documentation>Reference to the part of the train from where on the signal is valid.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalEtcs">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attributeGroup ref="rail:aETCS">
+          <xs:annotation>
+            <xs:documentation>ETCS level (1, 2, 3, ...)</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalLevelCrossing">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="type" type="rail:tLevelCrossingSignalType">
+          <xs:annotation>
+            <xs:documentation>level crossing signal type (bell, whistle, announcing, activating)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ref" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a level crossing</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tLevelCrossingSignalType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="bell">
+            <xs:annotation>
+              <xs:documentation>signal for train driver to ring the locomotive's bell</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="whistle">
+            <xs:annotation>
+              <xs:documentation>signal for train driver to blow the locomotive's whistle</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="announcing">
+            <xs:annotation>
+              <xs:documentation>signal announcing the upcoming level crossing ("distant signal" for level crossing)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="activating">
+            <xs:annotation>
+              <xs:documentation>signal that marks the position where the train detector for activating the level crossing is situated</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="supervision">
+            <xs:annotation>
+              <xs:documentation>signal supervising the level crossing</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tSignalTrainRadio">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="trackConditionRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a trackCondition element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalCatenary">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="trackConditionRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a trackCondition element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalLine">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="ref" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a line</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalMilepost">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="shownValue" type="rail:tLength">
+          <xs:annotation>
+            <xs:documentation>mileage value printed on the milepost</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="shownRemark" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>any remark that is printed on the milepost, e.g. for documenting a mileage gap</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="mileageChangeRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a mileageChange element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lineRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a line, for which the milepost is valid</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalBraking">
+    <xs:complexContent>
+      <xs:extension base="rail:tSignalBase">
+        <xs:attribute name="trackConditionRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>reference to a trackCondition element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tSignalKind">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="announcement"/>
+          <xs:enumeration value="execution"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tSignalType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="main"/>
+          <xs:enumeration value="distant"/>
+          <xs:enumeration value="repeater"/>
+          <xs:enumeration value="combined"/>
+          <xs:enumeration value="shunting"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tSignalFunction">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="exit"/>
+          <xs:enumeration value="home"/>
+          <xs:enumeration value="blocking"/>
+          <xs:enumeration value="intermediate"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:attributeGroup name="aSignal">
+    <xs:attribute name="sight" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED with railML 2.4 since it is not being used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tSignalType"/>
+    <xs:attribute name="function" type="rail:tSignalFunction"/>
+    <xs:attribute name="sigSystem" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED since it is not needed and not used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="switchable" type="xs:boolean" use="required">
+      <xs:annotation>
+        <xs:documentation>mandatory for differentiation between boards and signals</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maskableRoute" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED with railML 2.4 since it is not being used; refers to interlocking content</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maskableATC" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED with railML 2.4 since it is not being used; refers to interlocking content</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="virtual" type="xs:boolean" default="false"/>
+    <xs:attribute name="signalBoxOcpRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: use attribute 'controllerRef' instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="stationOcpRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: use attribute 'ocpStationRef' instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="distNearestDangerPoint" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED with railML 2.4 since it is not being used; refers to interlocking content</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trackDist" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>distance of middle of signal from middle of associated track axis</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="height" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>height of medium light of the signal above rail level (light spot height)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberOfLamps" type="xs:unsignedLong">
+      <xs:annotation>
+        <xs:documentation>the number of lamps fitted at the signal screen</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/IS:signal</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mountedOn">
+      <xs:annotation>
+        <xs:documentation>the way the signal is physically mounted</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/IS:signal</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="pole"/>
+              <xs:enumeration value="gantry"/>
+              <xs:enumeration value="wall"/>
+              <xs:enumeration value="ground"/>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="rail:tOtherEnumerationValue"/>
+          </xs:simpleType>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="positionAtTrack" type="rail:tSide">
+      <xs:annotation>
+        <xs:documentation>the position the signal is mounted in relation to track</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/IS:signal</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aSignalGroup">
+    <xs:attribute name="type" type="rail:tSignalGroupType"/>
+  </xs:attributeGroup>
+  <xs:simpleType name="tSignalGroupType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="distant-main"/>
+          <xs:enumeration value="station"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tSignalGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aSignalGroup"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSignalRefInGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementRefInGroup"/>
+      <!-- Possible signalGroup-specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tPIG">
+    <xs:restriction base="xs:long">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="7"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tBalise">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrientedElement">
+        <xs:attributeGroup ref="rail:aBalise"/>
+        <xs:attribute name="ndx" type="rail:tPIG"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tBaliseGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="baliseRef" type="rail:tBaliseRefInGroup" maxOccurs="8">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:baliseRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="rail:tBaliseGroupType">
+          <xs:annotation>
+            <xs:documentation>functional type of the balise group</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tBaliseGroupType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="infill"/>
+          <xs:enumeration value="signal"/>
+          <xs:enumeration value="fixed"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tBaliseRefInGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementRefInGroup"/>
+      <!-- Possible baliseGroup-specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tBaliseCountryID">
+    <xs:restriction base="xs:long">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="1023"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tBaliseGroupID">
+    <xs:restriction base="xs:long">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="16383"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tBaliseLinkingAcc">
+    <xs:restriction base="xs:long">
+      <xs:minInclusive value="-63"/>
+      <xs:maxInclusive value="63"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tBaliseType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="fixed"/>
+      <xs:enumeration value="controlled"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="aBalise">
+    <xs:attribute name="countryID" type="rail:tBaliseCountryID"/>
+    <xs:attribute name="groupID" type="rail:tBaliseGroupID"/>
+    <xs:attribute name="linkingAccuracy" type="rail:tBaliseLinkingAcc"/>
+    <xs:attribute name="linkReactionAscending" type="rail:tBaliseLinkReaction"/>
+    <xs:attribute name="linkReactionDescending" type="rail:tBaliseLinkReaction"/>
+    <xs:attribute name="staticTelegram" type="rail:tHexString">
+      <xs:annotation>
+        <xs:documentation>telegram coded to the balise; representation of the binary as hex string</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tBaliseType">
+      <xs:annotation>
+        <xs:documentation>type of balise: fixed or controlled</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tBaliseLinkReaction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="trainTrip"/>
+      <xs:enumeration value="applyServiceBrake"/>
+      <xs:enumeration value="noReaction"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tDetectionObject">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="wheel"/>
+          <xs:enumeration value="axle"/>
+          <xs:enumeration value="train"/>
+          <xs:enumeration value="endOfTrain"/>
+          <xs:enumeration value="obstacle"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tDetectorMedium">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="mechanical"/>
+          <xs:enumeration value="hydraulic"/>
+          <xs:enumeration value="pneumatic"/>
+          <xs:enumeration value="magnetic"/>
+          <xs:enumeration value="inductive"/>
+          <xs:enumeration value="optical"/>
+          <xs:enumeration value="radio"/>
+          <xs:enumeration value="manual">
+            <xs:annotation>
+              <xs:documentation>used for local dispatchers manual observation</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tPosInTrack">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="center"/>
+      <xs:enumeration value="leftRail"/>
+      <xs:enumeration value="leftRailInside"/>
+      <xs:enumeration value="leftRailOutside"/>
+      <xs:enumeration value="rightRail"/>
+      <xs:enumeration value="rightRailInside"/>
+      <xs:enumeration value="rightRailOutside"/>
+      <xs:enumeration value="outside"/>
+      <xs:enumeration value="outsideLeft"/>
+      <xs:enumeration value="outsideRight"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tTrainDetector">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElement">
+        <xs:attribute name="detectionObject" type="rail:tDetectionObject"/>
+        <xs:attribute name="medium" type="rail:tDetectorMedium"/>
+        <xs:attribute name="posInTrack" type="rail:tPosInTrack"/>
+        <xs:attribute name="directionDetection" type="xs:boolean"/>
+        <xs:attribute name="model" type="xs:string"/>
+        <xs:attribute name="axleCounting" type="xs:boolean"/>
+        <xs:attribute name="virtual" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>use this attribute to model a local dispatcher doing a visual train detection</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tInsulatedRailSide">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none"/>
+      <xs:enumeration value="left"/>
+      <xs:enumeration value="right"/>
+      <xs:enumeration value="both"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tTrackCircuitBorder">
+    <xs:complexContent>
+      <xs:extension base="rail:tDelimitedOrientedElementDeprecated">
+        <xs:attribute name="insulatedRail" type="rail:tInsulatedRailSide"/>
+        <xs:attributeGroup ref="rail:aOcpRef"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tStopPost">
+    <xs:complexContent>
+      <xs:extension base="rail:tRuleCodeElement">
+        <xs:sequence>
+          <xs:element name="validForMovements" type="rail:tValidForMovements" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>specification of the train types for which the stop post is relevant</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:validForMovements</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="signalRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to a (main) signal that is valid for a train waiting at the stop post</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:signalRef_stopPost</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aStopPost"/>
+        <xs:attributeGroup ref="rail:anyAttribute">
+          <xs:annotation>
+            <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tDerailer">
+    <xs:complexContent>
+      <xs:extension base="rail:tRuleCodeElement">
+        <xs:attribute name="derailSide" type="rail:tSide">
+          <xs:annotation>
+            <xs:documentation>Side, to which the vehicle will be derailed (left or right) considering the orientation of the track.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="kind" type="rail:tDerailKind">
+          <xs:annotation>
+            <xs:documentation>kind of derail device (cp. book "Railway Signalling and Interlocking" by Gregor Theeg and Sergej Vlasenko (Editors), p. 155)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="model" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>specification of the derailer</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="lockRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>Reference to a lock, locking the derailer</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tTrainRadioChange">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrientedElement">
+        <xs:attributeGroup ref="rail:aTrainRadioInfrastructure"/>
+        <xs:attributeGroup ref="rail:anyAttribute">
+          <xs:annotation>
+            <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLock">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrientedElement">
+        <xs:sequence>
+          <xs:element name="lockedElement" type="rail:tLockedElement" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to the infrastructure elements that are locked together</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:lockedElement</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aLock"/>
+        <xs:attributeGroup ref="rail:anyAttribute">
+          <xs:annotation>
+            <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLockedElement">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference">
+        <xs:attribute name="hasKeyByDefault" type="xs:boolean"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aLock">
+    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="positionAtTrack" type="rail:tSide">
+      <xs:annotation>
+        <xs:documentation>describe location of the lock along the track</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trackDist" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>distance between the track's middle axis and the middle of the lock cabinet in meters</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="controllerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>link the lock with the controller from where it is controlled</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyStorageRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>link the lock with the OCP where the key is stored in case it is not inserted in the lock</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tDerailKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="blockDerail">
+        <xs:annotation>
+          <xs:documentation>see book "Railway Signalling and Interlocking", p. 155</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="singleCatchPoints">
+        <xs:annotation>
+          <xs:documentation>see book "Railway Signalling and Interlocking", p. 155</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="doubleCatchPoints">
+        <xs:annotation>
+          <xs:documentation>see book "Railway Signalling and Interlocking", p. 155</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="tValidForMovements">
+    <xs:attribute name="kind" type="rail:tTrainMovements">
+      <xs:annotation>
+        <xs:documentation>specification of the train types</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:attributeGroup name="aStopPost">
+    <xs:attribute name="trainRelation" type="rail:tTrainRelation">
+      <xs:annotation>
+        <xs:documentation>Reference to the part of the train from where on the stop post is valid. Normally, a stop post relates to the head of the train.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="platformEdgeRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to a platform edge for which the stop post is relevant</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trainLength" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>set this value if the stop post is only valid for trains with a certain train length</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="axleCount" type="rail:tPositiveCounter">
+      <xs:annotation>
+        <xs:documentation>set this value if the stop post is only valid for trains with a certain number of axles</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="wagonCount" type="rail:tPositiveCounter">
+      <xs:annotation>
+        <xs:documentation>set this value if the stop post is only valid for trains with a certain number of wagons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verbalConstraints" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>set this value if the stop post is only valid for trains fulfilling a certain verbal constraint</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="virtual" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>marks a stop post being virtual if there is no physical representation along the track</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ocpRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to an OCP, which the stop post belongs to</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tTrainMovements">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="freightTrains"/>
+          <xs:enumeration value="passengerTrains"/>
+          <xs:enumeration value="allTrains"/>
+          <xs:enumeration value="shunting"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tInfrastructure">
+    <xs:complexContent>
+      <xs:extension base="rail:tGlobalElementWithMetadata">
+        <xs:attributeGroup ref="rail:aInfrastructure"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aInfrastructure">
+    <xs:attribute name="timetableRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>Reference to the timetable part of the document related to the described infrastructure</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rollingstockRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>Reference to the rollingstock section of the the document that is related to the described infrastructure</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tInfrastructureVisualization">
+    <xs:attribute name="version" type="rail:tRailMLVersion" use="required"/>
+    <xs:attribute name="infrastructureRef" type="rail:tGenericRef"/>
+    <xs:attribute name="id" type="rail:tGenericID" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="tPoint">
+    <xs:attribute name="x" type="xs:double" use="required"/>
+    <xs:attribute name="y" type="xs:double" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="tSize">
+    <xs:attribute name="width" type="xs:double" use="required"/>
+    <xs:attribute name="height" type="xs:double" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="tAttribute">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+  </xs:complexType>
+  <!-- simple types -->
+  <xs:simpleType name="tTrainRadioNetworkSelection">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="manually"/>
+          <xs:enumeration value="byBalise"/>
+          <xs:enumeration value="automatic"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tTrainRadioSystem">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="GSM-R"/>
+          <xs:enumeration value="otherDigitalRadio"/>
+          <xs:enumeration value="analogLocalRadio"/>
+          <xs:enumeration value="analogDistantRadio"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <!-- attribute groups -->
+  <xs:attributeGroup name="aTrainRadioInfrastructure">
+    <xs:attribute name="radioSystem" type="rail:tTrainRadioSystem" use="required">
+      <xs:annotation>
+        <xs:documentation>the train radio system, e.g. 'GSM-R'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="networkSelection" type="rail:tTrainRadioNetworkSelection">
+      <xs:annotation>
+        <xs:documentation>defines the procedure of train radio network selection</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="publicEmergency" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defines whether public emergency calls are available</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="broadcastCalls" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defines whether broadcast call functionality is available</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="textMessageService" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defines whether text message service (SMS) is available</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="directMode" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defines whether direct mode train radio is available</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="publicNetworkRoaming" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>defines whether roaming via public networks is available</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tRoute">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="switchAndPosition" type="rail:tSwitchAndPosition" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:switchAndPosition</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="overlapSwitchAndPosition" type="rail:tSwitchAndPosition" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:overlapSwitchAndPosition</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="releaseGroup" type="rail:tReleaseGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:releaseGroup</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="conditional">
+          <xs:simpleType>
+            <xs:union>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="ocpManned"/>
+                  <xs:enumeration value="ocpUnmanned"/>
+                </xs:restriction>
+              </xs:simpleType>
+              <xs:simpleType>
+                <xs:restriction base="rail:tOtherEnumerationValue"/>
+              </xs:simpleType>
+            </xs:union>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="approachPointRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>Used for a speed restriction on an approach zone in front of the route (Before RouteEntry) a train must obey if the route is closed (red light). The approachPoint refers to where the approach zone starts in front of the route. This may be the distant signal in front of the route.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="approachSpeed" type="rail:tSpeedKmPerHour">
+          <xs:annotation>
+            <xs:documentation>used together with approachPoint, ApproachSpeed can also be used for multiple route approach speed profiling.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="overlapEndRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>The overlap always starts at the RouteExit signal. The reference of the overlapEnd is to the end of the overlap/slip. This is usually a train detection element. Only one type of overlap exists. The overlap is defined to always start at the end signal of the route. The end of the overlap can be defined at the end point (usually an axle counter or a track circuit border) for an unambiguous overlap path. For an ambiguous overlap path the protective elements need to be defined (switch and position, flank protection or head protection). The overlap is always released together with the route. Except if there is defined a trigger. If a trigger is defined it can have a timer. The timer is set in seconds. The overlap is released after the trigger is activated and the timer has elapsed. The trigger can be a trigger point (line side) which either reacts on the head of the train (occupy TVD after the trigger point) or the complete train (release TVD before the trigger point). Or the trigger can be activated according to the speed of the train (train side). Only speed 0 km/h is deemed relevant (standstill). This (train side) trigger is technology independent. This as it can relay both to ETCS (which can be designed to send a telegram after standstill for a certain time), or human interlocking of the local dispatcher who observes that the train has come to a standstill and after a handling time (reflected in the timer) releases the overlap.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="releaseTriggerRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>Reference to the trigger point for the overlap release timer. This is usually a train detection element. If no overlapReleaseTimer is set, but a overlapValidityTime is set, the default value is that the timing starts from when the train has stopped on the route. This technology independent (ETCS standstill telegram or local dispatcher observance)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="releaseTriggerHead" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>"true" = valid for first axle (head) of the train. "false" = valid for last axle (tail/rear) of the train</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="overlapValidityTime" type="xs:duration">
+          <xs:annotation>
+            <xs:documentation>Duration the overlap is active blocking potential overlapping routes from forming. The overlap is formed together with the route and is released after overlapValidityTime has run out after the overlapReleaseTimer (aka overlap validity time trigger point) value has been triggered.</xs:documentation>
+            <xs:documentation>See https://www.w3.org/TR/xmlschema-2/#duration</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="proceedSpeed" type="rail:tSpeedKmPerHour">
+          <xs:annotation>
+            <xs:documentation>Proceed speed is a speed restrictions by the route. This is valid for the whole route (from signal to signal). No value=track speed.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="releaseSpeed" type="rail:tSpeedKmPerHour">
+          <xs:annotation>
+            <xs:documentation>Release speed is the speed at which the brake curve intervention is removed and the train driver is unsupervised except from SPAD. This is valid for the whole route (from signal to signal).</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="entryRef" type="rail:tGenericRef" use="required">
+          <xs:annotation>
+            <xs:documentation>refSignalId. Note term definition "route entry"</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="exitRef" type="rail:tGenericRef" use="required">
+          <xs:annotation>
+            <xs:documentation>ref to any element. reference to the signal where the route ends.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tSwitchAndPosition">
+    <xs:annotation>
+      <xs:documentation>For correct use see switch/crossing model. Position is either &quot;straight&quot;=trackContinuecourse or &quot;left/right&quot;=course. See course for direction of diverging track=&quot;left/right&quot;</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="switchRef" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>ref to any Switch element -- only to be used for when there are alternative routes between RouteEntry and RouteExit. Use from interlocking schema @switchAndPosition [ref switch id and course].</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="switchPosition" type="rail:tCourse" use="required"/>
+    <xs:attribute name="flankProtection" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>Set to “true” if switch/crossing is not part of the path of the route and gives it flank protection</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tReleaseGroup">
+    <xs:sequence>
+      <xs:element name="trackSectionRef" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:trackSectionRef</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="rail:tElementWithReference">
+              <xs:attribute name="flankProtection" type="xs:boolean">
+                <xs:annotation>
+                  <xs:documentation>Set to “true” if trackSection is not part of the path of the route and gives it flank protection</xs:documentation>
+                </xs:annotation>
+              </xs:attribute>
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tOperatingRule">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="childRule" type="rail:tChildRule" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to any another rule included here as part of the main rule</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:childRule</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="objectRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to any infrastructure object affected by the rule</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tChildRule">
+    <xs:attribute name="ruleRef" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>reference to an operatingRule element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <!-- Areas -->
+  <xs:complexType name="tLocationCircle">
+    <xs:sequence>
+      <xs:element name="center" type="rail:tGeoCoord">
+        <xs:annotation>
+          <xs:documentation>specification of the center point of a circular location</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:center</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="radius" type="rail:tLengthM" use="required">
+      <xs:annotation>
+        <xs:documentation>the radius of the circular location given in meters</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tLocationPolygon">
+    <xs:sequence>
+      <xs:element name="point" type="rail:tGeoCoord" minOccurs="3" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>specification of the polygon by its bounding nodes; first and last point are connected to close the polygon</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:point</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tLocationTrack">
+    <xs:sequence>
+      <xs:element name="trackRef" type="rail:tLocationTrackRef" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>reference to at least one track (section) covered by the location</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:trackRef_trackLocation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tLocationTrackRef">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference">
+        <xs:attribute name="fromPos" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>relative position on track where location starts</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="toPos" type="rail:tLengthM">
+          <xs:annotation>
+            <xs:documentation>relative position on track where location ends</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tGenericAreaLocation">
+    <xs:choice>
+      <xs:element name="circle" type="rail:tLocationCircle">
+        <xs:annotation>
+          <xs:documentation>defines a circular shape for the area location</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:circle</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="polygon" type="rail:tLocationPolygon">
+        <xs:annotation>
+          <xs:documentation>defines a polygon shape for the area location</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:polygon</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="trackLocation" type="rail:tLocationTrack">
+        <xs:annotation>
+          <xs:documentation>defines a track based area location</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:trackLocation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="tGenericArea">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:annotation>
+          <xs:documentation>generic area element; the specific purpose of this area is specified by the element that references this area</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="location" type="rail:tGenericAreaLocation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>location of the area within the track networt or with reference to a coordinate reference system</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:location</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="limitedBy" type="rail:tElementRefInGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference from the area to an element bounding this area</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:limitedBy</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tInformationArea">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference"/>
+      <!-- Possible information area specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tImpairmentSection">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="designator" type="rail:tDesignator" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:designator</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="additionalRunningTime" type="rail:tImpairmentSectionAdditionalRunningTime" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>specifying the additional running time connected with the impairment track section</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:additionalRunningTime</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aImpairmentSection"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:attributeGroup name="aImpairmentSection">
+    <xs:attribute name="areaRef" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>reference to a genericArea covering the impairment section</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tImpairmentSectionAdditionalRunningTime">
+    <xs:attribute name="value" type="xs:duration" use="required">
+      <xs:annotation>
+        <xs:documentation>quantify the additional running time (in form of xs:duration)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="absDir" type="rail:tMileageDirection">
+      <xs:annotation>
+        <xs:documentation>define the travel direction for which the additional running time applies</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:complexType name="tTrackVacancyDetectionArea">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference"/>
+      <!-- Possible track vacancy detection area specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tLocalOperationArea">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference"/>
+      <!-- Possible local operation area specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tWorkZone">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference"/>
+      <!-- Possible work zone specific attributes to be added here later -->
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

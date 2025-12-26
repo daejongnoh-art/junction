@@ -1,0 +1,2504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of attribute groups, simple and complex types, used by rollingstock sub schema (RS)</xs:documentation>
+  </xs:annotation>
+
+  <xs:include schemaLocation="railwayUnits.xsd" />
+  <xs:include schemaLocation="railwayBaseTypes.xsd" />
+
+  <xs:complexType name="tRollingstock">
+    <xs:annotation>
+      <xs:documentation>rolling stock data root</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tGlobalElementWithMetadata">
+        <xs:attributeGroup ref="rail:aRollingstock" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aRollingstock">
+    <xs:attribute name="timetableRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>identifier for status of related timetable data as reference</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="infrastructureRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>identifier for status of related infrastructure data as reference</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tVehicle">
+    <xs:annotation>
+      <xs:documentation>vehicle related data</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define various life cycle status of the vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aVehicle" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aVehicle">
+    <xs:attribute name="vehicleFamilyRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to 'id' in vehicle data in order to obtain all data common for the vehicle family not explicitly specified in this element of an individual vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleCategory" type="rail:tVehicleCategoryType">
+      <xs:annotation>
+        <xs:documentation>basic vehicle category used for train formation planning</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="axleSequence" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>description of axle sequence</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberDrivenAxles" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>the number of motored axles used for traction</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberNonDrivenAxles" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>the number of axles not used for traction (without motor or gear)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trackGauge" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>the track gauge in metres the vehicle is mainly used for</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trackGaugeAlternative" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>the track gauge in metres the vehicle is alternatively used for</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="adjustableWheelSet" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>the vehicle comprises wheelsets adjustable to different track gauge</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="length" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>vehicle length in metres</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="speed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>maximum allowed vehicle speed in km/h</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="towingSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>maximum allowed vehicle speed in km/h when its towed (not powered)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bruttoWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>total weight of vehicle with full payload in metric tons (gross weight)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nettoWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>net weight of vehicle payload in metric tons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tareWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>tare weight of vehicle (empty) in metric tons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bruttoAdhesionWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>portion of total vehicle weight on motored axles in metric tons (adhesion weight)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tareAdhesionWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>portion of tare vehicle weight on motored axles in metric tons (adhesion weight)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nettoAdhesionWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: portion of vehicle payload weight on motored axles in metric tons (adhesion weight)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="axleLoad" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>weight per axle of vehicle in metric tons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resistanceFactor" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>running resistance of vehicle in N/kN (to be used in conjunction with 'trainResistance' element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onTrainHead" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>vehicle may run at the train head</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onTrainTailOnly" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>vehicle must be the last one in any formation, no other vehicle coupled to its end</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tVehicleCategoryType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="coach" />
+          <xs:enumeration value="motorCoach" />
+          <xs:enumeration value="controlCabCoach" />
+          <xs:enumeration value="motorVehicles" />
+          <xs:enumeration value="freightWagon" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tManufacturer">
+    <xs:annotation>
+      <xs:documentation>container for descriptive data of the vehicle manufacturer</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aManufacturer" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aManufacturer">
+    <xs:attribute name="manufacturerName" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: name of manufacturer, use reference to manufacturer list instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleManufacturerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the vehicle manufacturer entry</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="manufacturerType" type="rail:tElementDescription" use="required">
+      <xs:annotation>
+        <xs:documentation>type description of manufacturer</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serialNumber" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>serial number from manufacturer for the particular vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tOwnerRS">
+    <xs:annotation>
+      <xs:documentation>container for descriptive data of the vehicle owner</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aOwnerRS" />
+    <xs:attributeGroup ref="rail:aTimePeriod" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aOwnerRS">
+    <xs:attribute name="vehicleOwnerRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the vehicle owner entry</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ownerClass" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>vehicle class description of owner</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tOperator">
+    <xs:annotation>
+      <xs:documentation>container for descriptive data of the vehicle operator</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aOperator" />
+    <xs:attributeGroup ref="rail:aTimePeriod" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aOperator">
+    <xs:attribute name="operatorName" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: name of vehicle operator, use reference to operator list instead</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleOperatorRef" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>reference to the vehicle operator entry</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="operatorClass" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>vehicle class description of operator or complete identifier number in case of particular vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tVehicleIdentification">
+    <xs:annotation>
+      <xs:documentation>container for the vehicle identification described by EU paper DV51EN01 annex P or UIC 438</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aVehicleIdentification" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aVehicleIdentification">
+    <xs:attribute name="uicIdentNumber" type="rail:tTwelveDigits" use="required">
+      <xs:annotation>
+        <xs:documentation>the UIC identification number with 12 digits</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="countryCode" type="rail:tThreeLetterString">
+      <xs:annotation>
+        <xs:documentation>code for the registered country (one to three letters)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleKeeperMarking" type="rail:tFiveLetterString">
+      <xs:annotation>
+        <xs:documentation>code for the vehicle ownwer (one to five letters)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tEngine">
+    <xs:annotation>
+      <xs:documentation>engine data about a motor car or locomotive</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aEngine" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aEngine">
+    <xs:attribute name="axleDriveType" type="rail:tAxleDriveType">
+      <xs:annotation>
+        <xs:documentation>way of transmitting the torque onto axle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="haulageLoad" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>permissible load attached to the vehicle in metric tons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tStorage">
+    <xs:annotation>
+      <xs:documentation>technical data of energy storage device</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aStorage" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aStorage">
+    <xs:attribute name="maximumCurrentCharging" type="rail:tCurrentAmpere" use="required">
+      <xs:annotation>
+        <xs:documentation>The maximum current in A while charging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maximumCurrentDischarging" type="rail:tCurrentAmpere" use="required">
+      <xs:annotation>
+        <xs:documentation>The maximum current in A while discharging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maximumPowerCharging" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>The maximum power in W while charging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maximumPowerDischarging" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>The maximum power in W while discharging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maximumChargingEnergy" type="rail:tEnergyKiloWattHours" use="required">
+      <xs:annotation>
+        <xs:documentation>The maximum energy in kWh charging to the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="chargingEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The efficiency while charging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="dischargingEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The efficiency while discharging the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanStorageEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The mean efficiency of the energy storage.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tPropulsion">
+    <xs:annotation>
+      <xs:documentation>technical data about the propulsion system of a vehicle</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aElectrificationSystem">
+          <xs:annotation>
+            <xs:documentation>type of power supply system for electric vehicles (voltage + frequency)</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+        <xs:attributeGroup ref="rail:aPropulsion" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aPropulsion">
+    <xs:attribute name="power" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>installed power of propulsion system per vehicle in Watt</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="powerType" type="rail:tMotivePowerType" use="required">
+      <xs:annotation>
+        <xs:documentation>type of power for propulsion system in the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="transmission" type="rail:tTransmission">
+      <xs:annotation>
+        <xs:documentation>type of transmission system in vehicle (mainly for diesel cars)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="controlType" type="rail:tPropulsionControlType">
+      <xs:annotation>
+        <xs:documentation>type of control for propulsion system in the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxTractEffort" type="rail:tForceNewton">
+      <xs:annotation>
+        <xs:documentation>maximum tractive effort per vehicle in Newton (to be used in conjunction with 'tractiveEffort' element)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rotationMassFactor" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>factor for increased running resistance by rotating masses of propulsion system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="additionalRotationMass" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>figure for increased running resistance by rotating masses of propulsion system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rackTraction" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: flag, whether the vehicle comprises equipment for use on rack railways</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="remoteControl" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the vehicle can be remotely controlled</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberNotches" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of notches of propulsion system switch gear</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="wheelDiameter" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>nominal diameter of driven wheels in m</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxBrakeEffort" type="rail:tForceNewton">
+      <xs:annotation>
+        <xs:documentation>maximum braking effort of propulsion system per vehicle in N (to be used in conjunction with 'brakeEffort' element)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxBrakePower" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>maximum braking power in W for regenerative braking</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="totalTractEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>the average efficiency of the entire propulsion system in traction mode</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="totalBrakeEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>the average efficiency of the entire propulsion system in braking mode</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tractionOffUndervoltageThreshold" type="rail:tVoltageVolt">
+      <xs:annotation>
+        <xs:documentation>under voltage threshold to switch off traction power in case net voltage out of limit</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="zeroSpeedCurrentLimitation" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>current limitation in Amps at zero speed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxRegenerativeVoltage" type="rail:tVoltageVolt">
+      <xs:annotation>
+        <xs:documentation>maximum voltage in Volts for regenerative braking</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="speedRange" type="rail:tSpeedRangeType">
+      <xs:annotation>
+        <xs:documentation>additional information, whether this propulsion dataset is for the normal, slow or fast speed range of the engine</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="forwardSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>permissible speed with front ahead (normal direction)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="reverseSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>permissible speed with tail ahead (reverse direction)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="activationStandstill" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>propulsion system can be activated only in standstill</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tElectrificationSystem">
+    <xs:annotation>
+      <xs:documentation>description of the electrification system</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aElectrificationSystem" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aElectrificationSystem">
+    <xs:annotation>
+      <xs:documentation>nominal values (voltage + frequency) of electrification system</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="voltage" type="rail:tVoltageVolt">
+      <xs:annotation>
+        <xs:documentation>as values (not enumeration)!!</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="frequency" type="rail:tFrequencyHertz">
+      <xs:annotation>
+        <xs:documentation>for DC the frequency shall be set to Zero</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tMotivePowerType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="electric" />
+          <xs:enumeration value="diesel" />
+          <xs:enumeration value="steam" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tTransmission">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="electric" />
+          <xs:enumeration value="hydraulic" />
+          <xs:enumeration value="hydromechanical" />
+          <xs:enumeration value="mechanical" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tModulationType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="analogue" />
+          <xs:enumeration value="digital" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tMonitoring">
+    <xs:annotation>
+      <xs:documentation>types of signalling systems fitted to the vehicle</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aMonitoringGeneric">
+    <xs:attribute name="onBoardUnitID" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>identification of the on-board unit used for addressing within communication</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="softwareVersion" type="rail:tVersionNumber">
+      <xs:annotation>
+        <xs:documentation>version of installed software of the system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tETCS">
+    <xs:annotation>
+      <xs:documentation>container for installed capabilities with respect to ETCS</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMonitoringGeneric" />
+        <xs:attributeGroup ref="rail:aETCS" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tSpecificTransmissionModule">
+    <xs:annotation>
+      <xs:documentation>container for installed special transmission modules</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMonitoringGeneric" />
+        <xs:attributeGroup ref="rail:aSpecificTransmissionModule" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aSpecificTransmissionModule">
+    <xs:attribute name="nationalSystemRef" type="rail:tGenericRef" />
+  </xs:attributeGroup>
+
+  <xs:complexType name="tTrainRadio">
+    <xs:annotation>
+      <xs:documentation>container for installed train radio systems</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMonitoringGeneric" />
+        <xs:attributeGroup ref="rail:aTrainRadio" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTrainRadio">
+    <xs:attribute name="modulation" type="rail:tModulationType" />
+  </xs:attributeGroup>
+  <xs:simpleType name="tRadioSystem">
+    <xs:annotation>
+      <xs:documentation>list of available radio systems for communication like 'GSM-R'</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tGenericName" />
+  </xs:simpleType>
+
+  <xs:complexType name="tOtherEquipment">
+    <xs:annotation>
+      <xs:documentation>container for other installed train equipment (non-safety)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMonitoringGeneric" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tTransformer">
+    <xs:annotation>
+      <xs:documentation>technical data of main transformer</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of transformers per vehicle and their type description</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aTransformer" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTransformer">
+    <xs:attribute name="ferrumResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of iron core of one transformer in Ohms (open-circuit core loss)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="additionalResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>additional resistance of one transformer in Ohms due to non-sinusoid currents (stray loss)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mainInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>main inductance of one transformer in H</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The transformer mean efficiency in the range 0..1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tWinding">
+    <xs:annotation>
+      <xs:documentation>technical data of transformer winding</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aWinding" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aWinding">
+    <xs:attribute name="assemblyName" type="rail:tGenericName" use="required">
+      <xs:annotation>
+        <xs:documentation>type of transformer winding as descriptive name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalVoltage" type="rail:tVoltageVolt">
+      <xs:annotation>
+        <xs:documentation>nominal voltage of transformer winding (primary side) in Volts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalCurrent" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>nominal current of transformer winding (primary side) in Amps</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="transformationRatio" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>transformation ratio of transformer winding (primary/secondary voltage)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="primaryResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of primary winding of one transformer in Ohms</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="secondaryResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of secondary winding of one transformer in Ohms transformed to primary side</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="primaryLeakageInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>leakage inductance of primary winding of one transformer in H</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="secondaryLeakageInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>leakage inductance of secondary winding of one transformer in H transformed to primary side</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tFourQuadrantChopper">
+    <xs:annotation>
+      <xs:documentation>technical data of inverter between OHL/transformer and link circuit</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of four-quadrant choppers installed per vehicle and their type description</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aFourQuadrantChopper" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aFourQuadrantChopper">
+    <xs:attribute name="meanPhi" type="rail:tAngleDegFullCircle">
+      <xs:annotation>
+        <xs:documentation>average phase angle phi of four-quadrant-chopper (in traction mode)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanPhiRegeneration" type="rail:tAngleDegFullCircle">
+      <xs:annotation>
+        <xs:documentation>average phase angle phi of four-quadrant-chopper in regeneration mode</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The four quadrant chopper mean efficiency in the range 0..1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tLink">
+    <xs:attributeGroup ref="rail:aNominalElectrical" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aNominalElectrical">
+    <xs:annotation>
+      <xs:documentation>nominal values (voltage + current) of an electrical circuit</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="nominalVoltage" type="rail:tVoltageVolt" use="required">
+      <xs:annotation>
+        <xs:documentation>nominal voltage of circuit in Volts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalCurrent" type="rail:tCurrentAmpere" use="required">
+      <xs:annotation>
+        <xs:documentation>nominal current of circuit in Amps</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tTractionInverter">
+    <xs:annotation>
+      <xs:documentation>technical data of inverter between link circuit and motors</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of traction inverters installed per vehicle and their type description</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aTractionInverter" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTractionInverter">
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The traction inverter mean efficiency in the range 0..1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tTractionMotor">
+    <xs:annotation>
+      <xs:documentation>technical data of traction motor</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of traction motors per vehicle and their type description</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aTractionMotor" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTractionMotor">
+    <xs:attribute name="nominalPower" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>rated power consumption of one traction motor in Watt</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalVoltage" type="rail:tVoltageVolt">
+      <xs:annotation>
+        <xs:documentation>rated voltage of traction motor in Volts</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalCurrent" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>rated current of one traction motor in Amps</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalFrequency" type="rail:tFrequencyHertz">
+      <xs:annotation>
+        <xs:documentation>rated frequency of traction motor windings in Hz</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalFlux" type="rail:tFluxVoltSecond">
+      <xs:annotation>
+        <xs:documentation>nominal flux of one traction motor in Volt*sec</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalPhi" type="rail:tAngleDegFullCircle">
+      <xs:annotation>
+        <xs:documentation>nominal phase angle phi of traction motor in the range -180..+180</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberPolePairs" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of pole pairs of one traction motor</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="statorResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of stator winding of one traction motor in Ohms</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rotorResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of rotor winding of one traction motor in Ohms</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ferrumResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of iron core of one traction motor in Ohms (open-circuit core loss)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="additionalResistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>additional resistance of one traction motor in Ohms due to non-sinusoid currents (stray loss)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="mainInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>main inductance of one traction motor in H</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="statorLeakageInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>leakage inductance of stator winding of one traction motor in H</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rotorLeakageInductance" type="rail:tInductanceHenry">
+      <xs:annotation>
+        <xs:documentation>leakage inductance of rotor winding of one traction motor in H</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalRevolutions" type="rail:tRotationalFrequencyRevolutionsPerMinute">
+      <xs:annotation>
+        <xs:documentation>nominal number of revolutions in revolutions per minute (rpm)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>The traction motor mean efficiency in the range 0..1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tDieselEngine">
+    <xs:annotation>
+      <xs:documentation>technical data of diesel engine</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of diesel engines per vehicle and their type description (for traction)</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aDieselEngine" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aDieselEngine">
+    <xs:attribute name="nominalPower" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>nominal power per diesel engine in Watt</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="availableAuxiliaryPower" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>nominal power per diesel engine in Watt leftover for auxiliary supply</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fuelCapacity" type="rail:tVolumeLitre">
+      <xs:annotation>
+        <xs:documentation>fuel capacity of the entire diesel tank in liters</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>average efficiency of the diesel engine in the range 0..1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tGear">
+    <xs:annotation>
+      <xs:documentation>technical data of transmission system between motor and wheel</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aAssemblyNameNumber">
+      <xs:annotation>
+        <xs:documentation>number of gear assemblies per vehicle and their type description</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:aGear" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aGear">
+    <xs:attribute name="gearRatio" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>gear ratio as decimal value</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanEfficiency" type="rail:tOneToZero">
+      <xs:annotation>
+        <xs:documentation>the gear mean efficiency in the range 0..1.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="designType" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>design type of the gear</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="manufacturerName" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>manufacturer of the gear</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nominalPower" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>nominal power of the gear for transmission</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="torqueConversion" type="rail:tTorqueConversionType">
+      <xs:annotation>
+        <xs:documentation>type of torque conversion between motor and axle gear, mainly for diesel-hydraulic vehicles</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tAuxiliarySupply">
+    <xs:attributeGroup ref="rail:aAuxiliarySupply" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aAuxiliarySupply">
+    <xs:attribute name="power" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>power consumption of constant load by auxiliary equipment in Watt (permanent)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="powerPhi" type="rail:tAngleDegFullCircle">
+      <xs:annotation>
+        <xs:documentation>phase angle phi of constant power of auxiliary load between -180..+180</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resistance" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of constant load by auxiliary equipment in Ohm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="powerBraking" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>power consumption of constant load by auxiliary equipment in Watt (only during braking mode)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="powerPhiBraking" type="rail:tAngleDegFullCircle">
+      <xs:annotation>
+        <xs:documentation>phase angle phi of constant power of auxiliary load between -180..+180 (only during braking mode)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resistanceBraking" type="rail:tResistanceOhm">
+      <xs:annotation>
+        <xs:documentation>resistance of constant load by auxiliary equipment in Ohm (only during braking mode)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tAuxiliarySupplySystem">
+    <xs:attributeGroup ref="rail:aElectrificationSystem" />
+    <xs:attribute name="maxPower" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>maximum power available for auxiliary equipment in this supply system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="tNationalSystem">
+    <xs:annotation>
+      <xs:documentation>description of installed national train protection/monitoring systems like PZB, CIR-ELKE, TVM, LEA, ...</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMonitoringGeneric" />
+        <xs:attributeGroup ref="rail:aMonitoringSystem" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aMonitoringSystem">
+    <xs:attribute name="type" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>type of national system as enumeration</xs:documentation>
+        <xs:documentation>use value from the separate code definition file 'TrainProtectionSystems.xml'/trainProtectionSystemsOnVehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trainProtectionMedium" type="rail:tTrainProtectionMedium" use="required">
+      <xs:annotation>
+        <xs:documentation>type of transmission medium for the train protection system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trainProtectionMonitoring" type="rail:tTrainProtectionMonitoring" use="required">
+      <xs:annotation>
+        <xs:documentation>way of information transmission between line-side and train-borne equipment</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tSpeedProfileRefRS">
+    <xs:annotation>
+      <xs:documentation></xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aSpeedProfileRefRS" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aSpeedProfileRefRS">
+    <xs:attribute name="ref" type="rail:tGenericRef">
+      <xs:annotation>
+        <xs:documentation>corresponding @id in 'infrastructure/speedProfile' in the same file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>corresponding @name in 'infrastructure/speedProfile' in another file</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tBasicBrakeOperation">
+    <xs:annotation>
+      <xs:documentation>data type for description of brake operation</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="decelerationTable" type="rail:tDecelerationCurve" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:decelerationTable</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="rail:aBasicBrakeOperation" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aBasicBrakeOperation">
+    <xs:attribute name="brakeSupervision" type="rail:tSupervisionType">
+      <xs:annotation>
+        <xs:documentation>possible values for selection of different brake operation rules</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="decelerationDelay" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>average brake application time, typically in seconds</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="releaseSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>below this speed limit in km/h generally the supervision regime of "none" shall apply</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanDeceleration" type="rail:tAccelerationMeterPerSquareSec">
+      <xs:annotation>
+        <xs:documentation>average deceleration value in this supervision regime in m/s^2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tSupervisionType">
+    <xs:annotation>
+      <xs:documentation>list of possible brake supervision regimes causing different operational behaviour during braking</xs:documentation>
+    </xs:annotation>
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none" />
+          <xs:enumeration value="ATP" />
+          <xs:enumeration value="ETCS" />
+          <xs:enumeration value="unknown" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tWagon">
+    <xs:annotation>
+      <xs:documentation>technical and payload data about a car</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aWagon" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aWagon">
+    <xs:attribute name="rotationMassFactor" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>factor for increased running resistance by rotating masses of non-motored axles</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="additionalRotationMass" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>additional mass for increased running resistance by rotating masses of non-motored axles</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="kinematicEnvelope" type="rail:tElementDescription">
+      <xs:annotation>
+        <xs:documentation>name of car body kinematic envelope as reference</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="auxiliaryPowerConsumption" type="rail:tPowerWatt">
+      <xs:annotation>
+        <xs:documentation>continuous power consumption in Watt of auxiliaries within one car</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="headShape" type="rail:tHeadShapeType">
+      <xs:annotation>
+        <xs:documentation>basic definition of head shape in order to derive air resistance of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="headSurface" type="rail:tAreaSquareMeter">
+      <xs:annotation>
+        <xs:documentation>cross-section area of vehicle front in order to derive air resistance of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bearingType" type="rail:tBearingType">
+      <xs:annotation>
+        <xs:documentation>describes the type of the bearing used for calculating vehicle resistance</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tPassenger">
+    <xs:annotation>
+      <xs:documentation>data for passenger cars</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:ePassengerFacility">
+        <xs:attributeGroup ref="rail:aPassenger" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aPassenger">
+    <xs:attribute name="deck" type="rail:tVerbalCounter">
+      <xs:annotation>
+        <xs:documentation>number of decks per vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="drivingCab" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the vehicle comprises driving cab</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tilting" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the vehicle comprises tilting capabilities</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="airTightness" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the passenger compartment of the vehicle is air tight/pressure resistant</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emergencyBrakeDeactivation" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the vehicle comprises a de-activation function of the emergency brake for long tunnels</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tGangway">
+    <xs:annotation>
+      <xs:documentation>description of any gangways of the passenger car to other cars</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aGangway" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aGangway">
+    <xs:attribute name="frontEnd" type="xs:boolean" use="required">
+      <xs:annotation>
+        <xs:documentation>flag, whether there is a gangway at the front end of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rearEnd" type="xs:boolean" use="required">
+      <xs:annotation>
+        <xs:documentation>flag, whether there is a gangway at the rear end of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="position" type="rail:tGangwayPosition">
+      <xs:annotation>
+        <xs:documentation>vertical position of the gangway, valid for both sides</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="designType" type="rail:tGangwayDesignType" use="required">
+      <xs:annotation>
+        <xs:documentation>type of design of the gangway</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="floorLevel" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>height of gangways floor above top of rail</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="gangwayHeight" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>height of gangway for passenger use</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="gangwayWidth" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>width of gangway for passenger use</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tGangwayPosition">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="standardUIC" />
+          <xs:enumeration value="upperDeck" />
+          <xs:enumeration value="lowerDeck" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tGangwayDesignType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="unknown" />
+          <xs:enumeration value="standardUIC561" />
+          <xs:enumeration value="special" />
+          <xs:enumeration value="nonPublic" />
+          <xs:enumeration value="sigI" />
+          <xs:enumeration value="sigII" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tDoors">
+    <xs:annotation>
+      <xs:documentation>data about door features for the car</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aDoors" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aDoors">
+    <xs:attribute name="number" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of doors per vehicle at each side</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="entranceHeight" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>height of entrance foot plate above rail top</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="entranceLength" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>maximum distance between the doors of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="entranceWidth" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>total of all door width of the vehicle at one side</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="footStepHeight" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>height of lowest foot step above rail top</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="lockingSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>speed limit for locking the doors during train ride</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="openingTime" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>Time from stand-still of the vehicle to the flow of passengers can start through the doors. This is estimated to be at a door gap of 80cm.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="closingTime" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>Time after closing signal is given on the last door to the vehicles can be put in motion.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tPassengerFlowSpeed">
+    <xs:annotation>
+      <xs:documentation>data for passenger flow speed</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aPassengerFlowSpeed" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aPassengerFlowSpeed">
+    <xs:attribute name="flowSpeed" type="rail:tPassengersPerSecond">
+      <xs:annotation>
+        <xs:documentation>average/planned number of passengers per second that can flow through the doors and vestibules of the vehicle at given platform heights</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="platformHeight" type="rail:tLengthMM">
+      <xs:annotation>
+        <xs:documentation>platform height in millimetres for a given flow speed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tGoods">
+    <xs:annotation>
+      <xs:documentation>data for freight cars</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aGoods" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aGoods">
+    <xs:attribute name="load" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>maximum payload per wagon in metric tons</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="loadArea" type="rail:tAreaSquareMeter">
+      <xs:annotation>
+        <xs:documentation>maximum area to be used for payload per wagon in square metres</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="volume" type="rail:tVolumeCubicMeter">
+      <xs:annotation>
+        <xs:documentation>available volume for payload per vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="freightCarType" type="rail:tFreightCarType">
+      <xs:annotation>
+        <xs:documentation>simple classification of goods vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="freightCarUICType" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>classification string of goods vehicle according UIC</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tFreightCarType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="open" />
+          <xs:enumeration value="covered" />
+          <xs:enumeration value="platform" />
+          <xs:enumeration value="refrigerated" />
+          <xs:enumeration value="tank" />
+          <xs:enumeration value="self-discharging" />
+          <xs:enumeration value="special" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:attributeGroup name="aVehicleBrake">
+    <xs:attribute name="loadSwitch" type="rail:tLoadSwitch">
+      <xs:annotation>
+        <xs:documentation>for wagons with "full" / "empty" switch</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="autoBrakePercentage" type="rail:tBrakePercentage">
+      <xs:annotation>
+        <xs:documentation>automatically regulated brake percentages depending on actual load of vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxAutoBrakeMass" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>maximum brake mass of automatic brake</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tLoadSwitch">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="empty" />
+      <xs:enumeration value="full" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="tEddyCurrentBrake">
+    <xs:annotation>
+      <xs:documentation>technical data of eddy current brake</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aEddyCurrentBrake" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aEddyCurrentBrake">
+    <xs:attribute name="maxPower" type="rail:tPowerWatt" use="required">
+      <xs:annotation>
+        <xs:documentation>maximal power consumption in Watt</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxEffort" type="rail:tForceNewton" use="required">
+      <xs:annotation>
+        <xs:documentation>maximal braking effort achieved in Newton</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="minSpeed" type="rail:tSpeedKmPerHour" use="required">
+      <xs:annotation>
+        <xs:documentation>minimum speed for use of eddy current brake in km/h</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tFormation">
+    <xs:annotation>
+      <xs:documentation>data for a single train formation made of rs-vehicles</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="states" type="rail:tStates" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container to define various life cycle status of the formation</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:states</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aFormation" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aFormation">
+    <xs:attribute name="formationCount" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of similar formations forming that train</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="length" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>entire length of the formation (shall be in accordance with the sum of single vehicles)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="speed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>allowed maximum speed for the entire formation (shall be in accordance with single vehicle speed values)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="weight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>DEPRECATED: weight in metrical tons of the entire formation (shall be in accordance with the sum of single vehicles)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bruttoWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>gross weight (vehicles plus payload) in metrical tons of the entire formation (shall be in accordance with the sum of single vehicles)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nettoWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>net weight (payload only) in metrical tons of the entire formation (shall be in accordance with the sum of single vehicles)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tareWeight" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>tare weight (empty vehicles) in metrical tons of the entire formation (shall be in accordance with the sum of single vehicles)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="load" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>weight without engine</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="etcsTrainCategory" type="rail:tEtcsTrainCategory">
+      <xs:annotation>
+        <xs:documentation>the international train category number as specified on page 38 in ERA_ERTMS_040001 "Assignment of values to ETCS variables" v1.9 from 10/07/12</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tVehicleRef">
+    <xs:attributeGroup ref="rail:aVehicleRef" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aVehicleRef">
+    <xs:attribute name="orderNumber" type="rail:tPositiveCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>position of that vehicle (group) in the formation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleRef" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>vehicle type as reference</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vehicleCount" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of consecutive vehicles of that type in the formation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="frontGangway" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether there is a gangway at the front end of the vehicle usable</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rearGangway" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether there is a gangway at the rear end of the vehicle usable</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tTrainEngine">
+    <xs:attributeGroup ref="rail:aTrainEngine" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTrainEngine">
+    <xs:attribute name="trainMeanAcceleration" type="rail:tAccelerationMeterPerSquareSec">
+      <xs:annotation>
+        <xs:documentation>formation whole mean acceleration in m/s^2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trainMaxAcceleration" type="rail:tAccelerationMeterPerSquareSec">
+      <xs:annotation>
+        <xs:documentation>formation whole maximum acceleration in m/s^2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="trainMinTimeHoldSpeed" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>minimum time the train can maintain its speed before it must brake as flag for acceleration acceptance</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tTrainResistance">
+    <xs:annotation>
+      <xs:documentation>mechanical train resistance vs. speed</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve">
+        <xs:attribute name="tunnelFactor" type="xs:decimal">
+          <xs:annotation>
+            <xs:documentation>factor for increasing air resistance when running through tunnel</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aResistanceFormula" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aResistanceFormula">
+    <xs:attribute name="strahlFactor" type="rail:tForceCoefficentNewton">
+      <xs:annotation>
+        <xs:documentation>coefficent used for calculation of train resistance according formula of Strahl/Sauthoff</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="daviesMassDependent" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the coefficents of Davies formula are to be considered mass dependent</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="daviesFactorA" type="rail:tForceCoefficentNewton">
+      <xs:annotation>
+        <xs:documentation>constant coefficent A used for calculation of train resistance according formula of Davies</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="daviesFactorB" type="rail:tForceCoefficentNewton">
+      <xs:annotation>
+        <xs:documentation>speed dependent coefficent B used for calculation of train resistance according formula of Davies</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="daviesFactorC" type="rail:tForceCoefficentNewton">
+      <xs:annotation>
+        <xs:documentation>square speed dependent coefficent C used for calculation of train resistance according formula of Davies</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="aAssemblyNameNumber">
+    <xs:attribute name="count" type="rail:tCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>number of assemblies per vehicle/unit</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="assemblyName" type="rail:tGenericName" use="required">
+      <xs:annotation>
+        <xs:documentation>type of assembly as descriptive name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tLosses">
+    <xs:annotation>
+      <xs:documentation>losses curve vs. speed, for use with mechanical and electrical systems</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tEffortCurve">
+    <xs:annotation>
+      <xs:documentation>effort curve vs. speed, for use with traction and braking</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tCurrentCurve">
+    <xs:annotation>
+      <xs:documentation>vehicle current curve vs. speed, for use with traction and braking</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tCurrentLimitation">
+    <xs:annotation>
+      <xs:documentation>net current limitation curve vs. net voltage, for use with traction and braking</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tEfficiencyCurve">
+    <xs:annotation>
+      <xs:documentation>subsystem efficiency curve vs. speed</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tDecelerationCurve">
+    <xs:annotation>
+      <xs:documentation>deceleration curve vs. speed for brake operation</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tCurve" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tCurve">
+    <xs:annotation>
+      <xs:documentation>generic curve of function y=f(x,z)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:any namespace="http://www.w3.org/1998/Math/MathML" processContents="strict" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>function definition vs. arbitrary variable in MathML format</xs:documentation>
+        </xs:annotation>
+      </xs:any>
+      <xs:element name="valueTable" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>table of values vs. arbitrary variable representing function y=f(x,z)</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:valueTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="rail:tValueTable" />
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="segmentTable" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>table of curve segments represented by polynomial function y=sum(a*x^i)</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:segmentTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="rail:tSegmentTable" />
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="tSegmentTable">
+    <xs:sequence>
+      <xs:element name="columnHeader" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:columnHeader_segmentTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="exponentValue" type="xs:long" use="required">
+            <xs:annotation>
+              <xs:documentation>the value used as exponent for the related x-value</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:columnHeader_segmentTable</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="valueLine" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>set of coefficient values related to an x-value (one table line)</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:valueLine_segmentTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="values" maxOccurs="unbounded">
+              <xs:annotation>
+                <xs:documentation>the coefficient values related to an x-value themselves</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/RS:values_valueLine_segmentTable</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:attribute name="coefficentValue" type="xs:decimal" use="required">
+                  <xs:annotation>
+                    <xs:documentation>value of coefficent for the exponent in this line (row)</xs:documentation>
+                  </xs:annotation>
+                </xs:attribute>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="segmentStartValue" type="xs:decimal" use="required">
+            <xs:annotation>
+              <xs:documentation>the starting x-value of the segment for abscissa (x-axis)</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="segmentStartValueName" type="rail:tElementDescription" use="required">
+      <xs:annotation>
+        <xs:documentation>descriptive name for values of abscissa (x-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="segmentStartValueUnit" type="rail:tUnitName" use="required">
+      <xs:annotation>
+        <xs:documentation>physical unit for values of abscissa (x-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="functionValueName" type="rail:tElementDescription" use="required">
+      <xs:annotation>
+        <xs:documentation>descriptive name for resulting values of ordinate (y-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="functionValueUnit" type="rail:tUnitName" use="required">
+      <xs:annotation>
+        <xs:documentation>physical unit for resulting values of ordinate (y-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="tValueTable">
+    <xs:annotation>
+      <xs:documentation>table of values vs. arbitrary x-variable</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="columnHeader" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>List of Names to explain meaning of values</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:columnHeader_valueTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="zValue" type="xs:decimal" use="required">
+            <xs:annotation>
+              <xs:documentation>z-value itself as parameter in the value table</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="valueLine" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>set of values related to an x-value (one table line)</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:valueLine_valueTable</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="values" maxOccurs="unbounded">
+              <xs:annotation>
+                <xs:documentation>the values related to an x-value themselves</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/RS:values_valueLine_valueTable</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:attribute name="yValue" type="xs:decimal" use="required">
+                  <xs:annotation>
+                    <xs:documentation>value of ordinate (y-axis) for this line (row)</xs:documentation>
+                  </xs:annotation>
+                </xs:attribute>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="xValue" type="xs:decimal" use="required">
+            <xs:annotation>
+              <xs:documentation>values of abscissa (x-axis) for this line (row)</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="xValueName" type="rail:tElementDescription" use="required">
+      <xs:annotation>
+        <xs:documentation>descriptive name for values of abscissa (x-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xValueUnit" type="rail:tUnitName" use="required">
+      <xs:annotation>
+        <xs:documentation>physical unit for values of abscissa (x-axis)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="yValueName" type="rail:tElementDescription" use="required">
+      <xs:annotation>
+        <xs:documentation>descriptive name of y-values in that column</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="yValueUnit" type="rail:tUnitName" use="required">
+      <xs:annotation>
+        <xs:documentation>physical unit of the values in element "values"</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="zValueName" type="rail:tElementDescription">
+      <xs:annotation>
+        <xs:documentation>descriptive name of z-value used as parameter in the value table</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="zValueUnit" type="rail:tUnitName">
+      <xs:annotation>
+        <xs:documentation>physical unit for z-value used as parameter in the value table</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:simpleType name="tSpeedRangeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="dontcare" />
+      <xs:enumeration value="slow" />
+      <xs:enumeration value="fast" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAxleDriveType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="cardanShaft" />
+          <xs:enumeration value="tubularAxle" />
+          <xs:enumeration value="noseSuspensionDrive" />
+          <xs:enumeration value="helicalSpringGear" />
+          <xs:enumeration value="rubberRingResilientDrive" />
+          <xs:enumeration value="buchliDrive" />
+          <xs:enumeration value="inclinedRodDrive" />
+          <xs:enumeration value="sideRodDrive" />
+          <xs:enumeration value="chain" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tPantographControlType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="cable" />
+          <xs:enumeration value="spring" />
+          <xs:enumeration value="air" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tPantographPositionType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="front" />
+          <xs:enumeration value="frontSecond" />
+          <xs:enumeration value="middle" />
+          <xs:enumeration value="rearSecond" />
+          <xs:enumeration value="rear" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tPantograph">
+    <xs:annotation>
+      <xs:documentation>description of any installed pantograph</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aPantograph" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aPantograph">
+    <xs:attribute name="orderNumber" type="rail:tPositiveCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>number of the pantograph on the vehicle, starting with '1'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="designType" type="rail:tGenericName" use="required">
+      <xs:annotation>
+        <xs:documentation>descriptive info about design type</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="positionOnSection" type="rail:tPantographPositionType" use="required">
+      <xs:annotation>
+        <xs:documentation>position of the pantograph with respect to typical locations of a section</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="fittedSection" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of vehicle section the panto is fitted on in case of articulated vehicle, normally '1'</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="controlType" type="rail:tPantographControlType">
+      <xs:annotation>
+        <xs:documentation>the way of controlling the pantograph drive</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="headWidth" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>width of pan head</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxCurrentDriving" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>maximum current transferred by the panto during driving</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxCurrentStandstill" type="rail:tCurrentAmpere">
+      <xs:annotation>
+        <xs:documentation>maximum current transferred by the panto in standstill of the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tDriversCabType">
+    <xs:annotation>
+      <xs:documentation>description of each drivers cab</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aDriversCab" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aDriversCab">
+    <xs:attribute name="orderNumber" type="rail:tPositiveCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>ordered number of cab</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="position" type="rail:tCabPositionType" use="required">
+      <xs:annotation>
+        <xs:documentation>position of cab related to vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="acousticSignaller" type="rail:tAcousticSignalType">
+      <xs:annotation>
+        <xs:documentation>installed acoustic signaller</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tAcousticSignalType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none" />
+          <xs:enumeration value="bell" />
+          <xs:enumeration value="alarmBell" />
+          <xs:enumeration value="horn" />
+          <xs:enumeration value="airChime" />
+          <xs:enumeration value="whistle" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tRackTractionType">
+    <xs:annotation>
+      <xs:documentation>description of any installed rack traction equipment</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aRackTraction" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aRackTraction">
+    <xs:attribute name="number" type="rail:tCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>number of cog wheels on the vehicle</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rackSystem" type="rail:tRackSystemType" use="required">
+      <xs:annotation>
+        <xs:documentation>kind of rack system used</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resilentCogWheel" type="xs:boolean" use="required">
+      <xs:annotation>
+        <xs:documentation>flag, whether the cog wheel(s) is(are) resilently suspended</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tRackSystemType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none" />
+          <xs:enumeration value="Riggenbach" />
+          <xs:enumeration value="Riggenbach-Klose" />
+          <xs:enumeration value="Abt2Bars" />
+          <xs:enumeration value="Abt3Bars" />
+          <xs:enumeration value="Locher" />
+          <xs:enumeration value="Strub" />
+          <xs:enumeration value="Wetli" />
+          <xs:enumeration value="Marsh" />
+          <xs:enumeration value="Roll" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tBearingType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="rollerBearing" />
+          <xs:enumeration value="ballBearing" />
+          <xs:enumeration value="plainBearing" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tHeadShapeType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="angular" />
+          <xs:enumeration value="rounded" />
+          <xs:enumeration value="streamlined" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="tEndPositionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="both" />
+      <xs:enumeration value="front" />
+      <xs:enumeration value="rear" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tRelatedPositionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none" />
+      <xs:enumeration value="aside" />
+      <xs:enumeration value="ontop" />
+      <xs:enumeration value="below" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tCabPositionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none" />
+      <xs:enumeration value="front" />
+      <xs:enumeration value="middle" />
+      <xs:enumeration value="rear" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tTorqueConversionType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="converter" />
+          <xs:enumeration value="coupling" />
+          <xs:enumeration value="hydrodynamicTransmission" />
+          <xs:enumeration value="hydraulicTransmission" />
+          <xs:enumeration value="hydromechanicalTransmission" />
+          <xs:enumeration value="hydrostaticTransmission" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tCurvingLimitationType">
+    <xs:annotation>
+      <xs:documentation>container for list of physical curving limits</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aCurvingLimitation" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aCurvingLimitation">
+    <xs:attribute name="horizontalCurveRadius" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>maximum horizontal curve radius in metres allowed for the vehicle running</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verticalCrestRadius" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>maximum vertical radius of any crest (de: Kuppe) in metres allowed for the vehicle running</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verticalSagRadius" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>maximum vertical radius of any sag (de: Wanne) in metres allowed for the vehicle running</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tLoadLimitMatrixType">
+    <xs:annotation>
+      <xs:documentation>container for list of load limits</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aLoadLimitMatrix" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aLoadLimitMatrix">
+    <xs:attribute name="chassisSpeed" type="rail:tSpeedKmPerHour">
+      <xs:annotation>
+        <xs:documentation>maximum speed allowed for the vehicle not considering braking capabilities</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tLoadLimitType">
+    <xs:annotation>
+      <xs:documentation>permissible load limits depending on line classification</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aLoadLimit" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aLoadLimit">
+    <xs:attribute name="maxSpeed" type="rail:tSpeedKmPerHour" use="required">
+      <xs:annotation>
+        <xs:documentation>maximum speed allowed with the load limit</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tRailNetwork">
+    <xs:annotation>
+      <xs:documentation>list of related rail networks</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aRailNetwork" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aRailNetwork">
+    <xs:attribute name="name" type="rail:tGenericName" use="required">
+      <xs:annotation>
+        <xs:documentation>name of the rail network the load limit and line classification is applicable</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tLineClassification">
+    <xs:annotation>
+      <xs:documentation>list of line classifications and permissible payload according RIV</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aLineClassification" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aLineClassification">
+    <xs:attribute name="name" type="rail:tLineClassificationType" use="required">
+      <xs:annotation>
+        <xs:documentation>the name of the line class according RIV or any other distinctive name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="payLoad" type="rail:tWeightTons" use="required">
+      <xs:annotation>
+        <xs:documentation>permissible payload for the vehicle with respect to line classification</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tMaintenanceInterval">
+    <xs:annotation>
+      <xs:documentation>description of a regular maintenance task</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aMaintenanceInterval" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:attributeGroup name="aMaintenanceInterval">
+    <xs:attribute name="maximumIntervalDays" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>maximum number of days for the interval until the task is due</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maximumIntervalDistance" type="rail:tLengthKM">
+      <xs:annotation>
+        <xs:documentation>maximum number of mileage in km for the interval until the task is due</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tPropulsionControlType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="unknown" />
+          <xs:enumeration value="camshaftControl" />
+          <xs:enumeration value="contactorControl" />
+          <xs:enumeration value="rectifier" />
+          <xs:enumeration value="thyristorControl" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tPneumaticWagonCouplerType">
+    <xs:annotation>
+      <xs:documentation>data of available pneumatic couplers between wagons</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aPneumaticWagonCoupler" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aPneumaticWagonCoupler">
+    <xs:attribute name="positionOnCarEnd" type="rail:tEndPositionType" use="required">
+      <xs:annotation>
+        <xs:documentation>basic position of the pneumatic wagon coupler (front/rear/both)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="couplerFunction" type="rail:tPneumaticCouplerFunctionType">
+      <xs:annotation>
+        <xs:documentation>the function the pneumatic coupler is used for</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="integratedOnMechanicalCoupler" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>flag, whether the pneumatic coupler is integrated in the mechanical coupler and coupled automatically</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tPneumaticCouplerFunctionType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="unknown" />
+          <xs:enumeration value="mainAirPipe" />
+          <xs:enumeration value="mainAirReservoirPipe" />
+          <xs:enumeration value="additionalBrakeControlPipe" />
+          <xs:enumeration value="vacuumAirPipe" />
+          <xs:enumeration value="steamHeatingPipe" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tElectricalWagonCouplerType">
+    <xs:annotation>
+      <xs:documentation>data of available electrical couplers between wagons</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aElectricalWagonCoupler" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aElectricalWagonCoupler">
+    <xs:attribute name="positionOnCarEnd" type="rail:tEndPositionType" use="required">
+      <xs:annotation>
+        <xs:documentation>basic position of the electrical wagon coupler (front/rear/both)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="designType" type="rail:tElectricalCouplerDesignType">
+      <xs:annotation>
+        <xs:documentation>description of the design type of the electrical coupler (mainly control lines)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="positionOnMechanicalCoupler" type="rail:tRelatedPositionType">
+      <xs:annotation>
+        <xs:documentation>the position of electrical coupling in relation to mechanical coupling if integrated</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="numberContacts" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>number of contacts included in the coupler (similar to number of lines)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tElectricalCouplerDesignType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="unknown" />
+          <xs:enumeration value="pushTrainControl36" />
+          <xs:enumeration value="pushTrainControl34" />
+          <xs:enumeration value="emergencyBrakeDeactivation" />
+          <xs:enumeration value="UIC-IS-cable21" />
+          <xs:enumeration value="UIC556" />
+          <xs:enumeration value="UIC558-18" />
+          <xs:enumeration value="UIC568-13" />
+          <xs:enumeration value="wireTrainBus" />
+          <xs:enumeration value="multifunctionVehicleBus" />
+          <xs:enumeration value="trainCommunicationNetwork" />
+          <xs:enumeration value="vehicleSpecificConnection" />
+          <xs:enumeration value="fibreOptics" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tMechanicalWagonCouplerType">
+    <xs:annotation>
+      <xs:documentation>data of available mechanical couplers between wagons</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aMechanicalWagonCoupler" />
+  </xs:complexType>
+  <xs:attributeGroup name="aMechanicalWagonCoupler">
+    <xs:attribute name="designType" type="rail:tMechanicalCouplerDesignType" use="required">
+      <xs:annotation>
+        <xs:documentation>design type of the mechanical wagon coupler</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="positionOnCarEnd" type="rail:tEndPositionType" use="required">
+      <xs:annotation>
+        <xs:documentation>basic position of the mechanical wagon coupler (front/rear/both)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="couplingHeight" type="rail:tLengthM">
+      <xs:annotation>
+        <xs:documentation>coupling level above top of rail in mm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="pullingForce" type="rail:tForceNewton">
+      <xs:annotation>
+        <xs:documentation>maximum force in Newton to be used for pulling vehicles with this type of coupling</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="pushingForce" type="rail:tForceNewton">
+      <xs:annotation>
+        <xs:documentation>maximum force in Newton to be used for pushing vehicles with this type of coupling</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tMechanicalCouplerDesignType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="unknown" />
+          <xs:enumeration value="AAR_KnuckleCoupler" />
+          <xs:enumeration value="AK69e" />
+          <xs:enumeration value="AlbertCoupler" />
+          <xs:enumeration value="APTA_tightlock" />
+          <xs:enumeration value="BSI_compact" />
+          <xs:enumeration value="BSI_shunting" />
+          <xs:enumeration value="buckeyeKnuckleCoupler" />
+          <xs:enumeration value="BuddPinCup" />
+          <xs:enumeration value="buffersChainScrewCoupler" />
+          <xs:enumeration value="C-AKv" />
+          <xs:enumeration value="centralBuffer1Chain" />
+          <xs:enumeration value="centralBuffer2Chains" />
+          <xs:enumeration value="FK-3-2.5" />
+          <xs:enumeration value="FK-5.5-4" />
+          <xs:enumeration value="FK-9-6" />
+          <xs:enumeration value="FK-15-10" />
+          <xs:enumeration value="FK-15-12" />
+          <xs:enumeration value="GF_Coupler" />
+          <xs:enumeration value="GFN" />
+          <xs:enumeration value="GFT" />
+          <xs:enumeration value="GFV" />
+          <xs:enumeration value="Intermat" />
+          <xs:enumeration value="linkPin_flat" />
+          <xs:enumeration value="linkPin_round" />
+          <xs:enumeration value="NorwegianMeatChopper" />
+          <xs:enumeration value="SA3_WillisonCoupler" />
+          <xs:enumeration value="Scharfenberg" />
+          <xs:enumeration value="Scharfenberg10" />
+          <xs:enumeration value="Scharfenberg35" />
+          <xs:enumeration value="Scharfenberg55" />
+          <xs:enumeration value="Scharfenberg140" />
+          <xs:enumeration value="Scharfenberg330" />
+          <xs:enumeration value="Scharfenberg430" />
+          <xs:enumeration value="SchwabCoupler" />
+          <xs:enumeration value="Wedgelock" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tTechnicalStopActivity">
+    <xs:annotation>
+      <xs:documentation>data about times technically required to perform for a particular formation</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aTechnicalStopActivity" />
+  </xs:complexType>
+
+  <xs:attributeGroup name="aTechnicalStopActivity">
+    <xs:attribute name="minimumTime" type="xs:duration">
+      <xs:annotation>
+        <xs:documentation>The time technically required for this formation to perform the activity</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="purpose" type="rail:tTechnicalStopActivityTypes">
+      <xs:annotation>
+        <xs:documentation>Selection of the particular activity</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+
+  <xs:simpleType name="tTechnicalStopActivityTypes">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="split">
+            <xs:annotation>
+              <xs:documentation>Technical process for uncouple formations / train parts - intended for self-propelling train parts.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="join">
+            <xs:annotation>
+              <xs:documentation>Technical process for couple formations / train parts - intended for self-propelling train parts.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="reversing-one_driver">
+            <xs:annotation>
+              <xs:documentation>Technical process for reversing the train direction with one driver who needs to go from one cab to the other</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="reversing-two_driver">
+            <xs:annotation>
+              <xs:documentation>Technical process for reversing train direction with two dirvers, thus without need to go from one cab to the other</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+</xs:schema>

@@ -1,0 +1,1547 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of elements (partially hidden as complex type) for timetable sub schema (TT), uses timetable types and attribute groups from "xs:include" path</xs:documentation>
+  </xs:annotation>
+
+  <xs:include schemaLocation="timetableTypes.xsd" />
+
+  <xs:element name="timetable">
+    <xs:annotation>
+      <xs:documentation>Root element of subtree related to timetable information.</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/TT:timetable</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="rail:tTimetable">
+          <xs:sequence>
+            <xs:element name="timetablePeriods" type="rail:eTimetablePeriods" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups timetablePeriod elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:timetablePeriods</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="operatingPeriods" type="rail:eOperatingPeriods" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups operatingPeriod elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingPeriods</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="distributions" type="rail:eDistributions" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups distribution elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:distributions</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="categories" type="rail:eCategories" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups category elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:categories</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="annotations" type="rail:eAnnotations" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups annotation elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:annotations</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="announcements" type="rail:eAnnouncements" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups announcement elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:announcements</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="linesTT" type="rail:eLines" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups lineTT elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:linesTT</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="patternTrainParts" type="rail:ePatternTrainParts" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups patternTrainPart elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:patternTrainParts</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="patternTrains" type="rail:ePatternTrains" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups patternTrain elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:patternTrains</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="trainParts" type="rail:eTrainParts" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups trainPart elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainParts</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="trains" type="rail:eTrains" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups train elements. </xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:trains</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="trainGroups" type="rail:eTrainGroups" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups trainGroup elements.</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainGroups</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="rosterings" type="rail:eRosterings" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Groups rostering elements. </xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:rosterings</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+
+    <xs:key name="timetablePeriodKey">
+      <xs:selector xpath=".//rail:timetablePeriods/rail:timetablePeriod" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="timetablePeriod-operatingPeriodKeyref" refer="rail:timetablePeriodKey">
+      <xs:selector xpath=".//rail:operatingPeriods/rail:operatingPeriod" />
+      <xs:field xpath="@timetablePeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="timetablePeriod-patternTrainPartKeyref" refer="rail:timetablePeriodKey">
+      <xs:selector xpath="rail:patternTrainParts/rail:patternTrainPart" />
+      <xs:field xpath="@timetablePeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="timetablePeriod-trainPartKeyref" refer="rail:timetablePeriodKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart" />
+      <xs:field xpath="@timetablePeriodRef" />
+    </xs:keyref>
+
+    <xs:key name="distributionKey">
+      <xs:selector xpath="rail:distributions/rail:distribution" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="distribution-patternTrainKeyref" refer="rail:distributionKey">
+      <xs:selector xpath="rail:patternTrains/rail:patternTrain" />
+      <xs:field xpath="@distributionRef" />
+    </xs:keyref>
+
+    <xs:key name="patternTrainPartKey">
+      <xs:selector xpath="rail:patternTrainParts/rail:patternTrainPart" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="patternTrainPart-trainPartSequenceKeyref" refer="rail:patternTrainPartKey">
+      <xs:selector xpath="rail:patternTrains/rail:patternTrain/rail:trainPartSequence/rail:patternTrainPartRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <xs:key name="trainPartKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="trainPart-trainPartSequenceKeyref" refer="rail:trainPartKey">
+      <xs:selector xpath=".//rail:trains/rail:train/rail:trainPartSequence/rail:trainPartRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="trainPart-blockPartKeyref" refer="rail:trainPartKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@trainPartRef" />
+    </xs:keyref>
+    <xs:keyref name="trainPart-connectionKeyref" refer="rail:trainPartKey">
+      <xs:selector xpath=".//rail:connections/rail:connection" />
+      <xs:field xpath="@trainPartRef" />
+    </xs:keyref>
+
+    <xs:key name="patternTrainKey">
+      <xs:selector xpath="rail:patternTrains/rail:patternTrain" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="patternTrain-trainGroupKeyref" refer="rail:patternTrainKey">
+      <xs:selector xpath="rail:trainGroups/rail:trainGroup" />
+      <xs:field xpath="@patternTrainRef" />
+    </xs:keyref>
+
+    <xs:key name="trainKey">
+      <xs:selector xpath=".//rail:trains/rail:train" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="train-trainGroupKeyref" refer="rail:trainKey">
+      <xs:selector xpath=".//rail:trainGroups/rail:trainGroup/rail:trainRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="train-connectionKeyref" refer="rail:trainKey">
+      <xs:selector xpath=".//rail:connections/rail:connection" />
+      <xs:field xpath="@trainRef" />
+    </xs:keyref>
+
+    <xs:key name="trainGroupKey">
+      <xs:selector xpath=".//rail:trainGroups/rail:trainGroup" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="trainGroup-trainGroupParentKeyRef" refer="rail:trainGroupKey">
+      <xs:selector xpath=".//rail:trainGroups/rail:trainGroup" />
+      <xs:field xpath="@parentRef" />
+    </xs:keyref>
+
+    <xs:key name="blockPartKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="blockPart-blockPartSequenceKeyref" refer="rail:blockPartKey">
+      <xs:selector xpath=".//rail:blocks/rail:block/rail:blockPartSequence/rail:blockPartRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <xs:key name="blockKey">
+      <xs:selector xpath=".//rail:blocks/rail:block" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="block-blockPartSequenceKeyref" refer="rail:blockKey">
+      <xs:selector xpath=".//rail:blocks/rail:block/rail:blockPartSequence" />
+      <xs:field xpath="@basicBlockRef" />
+    </xs:keyref>
+    <xs:keyref name="block-circulationKeyref" refer="rail:blockKey">
+      <xs:selector xpath=".//rail:circulations/rail:circulation" />
+      <xs:field xpath="@blockRef" />
+    </xs:keyref>
+    <xs:keyref name="block-circulationNextKeyref" refer="rail:blockKey">
+      <xs:selector xpath=".//rail:circulations/rail:circulation" />
+      <xs:field xpath="@nextBlockRef" />
+    </xs:keyref>
+
+    <!-- annotation identity in timetable subschema -->
+    <xs:key name="annotationKey">
+      <xs:selector xpath=".//rail:annotations/rail:annotation" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- annotation reference in timetable subschema -->
+    <xs:keyref name="annotation-trainPartKeyref" refer="rail:annotationKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart/rail:annotationRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="annotation-stopDescriptionKeyref" refer="rail:annotationKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:stopDescription/rail:annotationRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="annotation-connectionKeyref" refer="rail:annotationKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:connections/rail:connection/rail:annotationRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- announcement identity in timetable subschema -->
+    <xs:key name="announcementKey">
+      <xs:selector xpath=".//rail:announcements/rail:announcement" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- annotation reference in timetable subschema -->
+    <xs:keyref name="announcement-trainPartKeyref" refer="rail:announcementKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart/rail:announcementRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="announcement-stopDescriptionKeyref" refer="rail:announcementKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:stopDescription/rail:announcementRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="line-annotationKeyref" refer="rail:annotationKey">
+      <xs:selector xpath=".//rail:linesTT/rail:lineTT/rail:annotationRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="line-announcementKeyref" refer="rail:announcementKey">
+      <xs:selector xpath=".//rail:linesTT/rail:lineTT/rail:announcementRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:key name="lineTTKey">
+      <xs:selector xpath=".//rail:linesTT/rail:lineTT" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="trainPart-lineKeyref" refer="rail:lineTTKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart" />
+      <xs:field xpath="@lineTTRef" />
+    </xs:keyref>
+    <xs:keyref name="announcement-connectionKeyref" refer="rail:announcementKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:connections/rail:connection/rail:announcementRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+
+  </xs:element>
+
+  <xs:complexType name="eOperatingPeriods">
+    <xs:sequence>
+      <xs:element name="operatingPeriod" type="rail:eOperatingPeriod" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes the operation of a train. This could either be in relation to certain days of a calendar or abstract based on a standard week (or both).</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingPeriod</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eOperatingPeriod">
+    <xs:complexContent>
+      <xs:extension base="rail:tOperatingPeriod">
+        <xs:sequence>
+          <xs:element name="operatingDay" type="rail:eOperatingDay" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Gives a week based abstract description of an operating period for a normal day.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingDay</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="specialService" type="rail:tSpecialService" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Describes a calendar based modification of the operatingPeriod by including or excluding certain days or periods.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:specialService_operatingPeriod</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eOperatingDay">
+    <xs:complexContent>
+      <xs:extension base="rail:tOperatingDay">
+        <xs:sequence>
+          <xs:element name="operatingDayDeviance" type="rail:tOperatingDayDeviance" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Describes the operation modifications of the standard week described in operatingDay.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingDayDeviance</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTimetablePeriods">
+    <xs:sequence>
+      <xs:element name="timetablePeriod" type="rail:eTimetablePeriod" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Defines a timetable period, lasting typically about a year.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:timetablePeriod</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTimetablePeriod">
+    <xs:complexContent>
+      <xs:extension base="rail:tTimetablePeriod">
+        <xs:sequence>
+          <xs:element name="holidays" type="rail:eHolidays" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups holiday elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:holidays</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eHolidays">
+    <xs:sequence>
+      <xs:element name="holiday" type="rail:tHoliday" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>This element is used to specify the public holidays effective in the enclosing timetable period. Operating periods usually refer to such holidays with phrases like "all days, excluding public holidays".</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:holiday</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eDistributions">
+    <xs:annotation>
+      <xs:documentation>Container for one or more distribution elements.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="distribution" type="rail:eDistribution" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Lists how trains are distributed in time.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:distribution</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eDistribution">
+    <xs:annotation>
+      <xs:documentation>Allows listing the number of trains in different time slots, without exact times for the trains.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="referenceOcp" type="rail:tReferenceOcp" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Specifies the OCP for which the times slots are valid.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:referenceOcp</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="slotGroup" type="rail:eSlotGroup" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>One or more slot groups, each containing one or more time slots that belong to a common interval pattern.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:slotGroup</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eSlotGroup">
+    <xs:annotation>
+      <xs:documentation>A group of one or more time slots in a distribution that belong to a common interval pattern.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="slot" type="rail:eSlot" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A time slot belonging to this slot group.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:slot</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eSlot">
+    <xs:annotation>
+      <xs:documentation>A time slot with a number of trains, as part of a distribution.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tSlot">
+        <xs:sequence>
+          <xs:element name="operatingDay" type="rail:eOperatingDay" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>The Element &lt;operatingDay&gt; gives a week based abstract description of an operating period for a normal day. Variations at certain types of days (e.g. public holidays) are dealt with in operatingDayDeviance.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingDay</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eFormationTT">
+    <xs:complexContent>
+      <xs:extension base="rail:tFormationTT">
+        <xs:sequence>
+          <xs:element name="equipmentUsage" type="rail:eEquipmentUsage" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes how the equipment of the rolling stock is used or required by a certain trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:equipmentUsage_formationTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="passengerUsage" type="rail:ePassengerFacilityTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes how the rolling stock is used by the passengers in a certain train.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:passengerUsage</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="reservationInfo" type="rail:eReservationInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Intended for booking information described in its sub elements booking.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:reservationInfo</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eEquipmentUsage">
+    <xs:sequence>
+      <xs:element name="equipment" type="rail:eEquipment" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes the required technical equipment of the train.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:equipment</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eEquipment">
+    <xs:complexContent>
+      <xs:extension base="rail:tEquipment">
+        <xs:sequence>
+          <xs:element name="etcs" type="rail:tEtcsTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes the etcs level used by the train within the timetable.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:etcs</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePassengerFacilityTT">
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Provide an extension point for non-railML elements in foreign namespace.</xs:documentation>
+        </xs:annotation>
+      </xs:any>
+      <xs:element name="places" type="rail:tPlacesTT" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>contains the data related to particular passenger capacity with respect to the various categories of providing space for them</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:places</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="service" type="rail:tService" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Description of any additional service provided per vehicle.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:service</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eReservationInfo">
+    <xs:sequence>
+      <xs:element name="booking" type="rail:tBooking" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Provides a container for detailed booking information related to a specific vehicle.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:booking</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eCategories">
+    <xs:sequence>
+      <xs:element name="category" type="rail:eCategory" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes a "train type" or "train category" freely defined by the operator, e.g. "EC" for "EuroCity".</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:category</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eCategory">
+    <xs:complexContent>
+      <xs:extension base="rail:tCategory" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eLines">
+    <xs:sequence>
+      <xs:element name="lineTT" type="rail:eLineTT" maxOccurs="unbounded">
+        <xs:annotation>
+		  <xs:documentation>The element &lt;lineTT&gt; was introduced to allow providing more information for a line/transport service than its mere name. Before there was only as simple attribute "line" at the level of the train part. This attribute can still be used if no further information is available. If however the name of a trainsport service needs translating or media resources can be provided for passenger information systems, then this element can be used.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:lineTT</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eAnnouncements">
+    <xs:sequence>
+      <xs:element name="announcement" type="rail:eAnnouncement" maxOccurs="unbounded">
+        <xs:annotation>
+		  <xs:documentation>With this element it is possible to define announcements for passenger information systems that are used by the timetable. Several elements of the timetable allow references to announcements to indicate that a particular announcement is to be played when a certain event is triggered (arrival, departure, etc.).</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:announcement</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eAnnotations">
+    <xs:sequence>
+      <xs:element name="annotation" type="rail:eAnnotation" maxOccurs="unbounded">
+        <xs:annotation>
+		  <xs:documentation>The Element &lt;annotation&gt; element contains texts and messages dedicated for a passenger information system. An annotation may also encode images and symbols. Additionally meta-information regarding the annotation may be provided, allowing apart from categorization to distinguish between the different use cases that can be supported by this element.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:annotation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eLineTT">
+    <xs:complexContent>
+      <xs:extension base="rail:tLineTT">
+        <xs:sequence>
+          <xs:element name="mediaResources" type="rail:tMediaResources" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows specifying text and audio fragments intended for passenger information systems when replacing placeholders of special texts or announcements with the actual content fragments.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:mediaResources</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eAnnouncement">
+    <xs:complexContent>
+      <xs:extension base="rail:tAnnouncement">
+        <xs:sequence>
+          <xs:element name="mediaCategories" type="rail:tMediaCategories" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows specification of one or more media categories for this announcement (e.g. Cancellation message, Delay reason, Formation change).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:mediaCategories</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eAnnotation">
+    <xs:complexContent>
+      <xs:extension base="rail:tAnnotation">
+        <xs:sequence>
+          <xs:element name="mediaCategories" type="rail:tMediaCategories" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows specification of one or more media categories for this annotation (e.g. Cancellation message, Delay reason, Formation change).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:mediaCategories</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="text" type="rail:tInfoText" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Contains texts and messages dedicated for a passenger information system.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:text</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tMediaCategories">
+    <xs:sequence>
+      <xs:element name="mediaCategory" type="rail:tAdditionalName" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>With a mediaCategory it is possible to provide metadata for passenger information data.</xs:documentation>
+		  <xs:documentation>See https://wiki2.railml.org/wiki/TT:mediaCategory</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="ePatternTrainParts">
+    <xs:sequence>
+      <xs:element name="patternTrainPart" type="rail:ePatternTrainPart" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>This version of trainPart is used in the creation of train templates for other trains.</xs:documentation>
+          <xs:documentation>A trainPart describes the most basic part of a train. Hence there is no changement of the formation or operating period allowed during a train parts route.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:patternTrainPart</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainPart">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseTrainPart">
+        <xs:sequence>
+          <xs:element name="formationTT" type="rail:tBaseFormationTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes how a formation is used for a patternTrainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:formationTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="ocpsTT" type="rail:ePatternTrainOcps">
+            <xs:annotation>
+              <xs:documentation>Groups ocpTT elements applying for the respective patternTrainPart of a train template.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:ocpsTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="organizationalUnitBinding" type="rail:eOrganizationalUnitBinding" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes what organizational units are responsible for this patternTrainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:organizationalUnitBinding</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="origin" type="rail:tOriginDestinationInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows for specifying information about the origin of the pattern train if it cannot be derived from its path (trains entering the operated area).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:origin</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="destination" type="rail:tOriginDestinationInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows for specifying information about the destination of the pattern train if it cannot be derived from its path (trains leaving the operated area).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:destination</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainParts">
+    <xs:sequence>
+      <xs:element name="trainPart" type="rail:eTrainPart" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainPart</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainPart">
+    <xs:complexContent>
+      <xs:extension base="rail:tTrainPart">
+        <xs:sequence>
+          <xs:element name="formationTT" type="rail:eFormationTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes formation usage for a trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:formationTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="operatingPeriodRef" type="rail:eOperatingPeriodRef" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Reference to the operatingPeriod for the trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingPeriodRef_trainPart</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="ocpsTT" type="rail:eOcpsTT">
+            <xs:annotation>
+              <xs:documentation>Container for ocpTT elements that make up the trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:ocpsTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="organizationalUnitBinding" type="rail:eOrganizationalUnitBinding" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes what organizational units are responsible for this trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:organizationalUnitBinding_trainPart</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="annotationRef" type="rail:tAnnotationRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to id attributes of annotation elements. Used to specify passenger information that applies to the whole trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:annotationRef_trainPart</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="announcementRef" type="rail:tAnnouncementRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to id attributes of announcement elements. Used to specify accoustic passenger information that applies to the whole trainPart.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:announcementRef_trainPart</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="origin" type="rail:eOriginDestinationInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows for specifying information about the origin of the train if it cannot be derived from its path (trains entering the operated area).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:origin</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="destination" type="rail:eOriginDestinationInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows for specifying information about the destination of the train if it cannot be derived from its path (trains leaving the operated area).</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:destination</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>This element has been deprecated, and is only kept for backward compatibility. Please use the first any-element in the the sequence instead.</xs:documentation>
+            </xs:annotation>
+          </xs:any>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+
+  <xs:complexType name="eOperatingPeriodRef">
+    <xs:complexContent>
+      <xs:extension base="rail:tOperatingPeriodRef">
+        <xs:sequence>
+          <xs:element name="specialService" type="rail:tSpecialService" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>DEPRECATED: use reference to individual operating period instead.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:specialService_operatingPeriodRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainOcps">
+    <xs:sequence>
+      <xs:element name="ocpTT" type="rail:ePatternTrainOcp" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes a single point along the pattern train path.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:ocpTT_ocpsTT_patternTrainPart</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainOcp">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseOcpTT">
+        <xs:sequence>
+          <xs:element name="times" type="rail:ePatternTrainArrivalDepartureTimes" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Describes arrival and departure times of a pattern train with their scope.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:times</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="sectionTT" type="rail:eSectionTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes data concerning the way from one ocpTT to the next one in the order of the sequence.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:sectionTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="alternativeSectionsTT" type="rail:eAlternativeSectionsTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes alternative pathes from one ocpTT to its successor in order of the sequence.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:alternativeSectionsTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="stopDescription" type="rail:ePatternTrainStopDescription" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes data concerning the stop (or pass) at the parent pattern train ocpTT.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eOcpsTT">
+    <xs:sequence>
+      <xs:element name="ocpTT" type="rail:eOcpTT" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes a single point along the train path.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:ocpTT</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eOcpTT">
+    <xs:complexContent>
+      <xs:extension base="rail:tOcpTT">
+        <xs:sequence>
+          <xs:element name="times" type="rail:eArrivalDepartureTimes" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Describes arrival and departure times of a train with their scope.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:times</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="connections" type="rail:eConnectionsTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups connection elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:connections</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="statistics" type="rail:eStatistics" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups statistic elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:statistics</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="sectionTT" type="rail:eSectionTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes data concerning the way from one ocpTT to the next one in the order of the sequence.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:sectionTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="alternativeSectionsTT" type="rail:eAlternativeSectionsTT" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes alternative pathes from this ocpTT to the next.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:alternativeSectionsTT</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="stopDescription" type="rail:eStopDescription" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes data concerning the stop (or pass) of the enclosing ocpTT.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="originalTrackInfo" type="rail:eOriginalTrackInfo" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows for definition of station tracks that were supposed to be used by the train at the stop before some dispatching operation that caused a track change.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:originalTrackInfo</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eOriginalTrackInfo">
+    <xs:complexContent>
+      <xs:extension base="rail:tOriginalTrackInfo">
+        <xs:sequence>
+          <xs:element name="trackInfo" type="rail:tStationTrackInfo" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Allows the definition of operating day specific information for station tracks that were supposed to be used before changing them by some dispatching operation..</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trackInfo_originalTrackInfo</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainArrivalDepartureTimes">
+    <xs:complexContent>
+      <xs:extension base="rail:tPatternTrainArrivalDepartureTimes" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eArrivalDepartureTimes">
+    <xs:complexContent>
+      <xs:extension base="rail:tArrivalDepartureTimes" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eConnectionsTT">
+    <xs:sequence>
+      <xs:element name="connection" type="rail:eConnectionTT" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes connections between this train and another one.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:connection</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eConnectionTT">
+    <xs:complexContent>
+      <xs:extension base="rail:tConnectionTT">
+        <xs:sequence>
+          <xs:element name="externalReference" type="rail:eExternalReference" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups elements used to describe a train external to the railML document in order to specify a connection to that train.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:externalReference</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="annotationRef" type="rail:tAnnotationRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to id attributes of annotation elements. Used to specify connection specific passenger information.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:annotationRef_connection</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="announcementRef" type="rail:tAnnouncementRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to id attributes of announcement elements. Used to specify connection specific accoustic passenger information.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:announcementRef_connection</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eExternalReference">
+    <xs:sequence>
+      <xs:element name="tafTapTsiTrainID" type="rail:eTapTsiTransportOperationalIdentifier" minOccurs="0">
+        <xs:annotation>
+		  <xs:documentation>Groups elements used to describe a train external to the railML document in order to specify a connection to that train.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:tafTapTsiTrainID_externalReference</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="trainNumber" minOccurs="0">
+        <xs:annotation>
+		  <xs:documentation>This element is used to identify a train as part of a described connection by its train number. It is expected that the train identified thus is external to the enclosing railML document.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainNumber</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="organizationalUnitBinding" type="rail:eOrganizationalUnitBinding" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/TT:organizationalUnitBinding</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="trainNumber" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>Used to specify the number of the connecting train.</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="lineNumber" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Describes a number or character string assigned to a certain number of train journeys, in the sense of a sequence of stops and journey times for easier identification.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:lineNumber</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="lineNumber" type="xs:string">
+		    <xs:annotation>
+              <xs:documentation>Defines the number of the line.</xs:documentation>
+            </xs:annotation>
+		  </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="information" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:information</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attribute name="description" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>Used to provide the description of the connection - e.g. 'Connection to Berlin via Wolfsburg'</xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eStatistics">
+    <xs:sequence>
+      <xs:element name="statistic" type="rail:eStatistic" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Serves as "container element" for several statistical figures.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:statistic</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eStatistic">
+    <xs:complexContent>
+      <xs:extension base="rail:tStatistic">
+        <xs:sequence>
+          <xs:element name="mean" type="rail:tStatisticTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Provides 'mean' values for actually driven and therefore measured times.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:mean</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="median" type="rail:tStatisticTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Provides 'median' values for actually driven and therefore measured times.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:median</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="standardDeviation" type="rail:tStandardDeviationTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Provides 'standard deviation' values for actually driven and therefore measured times.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:standardDeviation</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="statisticAnalyses" type="rail:tStatisticAnalyses" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Provides a formalized output for the result of an analysed statistic figure.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:statisticAnalyses</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eAlternativeSectionsTT">
+    <xs:sequence>
+      <xs:element name="alternativeSectionTT" type="rail:eAlternativeSectionTT" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allow the specification of alternative ways to reach the next OCP in an microscopic infrastructure model. These can each be annotated with a priority of their use.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:alternativeSectionTT</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eAlternativeSectionTT">
+    <xs:complexContent>
+      <xs:extension base="rail:eSectionTT">
+        <xs:attribute name="priority" type="xs:long">
+          <xs:annotation>
+            <xs:documentation>Specifies an order of multiple alternative sections. A higher priority means that the alternative section is considered later.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eSectionTT">
+    <xs:complexContent>
+      <xs:extension base="rail:tSectionTT">
+        <xs:sequence>
+          <xs:element name="trackRef" type="rail:tTrackRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Referencing the track elements used by the train and described in detail in an infrastructure branch of the railml file.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trackRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="runTimes" type="rail:tRunTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes details about the scheduled run time from the current ocp to the next one ocpTT.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:runTimes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainStopDescription">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseStopDescription">
+        <xs:sequence>
+          <xs:element name="stopTimes" type="rail:tStopTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes the composition of the stopping durations the pattern train spends in a station.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopTimes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="platformEdgeRef" type="rail:tPlatformEdgeRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to the id attribute of the associated platform edge element, redundant if stopPostRef is given.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:platformEdgeRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trackInfo" type="rail:tBaseTrackInfo" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Allows specification of different track and platform designations for one ocpTT of the pattern train run differentiated by operating days without having to create different pattern train(-Part)s.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trackInfo_stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eStopDescription">
+    <xs:complexContent>
+      <xs:extension base="rail:tStopDescription">
+        <xs:sequence>
+          <xs:element name="stopTimes" type="rail:tStopTimes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes the composition of the stopping durations a train spends in a station.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopTimes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="stopActivities" type="rail:eStopActivities" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups stopActivity elements. Activities carried out at stop.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopActivities</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="platformEdgeRef" type="rail:tPlatformEdgeRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to the id attribute of the associated platform edge element; May be redundant if stopPostRef is given.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:platformEdgeRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="serviceSectionRef" type="rail:tServiceSectionRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Is referencing the serviceSection element used by the train and described in detail in an infrastructure branch of the railml file.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:serviceSectionRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trackInfo" type="rail:tStationTrackInfo" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Allows specification of different track and platform designations for one ocpTT of the train run differentiated by operating days without having to create different train(-Part)s.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trackInfo_stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="annotationRef" type="rail:tAnnotationRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to the id attribute of an annotation element.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:annotationRef_stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="announcementRef" type="rail:tAnnouncementRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to the id attribute of an announcement element.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:announcementRef_stopDescription</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eStopActivities">
+    <xs:sequence>
+      <xs:element name="stopActivity" type="rail:tStopActivity" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes the activity carried out at this stop.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:stopActivity</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eOrganizationalUnitBinding">
+    <xs:sequence>
+      <xs:element name="vehicleOperator" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a vehicleOperator within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:vehicleOperator</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="customer" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a customer within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:customer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="railwayUndertaking" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a railwayUndertaking within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:railwayUndertaking</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="operationalUndertaking" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a operationalUndertaking within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:operationalUndertaking</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="concessionaire" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a concessionaire within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:concessionaire</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="contractor" type="rail:tElementWithReference" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allows for referencing a contractor within the metadata.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:contractor</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eOriginDestinationInfo">
+    <xs:complexContent>
+      <xs:extension base="rail:tOriginDestinationInfo">
+        <xs:sequence>
+          <xs:element name="mediaResources" type="rail:tMediaResources" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Allows specifying text and audio fragments to be used by passenger information systems when replacing placeholders of special texts or announcements with the actual content fragments.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:mediaResources</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrains">
+    <xs:sequence>
+      <xs:element name="patternTrain" type="rail:ePatternTrain" maxOccurs="unbounded">
+        <xs:annotation>
+		  <xs:documentation>A pattern train is a template for other trains. It is not itself a train that is supposed to run. A pattern train describes a group of trains that belong to the same service and describes properties of that service as part of a service concept. Such a service is defined as a group of trains that run under a common name with the same stopping pattern and which usually have the same travel time between the common start and end stations.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:patternTrain</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrain">
+    <xs:complexContent>
+      <xs:extension base="rail:tPatternTrain">
+        <xs:sequence>
+          <xs:element name="trainPartSequence" type="rail:ePatternTrainPartSequence" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Groups all patternTrainPart references belonging to a pattern train.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainPartSequence</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTrains">
+    <xs:sequence>
+      <xs:element name="train" type="rail:eTrain" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes a train from different perspectives.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:train</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTrain">
+    <xs:complexContent>
+      <xs:extension base="rail:tTrain">
+        <xs:sequence>
+          <xs:element name="trainPartSequence" type="rail:eTrainPartSequence" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Groups all trainPart references belonging to a train.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainPartSequence</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tafTapTsiTrainID" type="rail:eTapTsiTransportOperationalIdentifier" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Optional information corresponding to the TAF/TAP TSI train ID.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:tafTapTsiTrainID</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="replacements" type="rail:eReplacedTrains" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>A container element for instances of replacementOf. Contains the mapping of train replacements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:replacements</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eReplacedTrains">
+    <xs:sequence>
+      <xs:element name="replacementOf" type="rail:eReplacementOf" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes a relationship between the train described in the XML tree and a train that has been cancelled or partially cancelled.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:replacementOf</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eReplacementOf">
+    <xs:sequence>
+      <xs:element name="operatingPeriodRef" type="rail:tOperatingPeriodRef">
+        <xs:annotation>
+          <xs:documentation>Specifies the operating days of a replacement service.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:operatingPeriodRef_replacementOf</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:choice>
+        <xs:element name="tafTapTsiTrainID" type="rail:eTapTsiTransportOperationalIdentifier">
+          <xs:annotation>
+            <xs:documentation>Specifies a replaced train or train parts. Alternatively, uniqueTrainKey can be used.</xs:documentation>
+            <xs:documentation>See https://wiki2.railml.org/wiki/TT:tafTapTsiTrainID_replacementOf</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="uniqueTrainKey" type="rail:tUniqueTrainKey">
+          <xs:annotation>
+            <xs:documentation>Specifies a replaced train or train parts. Alternatively, tafTapTsiTrainID can be used.</xs:documentation>
+            <xs:documentation>See https://wiki2.railml.org/wiki/TT:uniqueTrainKey</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainPartSequence">
+    <xs:complexContent>
+      <xs:extension base="rail:tTrainPartSequence">
+        <xs:sequence>
+          <xs:element name="trainPartRef" type="rail:tTrainPartRef" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Used for referencing one trainPart belonging with others to the same trainPartSequence.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainPartRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="speedProfileRef" type="rail:tSpeedProfileRef" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>A reference to a speed profile; there could be several speed profiles to be considered.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:speedProfileRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="equipmentUsage" type="rail:eEquipmentUsage" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes how the equipment of the rolling stock is used or required by a certain train.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:equipmentUsage_trainPartSequence</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="brakeUsage" type="rail:eBrakeUsage" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Defines the brake system for the whole train as a "fixed formation".</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:brakeUsage</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="topologyReference" type="rail:tTopologyReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Can be used to refer to the underlying topology, that was used to determine the train running path and calculate the runtimes.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:topologyReference</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePatternTrainPartSequence">
+    <xs:complexContent>
+      <xs:extension base="rail:tBaseTrainPartSequence">
+        <xs:sequence>
+          <xs:element name="patternTrainPartRef" type="rail:tTrainPartRef" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:patternTrainPartRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="topologyReference" type="rail:tTopologyReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Can be used to refer to the underlying topology, that was used to determine the train running path and calculate the runtimes.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:topologyReference</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eBrakeUsage">
+    <xs:complexContent>
+      <xs:extension base="rail:tBasicBrakeType">
+        <xs:sequence>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Provides an extension point for non-railML elements in foreign namespace.</xs:documentation>
+            </xs:annotation>
+          </xs:any>
+        </xs:sequence>
+        <xs:attributeGroup ref="rail:aBrakeUsage" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainGroups">
+    <xs:sequence>
+      <xs:element name="trainGroup" type="rail:eTrainGroup" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Links different individual trains to a group.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainGroup</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainGroup">
+    <xs:complexContent>
+      <xs:extension base="rail:tTrainGroup">
+        <xs:sequence>
+          <xs:element name="trainRef" type="rail:tElementRefInGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Reference to the trains included in a trainGroup; the group members could be ordered by a sequence attribute.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:trainRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="parentRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>Reference to a parent trainGroup, i.e. a group with sub-groups.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eRosterings">
+    <xs:sequence>
+      <xs:element name="rostering" type="rail:eRostering" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Contains all data, which are related to a rostering of a vehicle or a formation of vehicles.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:rostering</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eRostering">
+    <xs:complexContent>
+      <xs:extension base="rail:tRostering">
+        <xs:sequence>
+          <xs:element name="blockParts" type="rail:eBlockParts">
+            <xs:annotation>
+              <xs:documentation>Groups blockPart elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:blockParts</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="blocks" type="rail:eBlocks" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups block elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:blocks</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="circulations" type="rail:eCirculations" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Groups circulation elements.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:circulations</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eBlocks">
+    <xs:sequence>
+      <xs:element name="block" type="rail:eBlock" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Contains all data related to a "vehicle duty" containing a sequence of atomic tasks (blockParts). </xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:block</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eBlock">
+    <xs:complexContent>
+      <xs:extension base="rail:tBlock">
+        <xs:sequence>
+          <xs:element name="blockPartSequence" type="rail:eBlockPartSequence" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Groups the referenced blockParts into a sequence of tasks.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:blockPartSequence</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eBlockPartSequence">
+    <xs:complexContent>
+      <xs:extension base="rail:tBlockPartSequence">
+        <xs:sequence>
+          <xs:element name="blockPartRef" type="rail:tBlockPartRef" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Refers to blockParts for building sequences of tasks.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/TT:blockPartRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eBlockParts">
+    <xs:sequence>
+      <xs:element name="blockPart" type="rail:tBlockPart" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Contains all data, which is related to an atomic particle of a block.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:blockPart</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>DEPRECATED: The blockParts element is only the container for blockPart and shall not be extended.</xs:documentation>
+        </xs:annotation>
+      </xs:any>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eCirculations">
+    <xs:sequence>
+      <xs:element name="circulation" type="rail:tCirculation" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Chains the blocks into a complete rostering.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:circulation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- TAP TSI elements for the unique train ID -->
+  <xs:complexType name="eTapTsiTransportOperationalIdentifier">
+    <xs:complexContent>
+      <xs:extension base="rail:tTapTsiCompositIdentifierOperationalType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+</xs:schema>

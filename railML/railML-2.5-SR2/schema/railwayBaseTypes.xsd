@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema
+  xmlns:rail="https://www.railml.org/schemas/2021"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  targetNamespace="https://www.railml.org/schemas/2021"
+  elementFormDefault="qualified"
+  version="2.5">
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of attribute groups, simple and complex types, used by more than one sub schema</xs:documentation>
+  </xs:annotation>
+  <xs:include schemaLocation="genericRailML.xsd"/>
+  <xs:include schemaLocation="railwayUnits.xsd"/>
+  <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="https://dublincore.org/schemas/xmls/qdc/2008/02/11/dc.xsd">
+    <xs:annotation>
+      <xs:documentation>Portions of this software may use XML schemas Copyright (c) 2009 DCMI, the Dublin Core Metadata Initiative. These are licensed under the Creative Commons 3.0 Attribution license.</xs:documentation>
+      <xs:documentation>For further information see: https://dublincore.org/ License link: https://creativecommons.org/licenses/by/3.0/</xs:documentation>
+    </xs:annotation>
+  </xs:import>
+  <xs:complexType name="tTimeSpan">
+    <xs:annotation>
+      <xs:documentation>generic type for time spans/periods in required context</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="from" type="xs:time" use="required">
+      <xs:annotation>
+        <xs:documentation>The start time for the given mode. When referring to midnight at the beginning of the day, please use "00:00:00".</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="until" type="xs:time" use="required">
+      <xs:annotation>
+        <xs:documentation>The end time for the given mode. The value "00:00:00" shall be interpreted as midnight at the end of the day.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:attributeGroup name="aPeriodTimeSpan">
+    <xs:annotation>
+      <xs:documentation>generic type for time spans/periods in optional context</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="startTime" type="xs:time"/>
+    <xs:attribute name="endTime" type="xs:time"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aExactTimeSpan">
+    <xs:annotation>
+      <xs:documentation>generic type for exact time spans/periods in various context</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="startDateTime" type="xs:dateTime"/>
+    <xs:attribute name="endDateTime" type="xs:dateTime"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aTimePeriod">
+    <xs:annotation>
+      <xs:documentation>generic type for time spans/periods regarding its dates</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="startDate" type="xs:date"/>
+    <xs:attribute name="endDate" type="xs:date"/>
+  </xs:attributeGroup>
+  <xs:simpleType name="tTimeZone">
+    <xs:annotation>
+      <xs:documentation>timezone as defined in the tz database, e.g. "America/New_York"</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:complexType name="tBasicBrakeType">
+    <xs:annotation>
+      <xs:documentation>settings and characteristic of a particular brake type or brake application position</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrake</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="auxiliaryBrakes" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>provides access to the list of possible auxiliary brake systems</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:auxiliaryBrakes_vehicleBrake and https://wiki2.railml.org/wiki/RS:auxiliaryBrakes_trainBrakes</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/TT:auxiliaryBrakes</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:attributeGroup ref="rail:aAuxiliaryBrakes"/>
+          <xs:attributeGroup ref="rail:anyAttribute"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="rail:aBasicBrakeAttributes"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aMinBasicBrakeAttributes">
+    <xs:attribute name="brakeType" type="rail:tBrakeType" use="required">
+      <xs:annotation>
+        <xs:documentation>vacuum or compressed air brake, hand brake, parking brake, cable brake</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="airBrakeApplicationPosition" type="rail:tAirBrakeApplicationPosition">
+      <xs:annotation>
+        <xs:documentation>base brake switch, one of G, P or R</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="aBasicBrakeAttributes">
+    <xs:attributeGroup ref="rail:aMinBasicBrakeAttributes"/>
+    <xs:attribute name="regularBrakeMass" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>brake mass for normal brake operations of none-automatic brakes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="regularBrakePercentage" type="rail:tBrakePercentage">
+      <xs:annotation>
+        <xs:documentation>brake percentage related to brake mass for normal brake operations of none-automatic brakes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emergencyBrakeMass" type="rail:tWeightTons">
+      <xs:annotation>
+        <xs:documentation>brake mass for emergency brake operations, differs from regular brake mass depending on auxiliary brakes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emergencyBrakePercentage" type="rail:tBrakePercentage">
+      <xs:annotation>
+        <xs:documentation>brake percentage related to brake mass for emergency brake operations, differs from regular brake percentage depending on auxiliary brakes</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxDeceleration" type="rail:tAccelerationMeterPerSquareSec">
+      <xs:annotation>
+        <xs:documentation>alternative specification of maximum possible momentary deceleration</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="meanDeceleration" type="rail:tAccelerationMeterPerSquareSec">
+      <xs:annotation>
+        <xs:documentation>alternative specification of effective mean deceleration of a whole brake operation</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tBrakeType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none"/>
+          <xs:enumeration value="compressedAir">
+            <xs:annotation>
+              <xs:documentation>de: Druckluftbremse</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="vacuum">
+            <xs:annotation>
+              <xs:documentation>de: Saugluftbremse</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="handBrake"/>
+          <xs:enumeration value="parkingBrake"/>
+          <xs:enumeration value="cableBrake">
+            <xs:annotation>
+              <xs:documentation>de: Seilzugbremse</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tAirBrakeApplicationPosition">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="N/A"/>
+      <xs:enumeration value="G">
+        <xs:annotation>
+          <xs:documentation>Goods</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="P">
+        <xs:annotation>
+          <xs:documentation>Passenger</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="R">
+        <xs:annotation>
+          <xs:documentation>Rapid</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tBrakePercentage">
+    <xs:annotation>
+      <xs:documentation>Brake percentage as value of braking performance in relation to vehicle weight</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:long">
+      <xs:maxInclusive value="225"/>
+      <xs:minInclusive value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="aAuxiliaryBrakes">
+    <xs:annotation>
+      <xs:documentation>de: Zusatz-/Hilfsbremsen</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="brakeUse" type="rail:tBrakeUse"/>
+    <xs:attribute name="H" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>de: hydro-dynamisch</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="E" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>de: elektro-motorisch</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Mg" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>de: Magnetschienenbremse</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Wb" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>de: Wirbelstrombremse</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ep" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>de: elektro-pneumatisch</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tBrakeUse">
+    <xs:annotation>
+      <xs:documentation>planned/calculated usage of specified brakes</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="unknown"/>
+      <xs:enumeration value="normal"/>
+      <xs:enumeration value="emergency"/>
+      <xs:enumeration value="both"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tTrainProtectionMedium">
+    <xs:annotation>
+      <xs:documentation>classification of a train protection system by physical medium</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none"/>
+      <xs:enumeration value="mechanical"/>
+      <xs:enumeration value="electric"/>
+      <xs:enumeration value="inductive"/>
+      <xs:enumeration value="magnetic"/>
+      <xs:enumeration value="optical"/>
+      <xs:enumeration value="radio"/>
+      <xs:enumeration value="rail"/>
+      <xs:enumeration value="cable"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tTrainProtectionMonitoring">
+    <xs:annotation>
+      <xs:documentation>classification of a train protection system by coverage</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none"/>
+      <xs:enumeration value="intermittent"/>
+      <xs:enumeration value="continuous"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tInterlockingTypes">
+    <xs:annotation>
+      <xs:documentation>classification of an interlocking system by kind of implementation</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none"/>
+      <xs:enumeration value="mechanical"/>
+      <xs:enumeration value="electro-mechanical"/>
+      <xs:enumeration value="electrical">
+        <xs:annotation>
+          <xs:documentation>de: Gleisbildstellwerk, Spurplanstellwerk ...</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="electronical">
+        <xs:annotation>
+          <xs:documentation>de: ESTW</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tPassengersPerSecond">
+    <xs:annotation>
+      <xs:documentation>number of passengers per second used for flow description</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3"/>
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ePassengerFacility">
+    <xs:sequence>
+      <xs:element name="places" type="rail:tPlaces" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>list of place capacity of the vehicle divided by particular categories</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:places</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="service" type="rail:tService" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>description of any additional service provided per vehicle</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:service_passenger</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tPlaces">
+    <xs:annotation>
+      <xs:documentation>description of any places of the passenger car(part)</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:places</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aPlaces"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aPlaces">
+    <xs:attribute name="category" type="rail:tPlaceCategory" use="required"/>
+    <xs:attribute name="tapTsiType9039Code">
+      <xs:annotation>
+        <xs:documentation>Facility code from the TAP TSI code list B.4.9039 "Code list for the facility type description"</xs:documentation>
+        <xs:documentation>The code list is maintained by ERA and can be found in the Directory of Passenger Code Lists for the ERA Technical Documents used in TAP TSI, which can be downloaded from https://www.era.europa.eu/content/tap .</xs:documentation>
+        <xs:documentation>See https://www.era.europa.eu/activities/technical-specifications-interoperability_en#meeting10</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="rail:tDigitString">
+          <xs:maxLength value="3"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="count" type="rail:tCounter" use="required">
+      <xs:annotation>
+        <xs:documentation>count="0" means: there is no place of this category</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="rail:tElementDescription"/>
+  </xs:attributeGroup>
+  <xs:simpleType name="tPlaceCategory">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="class1"/>
+          <xs:enumeration value="class2"/>
+          <xs:enumeration value="class3"/>
+          <xs:enumeration value="standing"/>
+          <xs:enumeration value="standingArea"/>
+          <xs:enumeration value="wheelchair"/>
+          <xs:enumeration value="bicycle"/>
+          <xs:enumeration value="couchette"/>
+          <xs:enumeration value="bed"/>
+          <xs:enumeration value="chair"/>
+          <xs:enumeration value="bistro"/>
+          <xs:enumeration value="restaurant"/>
+          <xs:enumeration value="foldingSeat"/>
+          <xs:enumeration value="impairedToilet"/>
+          <xs:enumeration value="toilet"/>
+          <xs:enumeration value="business"/>
+          <xs:enumeration value="businessCompartment"/>
+          <xs:enumeration value="family"/>
+          <xs:enumeration value="familyCompartment"/>
+          <xs:enumeration value="stroller"/>
+          <xs:enumeration value="toddler"/>
+          <xs:enumeration value="toddlerCompartment"/>
+          <xs:enumeration value="sleepingCompartment"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tService">
+    <xs:annotation>
+      <xs:documentation>description of any service provided by the passenger car(part)</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:service_passenger</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aService"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aService">
+    <xs:attribute name="name" type="rail:tGenericName"/>
+    <xs:attribute name="tapTsiType7161Code">
+      <xs:annotation>
+        <xs:documentation>Service code from the TAP TSI code list B.4.7161 "Code list for the special services"</xs:documentation>
+        <xs:documentation>The code list is maintained by ERA and can be found in the Directory of Passenger Code Lists for the ERA Technical Documents used in TAP TSI, which can be downloaded from https://www.era.europa.eu/content/tap .</xs:documentation>
+        <xs:documentation>See https://www.era.europa.eu/activities/technical-specifications-interoperability_en#meeting10</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="rail:tDigitString">
+          <xs:maxLength value="3"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="count" type="rail:tCounter">
+      <xs:annotation>
+        <xs:documentation>count="0" means: there is not such a service</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="rail:tElementDescription"/>
+    <xs:attribute name="value" type="xs:decimal">
+      <xs:annotation>
+        <xs:documentation>generic decimal value for additional information of the service, meaning should be clarified by its "description"</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="rail:tServiceType"/>
+    <xs:attributeGroup ref="rail:anyAttribute"/>
+  </xs:attributeGroup>
+  <xs:simpleType name="tServiceType">
+    <xs:annotation>
+      <xs:documentation>list of common service types</xs:documentation>
+    </xs:annotation>
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="mobileCatering"/>
+          <xs:enumeration value="WLAN"/>
+          <xs:enumeration value="wheelchairLift"/>
+          <xs:enumeration value="toiletClosed"/>
+          <xs:enumeration value="toiletOpen"/>
+          <xs:enumeration value="toiletHc"/>
+          <xs:enumeration value="Snack"/>
+          <xs:enumeration value="SelfService"/>
+          <xs:enumeration value="PIS"/>
+          <xs:enumeration value="HVAC"/>
+          <xs:enumeration value="APC"/>
+          <xs:enumeration value="SecurityCamera"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:simpleType name="tLineClassificationType">
+    <xs:annotation>
+      <xs:documentation>according EN 15528 (other national values also possible)</xs:documentation>
+    </xs:annotation>
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="A">
+            <xs:annotation>
+              <xs:documentation>axle load: 16.0 t, meter load: 5.0 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="B1">
+            <xs:annotation>
+              <xs:documentation>axle load: 18.0 t, meter load: 5.0 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="B2">
+            <xs:annotation>
+              <xs:documentation>axle load: 18.0 t, meter load: 6.4 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="C2">
+            <xs:annotation>
+              <xs:documentation>axle load: 20.0 t, meter load: 6.4 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="C3">
+            <xs:annotation>
+              <xs:documentation>axle load: 20.0 t, meter load: 7.2 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="C4">
+            <xs:annotation>
+              <xs:documentation>axle load: 20.0 t, meter load: 8.0 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="D2">
+            <xs:annotation>
+              <xs:documentation>axle load: 22.5 t, meter load: 6.4 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="D3">
+            <xs:annotation>
+              <xs:documentation>axle load: 22.5 t, meter load: 7.2 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="D4">
+            <xs:annotation>
+              <xs:documentation>axle load: 22.5 t, meter load: 8.0 t/m</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="D4xL">
+            <xs:annotation>
+              <xs:documentation>only valid for locomotives</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="E4">
+            <xs:annotation>
+              <xs:documentation>axle load: 25.0 t, meter load: 8.0 t/m</xs:documentation>
+              <xs:documentation>only valid for freight cars</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="E5">
+            <xs:annotation>
+              <xs:documentation>axle load: 25.0 t, meter load: 8.8 t/m</xs:documentation>
+              <xs:documentation>only valid for freight cars</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tClearanceGaugeType">
+    <xs:annotation>
+      <xs:documentation>data about all compatible clearance gauges of the vehicle</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aClearanceGauge"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aClearanceGauge">
+    <xs:attribute name="code" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>code name of the train clearance gauge</xs:documentation>
+        <xs:documentation>use value from the separate code definition file 'TrainClearanceGauges.xml'/trainClearanceGauge</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:complexType name="tTilting">
+    <xs:annotation>
+      <xs:documentation>data for tilting mechanism of passenger cars</xs:documentation>
+    </xs:annotation>
+    <xs:attributeGroup ref="rail:aTilting"/>
+  </xs:complexType>
+  <xs:attributeGroup name="aTilting">
+    <xs:attribute name="maxTiltingAngle" type="rail:tAngleDegQuadrant">
+      <xs:annotation>
+        <xs:documentation>maximum tilting angle in degrees</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="actuation" type="rail:tTiltingActuationType">
+      <xs:annotation>
+        <xs:documentation>way of actuating the car body tilting (active/passive)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="tiltingSpeed" type="rail:tSpeedDegreesPerSecond">
+      <xs:annotation>
+        <xs:documentation>speed of changing the tilting angle in degrees per second</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tTiltingActuationType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none"/>
+      <xs:enumeration value="active"/>
+      <xs:enumeration value="passive"/>
+      <xs:enumeration value="rollCompensation"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:attributeGroup name="aETCS">
+    <xs:attribute name="srsVersion" type="rail:tVersionNumber">
+      <xs:annotation>
+        <xs:documentation>Version of ETCS language (SRS edition) installed</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="level_0" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>on-board unit supports level 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="level_1" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>on-board unit supports level 1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="level_2" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>on-board unit supports level 2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="level_3" type="xs:boolean">
+      <xs:annotation>
+        <xs:documentation>on-board unit supports level 3</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="tHexString">
+    <xs:annotation>
+      <xs:documentation>an arbitrary string consisting of hex digits from 0 to 9, a to f; not allowing white space, letters; no length restriction</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9a-fA-F]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tUsageType">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="passenger"/>
+          <xs:enumeration value="goods"/>
+          <xs:enumeration value="mixed"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tDesignator">
+    <xs:attribute name="register" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>name of the register, e.g. registers for OCPs: IBNR, DB640, RL100 or DIDOK</xs:documentation>
+        <xs:documentation>choose a value from the railML codelist Registers.xml or name your own register starting with an underscore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="entry" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>an entity's code in the specified register</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:aTimePeriod">
+      <xs:annotation>
+        <xs:documentation>the time period when the register is valid</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+    <xs:attributeGroup ref="rail:anyAttribute">
+      <xs:annotation>
+        <xs:documentation>provide an extension point for non-railML attributes in foreign namespace</xs:documentation>
+      </xs:annotation>
+    </xs:attributeGroup>
+  </xs:complexType>
+  <xs:complexType name="tMetadata">
+    <xs:complexContent>
+      <xs:extension base="dc:elementContainer">
+        <xs:annotation>
+          <xs:documentation>flexible collection of Dublin Core metadata based on xs:any according to https://dublincore.org/</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="organizationalUnits" type="rail:tOrganizationalUnits" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container element for various company definitions regarding the railway service of this file</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:organizationalUnits</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="projects" type="rail:tProjects" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container element for project desriptions</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:projects</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOrganizationalUnits">
+    <xs:sequence>
+      <xs:element name="infrastructureManager" type="rail:tInfrastructureManager" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows defining infrastructure managers (de: Infrastrukturbetreiber) to be referenced throughout the document. Via the attribute code it can be linked with the infrastructure manager codelist (infrastructureManagers.xml) that is published by railML.org and contains many international IMs.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:infrastructureManager</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="vehicleManufacturer" type="rail:tVehicleManufacturer" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows defining a vehicle manufacturer (de: Fahrzeughersteller) as an organizational unit to be referenced throughout the document.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:vehicleManufacturer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="vehicleOwner" type="rail:tVehicleOwner" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying vehicle owners as organizational units to be referenced throughout the document. A vehicle owner is an organisation that has the purpose of making railway vehicles available for railway undertakings</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:vehicleOwner</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="vehicleOperator" type="rail:tVehicleOperator" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying vehicle operators as organizational units to be referenced throughout the document. A vehicle operator is usually considered to be some kind of subcontractor (railway undertaking) that operates the vehicle, if different from the one that is responsible for the commercial service.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:vehicleOperator</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="customer" type="rail:tCustomer" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying a customer as organizational unit to be referenced throughout the document. A customer is understood as the authority or enterprise that ordered the transportation service, i.e., an integrated transit system.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:customer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="railwayUndertaking" type="rail:tRailwayUndertaking" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying railway undertakings as organizational units that may be referenced throughout the document. The undertaking that is commercially responsible for the planned service. </xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:railwayUndertaking</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="operationalUndertaking" type="rail:tOperationalUndertaking" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying an operational undertaking as an organizational unit to be referenced throughout the document. The operational undertaking is an entity the is responsible for operating a planned service on behalf of a railway undertaking.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:operationalUndertaking</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="concessionaire" type="rail:tConcessionaire" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows specifying a concessionaire (de: Konzessionsinhaber) as an organizational unti to be referenced thoughout the document.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:concessionaire</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="contractor" type="rail:tContractor" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Any unit or undertaking that has a binding not defined in a neighbouring element</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:contractor</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tOrganizationalUnit">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:annotation>
+          <xs:documentation>Base type for child elements of organizationalUnits</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="designator" type="rail:tDesignator" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:designator</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tInfrastructureManager">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit">
+        <xs:annotation>
+          <xs:documentation>use the separated infrastructureManagerCode list for the 'code' attribute</xs:documentation>
+        </xs:annotation>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tVehicleManufacturer">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tVehicleOwner">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tVehicleOperator">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tCustomer">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tRailwayUndertaking">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tOperationalUndertaking">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tConcessionaire">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tContractor">
+    <xs:complexContent>
+      <xs:extension base="rail:tOrganizationalUnit">
+        <xs:attribute name="role" type="rail:tGenericName">
+          <xs:annotation>
+            <xs:documentation>characterizes the kind of work that has to be fulfilled with the contract, e.g. catering, cleaning</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="subLevel" type="rail:tCounter">
+          <xs:annotation>
+            <xs:documentation>the level of sub-contract, if appropriate, starting with zero for direct contracts</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tProjects">
+    <xs:sequence>
+      <xs:element name="project" type="rail:tProject" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Describes one or more projects this railML model belongs to.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:project</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tProject">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="designator" type="rail:tDesignator" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>External identifier of the project.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:designator</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="alternative" type="rail:tElementWithIDAndName" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>If a project has multiple alternative solutions, this elements is used to specify which alternative is presented in this railML file.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:alternative</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="phase" type="rail:tPhase" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes which phase of the project this file represents.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:phase</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="revision" type="rail:tRevision" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Describes changes from a previous revision and the authors and auditors of these changes.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:revision</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="projectArea" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>Reference to a project area.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:projectArea</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tPhase">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attributeGroup ref="rail:aTimePeriod">
+          <xs:annotation>
+            <xs:documentation>The start and end date for this phase.</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tRevision">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="objectsRevised" type="rail:tObjectsRevised" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>Container for references to objects changed in this revision.</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:objectsRevised</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="revisedBy" type="rail:tDoneBy" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>The author(s) of this revision</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:revisedBy</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="checkedBy" type="rail:tDoneBy" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>The peer-reviewer(s) of this revision</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:checkedBy</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="approvedBy" type="rail:tDoneBy" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>The person(s) who approved this revision</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/CO:approvedBy</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="initialProjectRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>Reference to a project element describing the previous revision. This may be the same project with another alternative or revision, or another project that was the base for this one.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tObjectsRevised">
+    <xs:sequence>
+      <xs:element name="objectRevised" type="rail:tElementWithReference" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Reference to an object that was changed in this revision.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/CO:objectRevised</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tDoneBy">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:attribute name="date" type="xs:date">
+          <xs:annotation>
+            <xs:documentation>The date of a revision</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:simpleType name="tInfrastructureStatus">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="conceptual">
+            <xs:annotation>
+              <xs:documentation>The construction or commissioning of the element is planned for the medium or long term. However, there are still no concrete (planning) activities for the construction of the element beyond the preliminary planning and cost estimation.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="planned">
+            <xs:annotation>
+              <xs:documentation>The construction or commissioning of the element is planned concretely and at short notice or concrete planning activities for the construction take place, e.g. design, approval or implementation planning, cost calculation, award of contracts. It is not normally possible to use the element.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="operational">
+            <xs:annotation>
+              <xs:documentation>The element is operational and can be used regularly.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="disabled">
+            <xs:annotation>
+              <xs:documentation>The element is currently not usable, switched off or deactivated and therefore cannot be used regularly. However, it can be put back into operation at short notice without further construction, acceptance or approval activities.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="closed">
+            <xs:annotation>
+              <xs:documentation>The element is no longer available, removed, dismantled, or no longer exists. Planning, construction or commissioning activities are absolutely necessary for recommissioning.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="unknown">
+            <xs:annotation>
+              <xs:documentation>The state of this infrastructure element is explicitly unknown.</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue"/>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+  <xs:complexType name="tStates">
+    <xs:sequence>
+      <xs:element name="state" type="rail:tState" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>This is to define disabled/enabled objects with a given time frame.</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/IS:state</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:state</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="tState">
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithID">
+        <xs:sequence>
+          <xs:element name="designator" type="rail:tDesignator" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:designator</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>provide an extension point for non-railML elements in foreign namespace</xs:documentation>
+            </xs:annotation>
+          </xs:any>
+        </xs:sequence>
+        <xs:attribute name="disabled" type="xs:boolean" use="required">
+          <xs:annotation>
+            <xs:documentation>This attribute is 'true' if the object is somehow disabled.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="status" type="rail:tInfrastructureStatus">
+          <xs:annotation>
+            <xs:documentation>defines the status of the object from perspective of its availability</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="operatingPeriodRef" type="rail:tGenericRef">
+          <xs:annotation>
+            <xs:documentation>The temporal frame of the 'state' should be defined in the 'timetable' part of the railML file, using the 'operatingPeriod' element.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:aPeriodTimeSpan">
+          <xs:annotation>
+            <xs:documentation>Start and/or end time of this state if linked with an operating period.</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+        <xs:attributeGroup ref="rail:aExactTimeSpan">
+          <xs:annotation>
+            <xs:documentation>start and/or end time of this state if not linked with an operating period.</xs:documentation>
+          </xs:annotation>
+        </xs:attributeGroup>
+        <xs:attribute name="endDayOffset" type="xs:unsignedLong">
+          <xs:annotation>
+            <xs:documentation>The number of midnight overruns over which this state persists, when linked with an operating period.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="remarks" type="rail:tElementDescription">
+          <xs:annotation>
+            <xs:documentation>This is to further explain the 'state' definition.</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:anyAttribute"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

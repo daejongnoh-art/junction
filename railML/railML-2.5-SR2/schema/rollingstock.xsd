@@ -1,0 +1,927 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of elements (partially hidden as complex type) for rollingstock sub schema (RS), uses rollingstock types and attribute groups from "xs:include" path</xs:documentation>
+  </xs:annotation>
+
+  <xs:include schemaLocation="rollingstockTypes.xsd" />
+
+  <xs:element name="rollingstock">
+    <xs:annotation>
+      <xs:documentation>container for rolling stock data of single vehicles and train formations</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:rollingstock</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="rail:tRollingstock">
+          <xs:sequence>
+            <xs:element name="vehicles" type="rail:eVehicles" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>container for single vehicle data or vehicle family data</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicles</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="formations" type="rail:eFormations" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>container for complete train formations or sets of vehicles</xs:documentation>
+                <xs:documentation>See https://wiki2.railml.org/wiki/RS:formations</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+
+    <xs:key name="etcsKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:monitoring/rail:etcs" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <xs:key name="specificTransmissionModuleKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:monitoring/rail:etcs/rail:specificTransmissionModule" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <xs:key name="nationalSystemKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:monitoring/rail:nationalSystem" />
+      <xs:field xpath="@id" />
+    </xs:key>
+    <xs:keyref name="nationalSystem-specificTransmissionModuleKeyref" refer="rail:nationalSystemKey">
+      <xs:selector xpath=".//rail:etcs/rail:specificTransmissionModule" />
+      <xs:field xpath="@nationalSystemRef" />
+    </xs:keyref>
+
+    <xs:key name="trainRadioKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:monitoring/rail:trainRadio" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <xs:key name="otherEquipmentKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:monitoring/rail:otherEquipment" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <xs:key name="energyStorageKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:energyStorage" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <xs:key name="propulsionKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle/rail:engine/rail:propulsion" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+  </xs:element>
+
+  <xs:complexType name="eVehicles">
+    <xs:sequence>
+      <xs:element name="vehicle" type="rail:eVehicle" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>data related to single vehicle or vehicle family</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicle</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eVehicle">
+    <xs:complexContent>
+      <xs:extension base="rail:tVehicle">
+        <xs:sequence>
+          <xs:element name="classification" type="rail:eClassification" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>general management and classification data of vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:classification</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="engine" type="rail:eEngine" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>engine data about a motor car or locomotive</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:engine</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="wagon" type="rail:eWagon" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical and payload data about a (motor) car or locomotive</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:wagon</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="vehicleBrakes" type="rail:eVehicleBrakes" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data about brake systems independent from propulsion</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrakes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="loadLimitMatrix" type="rail:eLoadLimitMatrix" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>matrix of permissible speed, line classification and payload</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:loadLimitMatrix</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="curvingLimitation" type="rail:eCurvingLimitation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>list of permissible curve radius in horizontal and vertical direction</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:curvingLimitation</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="maintenanceIntervals" type="rail:eMaintenanceIntervals" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:maintenanceIntervals</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eClassification">
+    <xs:sequence>
+      <xs:element name="manufacturer" type="rail:tManufacturer" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>manufacturer data related to the vehicle</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:manufacturer</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="owner" type="rail:tOwnerRS" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>owner specific vehicle data</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:owner</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="operator" type="rail:eOperator" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>general operator specific vehicle data</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:operator</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eOperator">
+    <xs:complexContent>
+      <xs:extension base="rail:tOperator">
+        <xs:sequence>
+          <xs:element name="vehicleIdentification" type="rail:tVehicleIdentification" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>vehicle identification as described by EU paper DV51EN01 annex P or UIC 438</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleIdentification</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eEngine">
+    <xs:annotation>
+      <xs:documentation>engine data about a motor car or locomotive, may be used in conjunction with 'wagon'</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:engine</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tEngine">
+        <xs:sequence>
+          <xs:element name="propulsion" type="rail:ePropulsion" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>technical data about the propulsion system of a vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:propulsion</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="pantograph" type="rail:ePantograph" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>technical data about the installed pantographs of a vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:pantograph</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="energyStorage" type="rail:eStorage" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>technical data about the installed energy storage devices of a vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:energyStorage</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="monitoring" type="rail:eMonitoring" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>types of signalling systems fitted to the vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:monitoring</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePantograph">
+    <xs:annotation>
+      <xs:documentation>technical data about the installed pantographs of a vehicle</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:pantograph</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tPantograph">
+        <xs:sequence>
+          <xs:element name="dedicatedSupplySystem" type="rail:tElectrificationSystem" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>technical data of the supply system the pantograph is used for</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:dedicatedSupplySystem_pantograph</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eStorage">
+    <xs:complexContent>
+      <xs:extension base="rail:tStorage">
+        <xs:sequence>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>detailed efficiency of energy storage device</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_energyStorage</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePropulsion">
+    <xs:annotation>
+      <xs:documentation>technical data about the propulsion system of a vehicle</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:propulsion</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tPropulsion">
+        <xs:sequence>
+          <xs:element name="transformer" type="rail:eTransformer" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of main transformer</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:transformer</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="fourQuadrantChopper" type="rail:eFourQuadrantChopper" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of inverter between OHL/transformer and link circuit</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:fourQuadrantChopper</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="link" type="rail:tLink" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>nominal values of link circuit between input inverter and motor inverter</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:link</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractionInverter" type="rail:eTractionInverter" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of inverter between link circuit and motors</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractionInverter</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractionMotor" type="rail:eTractionMotor" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of traction motor</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractionMotor</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="diesel" type="rail:tDieselEngine" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of diesel engine</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:diesel</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="gear" type="rail:eGear" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>technical data of transmission system between motor and wheel</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:gear</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="auxiliarySupply" type="rail:eAuxiliarySupply" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>technical data of auxiliary systems (supply and consumption)</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:auxiliarySupply</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractiveEffort" type="rail:tEffortCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>mechanical tractive effort at wheel vs. speed by propulsion system</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractiveEffort</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="brakeEffort" type="rail:tEffortCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>mechanical brake effort at wheel vs. speed by propulsion system</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:brakeEffort</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractiveCurrent" type="rail:tCurrentCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>net current of the entire propulsion system as curve vs. speed for traction mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractiveCurrent</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="brakeCurrent" type="rail:tCurrentCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>net current of the entire propulsion system as curve vs. speed for braking mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:brakeCurrent</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractiveCurrentLimitation" type="rail:tCurrentLimitation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>limitation curve of net current of the entire propulsion system vs. net voltage for traction mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractiveCurrentLimitation</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="brakeCurrentLimitation" type="rail:tCurrentLimitation" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>limitation curve of net current of the entire propulsion system vs. net voltage for braking mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:brakeCurrentLimitation</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tractiveVehicleEfficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>efficiency of the entire propulsion system as curve vs. speed or effort for traction mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tractiveVehicleEfficiency</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="brakeVehicleEfficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>efficiency of the entire propulsion system as curve vs. speed or effort for braking mode</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:brakeVehicleEfficiency</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="rackTraction" type="rail:tRackTractionType" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data about rack traction equipment of the vehicle used for propulsion</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:rackTraction_propulsion</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTransformer">
+    <xs:complexContent>
+      <xs:extension base="rail:tTransformer">
+        <xs:sequence>
+          <xs:element name="winding" type="rail:tWinding" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>nominal values of each transformer winding</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:winding</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>transformer efficiency vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_transformer</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eFourQuadrantChopper">
+    <xs:complexContent>
+      <xs:extension base="rail:tFourQuadrantChopper">
+        <xs:sequence>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>four-quadrant-chopper efficiency vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_fourQuadrantChopper</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="phi" type="rail:tCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>phase angle of the real power to the apparent power as curve for the entire propulsion system</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:phi</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTractionInverter">
+    <xs:complexContent>
+      <xs:extension base="rail:tTractionInverter">
+        <xs:sequence>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>traction inverter efficiency vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_tractionInverter</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="pulsePattern" type="rail:ePulsePattern" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>pulse pattern of the traction inverter</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:pulsePattern</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePulsePattern">
+    <xs:sequence>
+      <xs:element name="valueTable">
+        <xs:annotation>
+          <xs:documentation>table of values vs. arbitrary variable</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:valueTable_pulsePattern</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="rail:tValueTable" />
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eTractionMotor">
+    <xs:complexContent>
+      <xs:extension base="rail:tTractionMotor">
+        <xs:sequence>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>traction motor efficiency vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_tractionMotor</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="mechanicalLosses" type="rail:tLosses" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>traction motor mechanical losses vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:mechanicalLosses</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eGear">
+    <xs:complexContent>
+      <xs:extension base="rail:tGear">
+        <xs:sequence>
+          <xs:element name="efficiency" type="rail:tEfficiencyCurve" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>transmission efficiency vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:efficiency_gear</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eAuxiliarySupply">
+    <xs:complexContent>
+      <xs:extension base="rail:tAuxiliarySupply">
+        <xs:sequence>
+          <xs:element name="dedicatedSupplySystem" type="rail:tAuxiliarySupplySystem" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>list of available supply systems for auxiliaries</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:dedicatedSupplySystem_auxiliarySupply</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eMonitoring">
+    <xs:complexContent>
+      <xs:extension base="rail:tMonitoring">
+        <xs:sequence>
+          <xs:element name="etcs" type="rail:eETCS" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>capabilities with respect to European Train Control System</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:etcs</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="nationalSystem" type="rail:tNationalSystem" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>list of installed national train protection/control systems</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:nationalSystem</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainRadio" type="rail:eTrainRadio" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>list of installed train radio systems for communication</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainRadio</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="otherEquipment" type="rail:tOtherEquipment" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>list of other (non-safety) installed train equipment</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:otherEquipment</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eETCS">
+    <xs:annotation>
+      <xs:documentation>data about installed ETCS system</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:etcs</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tETCS">
+        <xs:sequence>
+          <xs:element name="specificTransmissionModule" type="rail:tSpecificTransmissionModule" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data for special transmission modules of ETCS equipment</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:specificTransmissionModule</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainRadio">
+    <xs:annotation>
+      <xs:documentation>train radio</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainRadio</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tTrainRadio">
+        <xs:sequence>
+          <xs:element name="radioSystem" type="rail:tRadioSystem" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>list of available radio systems for communication like 'GSM-R'</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:radioSystem</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eWagon">
+    <xs:annotation>
+      <xs:documentation>data about the car body of a vehicle and its payload</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:wagon</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tWagon">
+        <xs:sequence>
+          <xs:element name="passenger" type="rail:ePassenger" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data for passenger cars</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:passenger</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="goods" type="rail:eGoods" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data for freight cars</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:goods</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="auxiliarySupplySystem" type="rail:tElectrificationSystem" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>installed supply systems for auxiliaries in the vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:auxiliarySupplySystem</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="driversCab" type="rail:tDriversCabType" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>data about each drivers cab of the vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:driversCab</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="rackTraction" type="rail:tRackTractionType" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data about rack traction equipment of the vehicle used for braking only</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:rackTraction_wagon</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="couplers" type="rail:eCouplers" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data for couplers between wagons</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:couplers</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainClearanceGauge" type="rail:tClearanceGaugeType" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>data about all compatible clearance gauges of the vehicle</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainClearanceGauge</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePassenger">
+    <xs:complexContent>
+      <xs:extension base="rail:tPassenger">
+        <xs:sequence>
+          <xs:element name="gangway" type="rail:tGangway" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>description of gangway features between vehicles</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:gangway</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="doors" type="rail:eDoors" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data about door dimensions</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:doors</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="tilting" type="rail:tTilting" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>data about car body tilting system</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:tilting</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eDoors">
+    <xs:complexContent>
+      <xs:extension base="rail:tDoors">
+        <xs:sequence>
+          <xs:element name="passengerFlowSpeed" type="rail:tPassengerFlowSpeed" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>data about speed of passenger flow</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:passengerFlowSpeed</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eGoods">
+    <xs:complexContent>
+      <xs:extension base="rail:tGoods">
+        <xs:sequence>
+          <xs:element name="service" type="rail:tService" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>description of any additional service provided per vehicle like car or truck ports</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:service_goods</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eCouplers">
+    <xs:sequence>
+      <xs:element name="mechanicalCoupler" type="rail:eMechanicalCoupler" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>container for available mechanical couplers between wagons</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:mechanicalCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="pneumaticCoupler" type="rail:ePneumaticCoupler" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>container for available pneumatic couplers between wagons</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:pneumaticCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="electricalCoupler" type="rail:eElectricalCoupler" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>container for available electrical couplers between wagons</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:electricalCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eMechanicalCoupler">
+    <xs:complexContent>
+      <xs:extension base="rail:tMechanicalWagonCouplerType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:mechanicalCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ePneumaticCoupler">
+    <xs:complexContent>
+      <xs:extension base="rail:tPneumaticWagonCouplerType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:pneumaticCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eElectricalCoupler">
+    <xs:complexContent>
+      <xs:extension base="rail:tElectricalWagonCouplerType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:electricalCoupler</xs:documentation>
+        </xs:annotation>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eVehicleBrakes">
+    <xs:annotation>
+      <xs:documentation>data about brake systems independent from propulsion</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrakes</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="vehicleBrake" type="rail:eVehicleBrake" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>settings and characteristic of a particular brake type or brake application position</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrake</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="vehicleBrakeOperation" type="rail:tBasicBrakeOperation" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>operational braking rules according to specific supervision regime for single vehicle</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrakeOperation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="mechanicalBrakeEffort" type="rail:tEffortCurve" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>mechanical brake effort at wheel vs. speed by brake systems without propulsion</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:mechanicalBrakeEffort</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="eddyCurrentBrake" type="rail:tEddyCurrentBrake" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>technical data of eddy current brake</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:eddyCurrentBrake</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eVehicleBrake">
+    <xs:complexContent>
+      <xs:extension base="rail:tBasicBrakeType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleBrake</xs:documentation>
+        </xs:annotation>
+        <xs:attributeGroup ref="rail:aVehicleBrake" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eCurvingLimitation">
+    <xs:complexContent>
+      <xs:extension base="rail:tCurvingLimitationType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:curvingLimitation</xs:documentation>
+        </xs:annotation>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eMaintenanceIntervals">
+    <xs:sequence>
+      <xs:element name="maintenanceInterval" type="rail:tMaintenanceInterval" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:maintenanceInterval</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eLoadLimitMatrix">
+    <xs:complexContent>
+      <xs:extension base="rail:tLoadLimitMatrixType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:loadLimitMatrix</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="loadLimit" type="rail:eLoadLimit" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>container for possible load limits</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:loadLimit</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eLoadLimit">
+    <xs:complexContent>
+      <xs:extension base="rail:tLoadLimitType">
+        <xs:annotation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:loadLimit</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+          <xs:element name="railNetwork" type="rail:tRailNetwork" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>relation to particular rail networks the limit is applicable</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:railNetwork</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="lineClassification" type="rail:tLineClassification" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>load limit with respect to line classification (permissible axle load and meter load)</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:lineClassification</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eFormations">
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation>contain formation data</xs:documentation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/RS:formations</xs:documentation>
+      </xs:annotation>
+      <xs:element name="formation" type="rail:eFormation" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>data for train composition or vehicle formation</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:formation</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="eFormation">
+    <xs:annotation>
+      <xs:documentation>data for train composition or vehicle formation</xs:documentation>
+      <xs:documentation>See https://wiki2.railml.org/wiki/RS:formation</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tFormation">
+        <xs:sequence>
+          <xs:annotation>
+            <xs:documentation>contain formation data</xs:documentation>
+          </xs:annotation>
+          <xs:element name="trainOrder" type="rail:eTrainOrder" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>car order for a formation</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainOrder</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="categoryRef" type="rail:tElementWithReference" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to train categories in TimeTable part, e.g. ltd. Express, the formation can run as in service</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:categoryRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainEngine" type="rail:tTrainEngine" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>acceleration value for whole formation</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainEngine</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainBrakes" type="rail:tBasicBrakeType" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>for whole formation deceleration</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainBrakes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainBrakeOperation" type="rail:tBasicBrakeOperation" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>operational braking rules according to specific supervision regime for entire formation</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainBrakeOperation</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="trainResistance" type="rail:tTrainResistance" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>mechanical train resistance vs. speed</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:trainResistance</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="speedProfileRef" type="rail:tSpeedProfileRefRS" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>reference to permissible speed profiles for entire formation</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:speedProfileRef</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="technicalStopActivity" type="rail:tTechnicalStopActivity" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>list of stop activities with their related technical times</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/RS:technicalStopActivity</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="eTrainOrder">
+    <xs:sequence>
+      <xs:element name="vehicleRef" type="rail:tVehicleRef" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>references via ID-attribute to vehicle element</xs:documentation>
+          <xs:documentation>See https://wiki2.railml.org/wiki/RS:vehicleRef</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns:dc="http://purl.org/dc/elements/1.1/" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of generic simple types, used by all sub schemas</xs:documentation>
+  </xs:annotation>
+
+  <xs:import namespace="http://purl.org/dc/elements/1.1/" schemaLocation="https://dublincore.org/schemas/xmls/qdc/2008/02/11/dc.xsd">
+    <xs:annotation>
+      <xs:documentation>Portions of this software may use XML schemas Copyright (c) 2009 DCMI, the Dublin Core Metadata Initiative. These are licensed under the Creative Commons 3.0 Attribution license.</xs:documentation>
+      <xs:documentation>For further information see: https://dublincore.org/ License link: https://creativecommons.org/licenses/by/3.0/</xs:documentation>
+    </xs:annotation>
+  </xs:import>
+
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/03/xml.xsd" />
+
+  <xs:simpleType name="tRailMLVersion">
+    <xs:annotation>
+      <xs:documentation>Version Number is some official release number, rather than any internal numbering from an version control system</xs:documentation>
+      <xs:documentation>Allows two part or three part version numbers, 1.0 up to 99.99, or 1.0.1 up to 99.99.99</xs:documentation>
+      <xs:documentation>Allows additional SVN release numbers for testing unofficial releases: 1.1r4 or 2.0r271</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[1-9][0-9]?\.([0-9]|[1-9][0-9])(\.[1-9][0-9]?)?(r[1-9][0-9]?[0-9]?)?" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tVersionNumber">
+    <xs:annotation>
+      <xs:documentation>an arbitrary version number for any system; allowing digits, letters and white space</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tGenericID">
+    <xs:annotation>
+      <xs:documentation>an XML-side constrained bi-unique identity; unique across an XML file including its outsourced components (xi:include mechanism); white spaces not allowed</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:ID" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tGenericRef">
+    <xs:annotation>
+      <xs:documentation>an XML-side constrained reference to one xs:ID value, acts across an XML file including its outsourced components (xi:include mechanism)</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:IDREF" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tGenericName">
+    <xs:annotation>
+      <xs:documentation>system-wide known name of an railway facility (e.g. station, timetable period or vehicle), allowing digits, letters and white space</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tElementDescription">
+    <xs:annotation>
+      <xs:documentation>an detailed description of an railway facility (e.g. station, timetable period or vehicle), allowing digits, letters and white space</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string" />
+  </xs:simpleType>
+
+  <xs:complexType name="tElementWithID">
+    <xs:annotation>
+      <xs:documentation>base type for all elements with IDs</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="id" type="rail:tGenericID" use="required">
+      <xs:annotation>
+        <xs:documentation>XML-file-wide unique identity is required for later referencing that element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="tElementWithIDAndName">
+    <xs:annotation>
+      <xs:documentation>generic base type, used for inheritance of many railML types</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithID">
+        <xs:sequence>
+          <xs:element name="additionalName" type="rail:tAdditionalName" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>additional names and its according descriptions to be provided in other languages, dialects, encodings...</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:additionalName, https://wiki2.railml.org/wiki/RS:additionalName and https://wiki2.railml.org/wiki/TT:additionalName</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>provide an extension point for non-railML elements in foreign namespace</xs:documentation>
+            </xs:annotation>
+          </xs:any>
+        </xs:sequence>
+        <xs:attribute name="code" type="rail:tGenericName">
+          <xs:annotation>
+            <xs:documentation>for typical, specific abbreviations, used in different systems with the same understanding</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="name" type="rail:tGenericName">
+          <xs:annotation>
+            <xs:documentation>should be interpreted in its elements' context (e.g. track/name, vehicle/name)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="description" type="rail:tElementDescription">
+          <xs:annotation>
+            <xs:documentation>should be interpreted in its elements' context, substantiates the name </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="xml:lang">
+          <xs:annotation>
+            <xs:documentation>natural language identification according to https://www.w3.org/TR/xml/#sec-lang-tag</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="rail:anyAttribute" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tAdditionalName">
+    <xs:attribute name="name" type="rail:tGenericName">
+      <xs:annotation>
+        <xs:documentation>should be interpreted in its elements' context (e.g. track/name, vehicle/name)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="rail:tElementDescription">
+      <xs:annotation>
+        <xs:documentation>should be interpreted in its elements' context, substantiates the name</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="xml:lang">
+      <xs:annotation>
+        <xs:documentation>natural language identification according to https://www.w3.org/TR/xml/#sec-lang-tag; should always be given</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:anyAttribute" />
+  </xs:complexType>
+
+  <xs:complexType name="tElementWithIDAndNameWithoutAny">
+    <xs:annotation>
+      <xs:documentation>Special derived type without 'any' element sequence but 'anyAttribute' for inheritance with 'xs:all' model group.</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tAdditionalName">
+        <xs:attribute name="id" type="rail:tGenericID" use="required">
+          <xs:annotation>
+            <xs:documentation>XML-file-wide unique identity is required for later referencing that element</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="code" type="rail:tGenericName">
+          <xs:annotation>
+            <xs:documentation>for typical, specific abbreviations, used in different systems with the same understanding</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tElementWithReference">
+    <xs:annotation>
+      <xs:documentation>generic base type, used for inheritance of railML types deploying references</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="ref" type="rail:tGenericRef" use="required">
+      <xs:annotation>
+        <xs:documentation>reference is required because it's the purpose of the element</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attributeGroup ref="rail:anyAttribute" />
+  </xs:complexType>
+
+  <xs:complexType name="tGlobalElementWithMetadata">
+    <xs:annotation>
+      <xs:documentation>generic base type, used for inheritance of railML subschema elements</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithIDAndName">
+        <xs:sequence>
+          <xs:element name="metadata" type="dc:elementContainer" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>subschema-wide flexible collection of Dublin Core metadata based on xs:any according to https://dublincore.org/</xs:documentation>
+              <xs:documentation>See https://wiki2.railml.org/wiki/IS:metadata, https://wiki2.railml.org/wiki/RS:metadata and https://wiki2.railml.org/wiki/TT:metadata</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="version" type="rail:tRailMLVersion">
+          <xs:annotation>
+            <xs:documentation>only used, if subschema element is outsourced, else use 'version' attribute in root element ('railml')</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="xml:base">
+          <xs:annotation>
+            <xs:documentation>provide outsourcing of subschema element with xi:include mechanism</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="positiveLong">
+    <xs:restriction base="xs:unsignedLong">
+      <xs:minInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tCounter">
+    <xs:annotation>
+      <xs:documentation>generic type for counters (e.g. number of equipment), allowing zero</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:unsignedLong" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tPositiveCounter">
+    <xs:annotation>
+      <xs:documentation>generic type for counters (e.g. order number of a vehicle in an formation), starting with '1'</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:positiveLong" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tVerbalCounter">
+    <xs:annotation>
+      <xs:documentation>generic enumeration, where digits are not common</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="single" />
+      <xs:enumeration value="double" />
+      <xs:enumeration value="triple" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tOneToZero">
+    <xs:annotation>
+      <xs:documentation>generic type for values only between 0 and 1, as efficiency or cosine phi.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="1" />
+      <xs:fractionDigits value="6" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tThreeLetterString">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\w{1,3}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tFiveLetterString">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\w{1,5}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tDigitString">
+    <xs:annotation>
+      <xs:documentation>an arbitrary string consisting of digits from 0 to 9; not allowing white space, letters; no length restriction</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]*" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tOneDigit">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly one digit</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tTwoDigits">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly two digits</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="2" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tThreeDigits">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly three digits</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tFourDigits">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly four digits</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="4" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tFiveDigits">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly five digits</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="5" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tTwelveDigits">
+    <xs:annotation>
+      <xs:documentation>an identification string consisting of exactly twelve digits, e.g. UIC ident numbers</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDigitString">
+      <xs:length value="12" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tDoubleList">
+    <xs:annotation>
+      <xs:documentation>an arbitrary list consisting of xs:double values separated by white space; no length restriction</xs:documentation>
+    </xs:annotation>
+    <xs:list itemType="xs:double" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tDurationList">
+    <xs:annotation>
+      <xs:documentation>a list of time intervals, each given as an xs:duration, separated by white space</xs:documentation>
+    </xs:annotation>
+    <xs:list itemType="xs:duration" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tCoordinateList">
+    <xs:annotation>
+      <xs:documentation>an coordinate list consisting of two or three coordinates</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tDoubleList">
+      <xs:minLength value="2" />
+      <xs:maxLength value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tOtherEnumerationValue">
+    <xs:annotation>
+      <xs:documentation>an arbitrary string starting with 'other:' followed by at least two letters and/or digits, for extending railML enumeration lists</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="other:\w{2,}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:attributeGroup name="anyAttribute">
+    <xs:anyAttribute namespace="##other">
+      <xs:annotation>
+        <xs:documentation>provide an extension point for non-railML 'any attribute' in a foreign namespace</xs:documentation>
+      </xs:annotation>
+    </xs:anyAttribute>
+  </xs:attributeGroup>
+
+  <xs:complexType name="tElementRefInGroup">
+    <xs:annotation>
+      <xs:documentation>generic type for inheritance in serialized reference elements</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="rail:tElementWithReference">
+        <xs:attribute name="sequence" type="rail:tPositiveCounter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="tVerbosenessClass">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="reduced" />
+          <xs:enumeration value="normal" />
+          <xs:enumeration value="verbose" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:complexType name="tInfoTextBase">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attributeGroup ref="rail:anyAttribute" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="tInfoText">
+    <xs:simpleContent>
+      <xs:extension base="rail:tInfoTextBase">
+        <xs:attribute ref="xml:lang">
+          <xs:annotation>
+            <xs:documentation>natural language identification according to https://www.w3.org/TR/xml/#sec-lang-tag</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="verboseness" type="rail:tVerbosenessClass">
+          <xs:annotation>
+            <xs:documentation>allows to categorize the text along its verboseness</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+</xs:schema>

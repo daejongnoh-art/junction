@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of simple types, which represent general units of measure, used by all sub schemas</xs:documentation>
+  </xs:annotation>
+
+  <xs:include schemaLocation="genericRailML.xsd" />
+
+  <xs:simpleType name="tLength">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="6" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tLengthMM">
+    <xs:annotation>
+      <xs:documentation>generic type for length values measured in millimeter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tLength" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tLengthM">
+    <xs:annotation>
+      <xs:documentation>generic type for length values measured in meter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tLength" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tLengthKM">
+    <xs:annotation>
+      <xs:documentation>generic type for length values measured in kilometer</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tLength" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tSpeed">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="1" />
+      <xs:minInclusive value="0" />
+      <xs:totalDigits value="5" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tSpeedKmPerHour">
+    <xs:annotation>
+      <xs:documentation>generic type for speed/velocity values measured in kilometer per hour</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tSpeed" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tSpeedMPerSec">
+    <xs:annotation>
+      <xs:documentation>generic type for speed/velocity values measured in meter per second</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tSpeed" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tSpeedDegreesPerSecond">
+    <xs:annotation>
+      <xs:documentation>generic type for angular speed/velocity values measured in degree per second</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAcceleration">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAccelerationMeterPerSquareSec">
+    <xs:annotation>
+      <xs:documentation>generic type for acceleration values measured in meter per square second</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tAcceleration" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tArea">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAreaSquareMeter">
+    <xs:annotation>
+      <xs:documentation>generic type for area values measured in square meter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tArea" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tVolume">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tVolumeCubicMeter">
+    <xs:annotation>
+      <xs:documentation>generic type for volume values measured in cubic meter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tVolume" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tVolumeLitre">
+    <xs:annotation>
+      <xs:documentation>generic type for volume values measured in litre</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tVolume" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tVoltage">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tVoltageVolt">
+    <xs:annotation>
+      <xs:documentation>generic type for voltage values measured in volt</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tVoltage" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tResistance">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="4" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tResistanceOhm">
+    <xs:annotation>
+      <xs:documentation>generic type for electric resistance values measured in ohm</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tResistance" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tInductance">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="6" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tInductanceHenry">
+    <xs:annotation>
+      <xs:documentation>generic type for inductance values measured in henry</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tInductance" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tFlux">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="6" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tFluxVoltSecond">
+    <xs:annotation>
+      <xs:documentation>generic type for electric flux values measured in volt*second</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tFlux" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tForce">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tForceNewton">
+    <xs:annotation>
+      <xs:documentation>generic type for force values measured in newton</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tForce" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tForceCoefficentNewton">
+    <xs:annotation>
+      <xs:documentation>generic type for coefficent values measured in newton</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="6" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tPower">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tPowerWatt">
+    <xs:annotation>
+      <xs:documentation>generic type for power values measured in watt</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tPower" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tEnergy">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tEnergyKiloWattHours">
+    <xs:annotation>
+      <xs:documentation>generic type for energy values measured in kilowatt*hour</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tEnergy" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tCurrent">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tCurrentAmpere">
+    <xs:annotation>
+      <xs:documentation>generic type for electric current values measured in ampere</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tCurrent" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tFrequency">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tFrequencyHertz">
+    <xs:annotation>
+      <xs:documentation>generic type for frequency values measured in hertz</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tFrequency" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tRotationalFrequency">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:positiveLong" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tRotationalFrequencyRevolutionsPerMinute">
+    <xs:annotation>
+      <xs:documentation>generic type for rotational frequency values measured in revolutions per minute</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tRotationalFrequency" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tWeight">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tWeightKG">
+    <xs:annotation>
+      <xs:documentation>generic type for weight/load values measured in kilogram</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tWeight" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tWeightTons">
+    <xs:annotation>
+      <xs:documentation>generic type for weight/load values measured in ton</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tWeight" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tAngleDeg">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+      <xs:totalDigits value="6" />
+      <xs:minInclusive value="-360" />
+      <xs:maxInclusive value="360" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAngleDegFullCircle">
+    <xs:annotation>
+      <xs:documentation>generic type for angle values measured in degree, allowing -180 ... +180</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tAngleDeg">
+      <xs:minInclusive value="-180" />
+      <xs:maxInclusive value="180" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tAngleDegQuadrant">
+    <xs:annotation>
+      <xs:documentation>generic type for angle values measured in degree, allowing 0 ... +90</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tAngleDeg">
+      <xs:minExclusive value="0" />
+      <xs:maxInclusive value="90" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tGradient">
+    <xs:annotation>
+      <xs:documentation>applies as basic type for inheritance, should not be used directly because of missing unit of measure</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="tGradientPromille">
+    <xs:annotation>
+      <xs:documentation>generic type for gradient values measured in per thousand/mill</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tGradient" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tRadiusM">
+    <xs:annotation>
+      <xs:documentation>generic type for radius values measured in meter</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="rail:tLengthM" />
+  </xs:simpleType>
+
+  <xs:simpleType name="tUnitName">
+    <xs:annotation>
+      <xs:documentation>enumeration of physical units</xs:documentation>
+    </xs:annotation>
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="m/s" />
+          <xs:enumeration value="km/h" />
+          <xs:enumeration value="A" />
+          <xs:enumeration value="N" />
+          <xs:enumeration value="Hz" />
+          <xs:enumeration value="%" />
+          <xs:enumeration value="V" />
+          <xs:enumeration value="W" />
+          <xs:enumeration value="VA" />
+          <xs:enumeration value="Vs" />
+          <xs:enumeration value="1" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="rail:tOtherEnumerationValue" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+</xs:schema>

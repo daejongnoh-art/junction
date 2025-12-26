@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<xs:schema xmlns:rail="https://www.railml.org/schemas/2021" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dc="http://purl.org/dc/elements/1.1/" targetNamespace="https://www.railml.org/schemas/2021" elementFormDefault="qualified" version="2.5">
+
+  <xs:annotation>
+    <xs:documentation>Copyright (c) railML.org e.V. Dresden/Germany; All Rights Reserved.</xs:documentation>
+    <xs:documentation>This work is licensed under the restricted CreativeCommons Attribution-NonCommercial-NoDerivs 3.0 Unported License with additional license conditions of railML.org.</xs:documentation>
+    <xs:documentation>For further information see: https://www.railml.org/licence</xs:documentation>
+    <xs:documentation>Content of this file: XML Schema for railML(R) 2.5 Definition of root element "railml", refers to elements of all sub schemas from "xs:include" paths</xs:documentation>
+  </xs:annotation>
+
+  <xs:include schemaLocation="infrastructure.xsd" />
+  <xs:include schemaLocation="rollingstock.xsd" />
+  <xs:include schemaLocation="timetable.xsd" />
+
+  <xs:element name="railml">
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation>See https://wiki2.railml.org/wiki/CO:railml</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element name="metadata" type="rail:tMetadata" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>See https://wiki2.railml.org/wiki/CO:metadata</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="rail:infrastructure" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>"subschema Infrastructure (IS)" can be outsourced in extra file and imported with xi:include mechanism</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="rail:infrastructureVisualizations" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>use this branch to model explicit visualizations of infrastructure data</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="rail:rollingstock" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>"subschema Rollingstock (RS)" can be outsourced in extra file and imported with xi:include mechanism</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="rail:timetable" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>"subschema Timetable (TT)" can be outsourced in extra file and imported with xi:include mechanism</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" type="rail:tRailMLVersion">
+        <xs:annotation>
+          <xs:documentation>supported railML version should be declared for software compatibility reasons, valid for all subschemas, don't mix railML versions between subschemas in one XML file</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+
+    <!-- infrastructureManager identity in metadata -->
+    <xs:key name="infrastructureManagerKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:infrastructureManager" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- infrastructureManager reference in infrastructure subschema -->
+    <xs:keyref name="infrastructureManager-ownerKeyref" refer="rail:infrastructureManagerKey">
+      <xs:selector xpath=".//rail:infraAttributes/rail:owner" />
+      <xs:field xpath="@infrastructureManagerRef" />
+    </xs:keyref>
+    <xs:keyref name="infrastructureManager-ownerChangeKeyref" refer="rail:infrastructureManagerKey">
+      <xs:selector xpath=".//rail:ownerChange" />
+      <xs:field xpath="@infrastructureManagerRef" />
+    </xs:keyref>
+    <xs:keyref name="infrastructureManager-lineKeyref" refer="rail:infrastructureManagerKey">
+      <xs:selector xpath=".//rail:line" />
+      <xs:field xpath="@infrastructureManagerRef" />
+    </xs:keyref>
+
+    <!-- vehicleManufacturer identity in metadata -->
+    <xs:key name="vehicleManufacturerKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:vehicleManufacturer" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- vehicleManufacturer reference in rollingstock subschema -->
+    <xs:keyref name="vehicleManufacturer-manufacturerKeyref" refer="rail:vehicleManufacturerKey">
+      <xs:selector xpath=".//rail:classification/rail:manufacturer" />
+      <xs:field xpath="@vehicleManufacturerRef" />
+    </xs:keyref>
+
+    <!-- vehicleOwner identity in metadata -->
+    <xs:key name="vehicleOwnerKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:vehicleOwner" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- vehicleOwner reference in rollingstock subschema -->
+    <xs:keyref name="vehicleOwner-ownerKeyref" refer="rail:vehicleOwnerKey">
+      <xs:selector xpath=".//rail:classification/rail:owner" />
+      <xs:field xpath="@vehicleOwnerRef" />
+    </xs:keyref>
+
+    <!-- vehicleOperator identity in metadata -->
+    <xs:key name="vehicleOperatorKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:vehicleOperator" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- vehicleOperator reference in rollingstock subschema -->
+    <xs:keyref name="vehicleOperator-operatorKeyref" refer="rail:vehicleOperatorKey">
+      <xs:selector xpath=".//rail:classification/rail:operator" />
+      <xs:field xpath="@vehicleOperatorRef" />
+    </xs:keyref>
+
+    <!-- vehicleOperator reference in timetable subschema -->
+    <xs:keyref name="vehicleOperator-vehicleOperatorKeyref" refer="rail:vehicleOperatorKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:vehicleOperator" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- customer identity in metadata -->
+    <xs:key name="customerKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:customer" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- customer reference in timetable subschema -->
+    <xs:keyref name="customer-customerKeyref" refer="rail:customerKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:customer" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- railwayUndertaking identity in metadata -->
+    <xs:key name="railwayUndertakingKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:railwayUndertaking" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- railwayUndertaking reference in timetable subschema -->
+    <xs:keyref name="railwayUndertaking-railwayUndertakingKeyref" refer="rail:railwayUndertakingKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:railwayUndertaking" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- operationalUndertaking identity in metadata -->
+    <xs:key name="operationalUndertakingKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:operationalUndertaking" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- operationalUndertaking reference in timetable subschema -->
+    <xs:keyref name="operationalUndertaking-operationalUndertakingKeyref" refer="rail:operationalUndertakingKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:operationalUndertaking" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- concessionaire identity in metadata -->
+    <xs:key name="concessionaireKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:concessionaire" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- concessionaire reference in timetable subschema -->
+    <xs:keyref name="concessionaire-concessionaireKeyref" refer="rail:concessionaireKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:concessionaire" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- contractor identity in metadata -->
+    <xs:key name="contractorKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/rail:contractor" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- contractor reference in timetable subschema -->
+    <xs:keyref name="contractor-contractorKeyref" refer="rail:contractorKey">
+      <xs:selector xpath=".//rail:organizationalUnitBinding/rail:contractor" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- any organization unit identity in metadata -->
+    <xs:key name="organizationalUnitKey">
+      <xs:selector xpath="./rail:metadata/rail:organizationalUnits/*" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- organization unit reference in timetable subschema -->
+    <xs:keyref name="category-organizationalUnitKeyref" refer="rail:organizationalUnitKey">
+      <xs:selector xpath=".//rail:categories/rail:category" />
+      <xs:field xpath="@organizationalUnitRef" />
+    </xs:keyref>
+
+    <!-- ocp idendity in infrastructure subschema -->
+    <xs:key name="ocpKey">
+      <xs:selector xpath=".//rail:operationControlPoints/rail:ocp" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- ocp reference in infrastructure subschema -->
+    <xs:keyref name="ocp-macroscopicNodeKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:macroscopicNode" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-switchKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:switch" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-crossSectionKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:crossSections/rail:crossSection" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-levelCrossingKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:levelCrossings/rail:levelCrossing" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-signalKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:signals/rail:signal" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-trainDetectorKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:trainDetectionElements/rail:trainDetector" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-trackCircuitBorderKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:trainDetectionElements/rail:trackCircuitBorder" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-platformEdgeKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:platformEdges/rail:platformEdge" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-serviceSectionKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:serviceSections/rail:serviceSection" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-stopPostKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:stopPosts/rail:stopPost" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-locallyControlledAreaKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:trackGroups/rail:locallyControlledArea" />
+      <xs:field xpath="@ocpStationRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-stateKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:states/rail:state/rail:*" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-signal-signalBoxKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:signals/rail:signal" />
+      <xs:field xpath="@signalBoxOcpRef" />
+      <!-- Deprecated -->
+    </xs:keyref>
+    <xs:keyref name="ocp-signal-stationKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:signals/rail:signal" />
+      <xs:field xpath="@stationOcpRef" />
+      <!-- Deprecated -->
+    </xs:keyref>
+    <xs:keyref name="ocp-locallyControlledArea-shortKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:trackGroups/rail:locallyControlledArea" />
+      <xs:field xpath="@ocpRef" />
+      <!-- Deprecated -->
+    </xs:keyref>
+
+    <!-- ocp reference in timetable subschema -->
+    <xs:keyref name="ocp-distributionKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:distribution/rail:referenceOcp" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-ocpTTKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-connectionKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:ocpTT/rail:connections/rail:connection" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-blockPartStartKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@startOcpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-blockPartEndKeyref" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@endOcpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-trainPartOrigin" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:origin" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+    <xs:keyref name="ocp-trainPartDestination" refer="rail:ocpKey">
+      <xs:selector xpath=".//rail:destination" />
+      <xs:field xpath="@ocpRef" />
+    </xs:keyref>
+
+    <!-- track idendity in infrastructure subschema -->
+    <xs:key name="trackKey">
+      <xs:selector xpath=".//rail:tracks/rail:track" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- track reference in infrastructure subschema -->
+    <xs:keyref name="track-lineKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:trackGroups/rail:line/rail:trackRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="track-locallyControlledAreaKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:trackGroups/rail:locallyControlledArea/rail:trackRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="track-ocpKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:operationControlPoints/rail:ocp/rail:propEquipment/rail:trackRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- track reference in timetable subschema -->
+    <xs:keyref name="track-ocpTTKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT" />
+      <xs:field xpath="@trackRef" />
+    </xs:keyref>
+    <xs:keyref name="track-sectionTTKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:ocpTT/rail:sectionTT/rail:trackRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="track-alternativeSectionTTKeyref" refer="rail:trackKey">
+      <xs:selector xpath=".//rail:ocpTT/rail:alternativeSectionsTT/rail:alternativeSectionTT/rail:trackRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- line idendity in infrastructure subschema -->
+    <xs:key name="lineKey">
+      <xs:selector xpath=".//rail:trackGroups/rail:line" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- line reference in infrastructure subschema -->
+    <xs:keyref name="line-signalLineKeyref" refer="rail:lineKey">
+      <xs:selector xpath=".//rail:signal/rail:line" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="line-signalMilepostKeyref" refer="rail:lineKey">
+      <xs:selector xpath=".//rail:signal/rail:milepost" />
+      <xs:field xpath="@lineRef" />
+    </xs:keyref>
+
+    <!-- line reference in timetable subschema -->
+    <xs:keyref name="line-sectionTTKeyref" refer="rail:lineKey">
+      <xs:selector xpath=".//rail:ocpTT/rail:sectionTT" />
+      <xs:field xpath="@lineRef" />
+    </xs:keyref>
+    <xs:keyref name="line-alternativeSectionTTKeyref" refer="rail:lineKey">
+      <xs:selector xpath=".//rail:ocpTT/rail:alternativeSectionsTT/rail:alternativeSectionTT" />
+      <xs:field xpath="@lineRef" />
+    </xs:keyref>
+
+    <!-- vehicle idendity in rollingstock subschema -->
+    <xs:key name="vehicleKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- vehicle reference in rollingstock subschema -->
+    <xs:keyref name="vehicle-vehicleFamilyKeyref" refer="rail:vehicleKey">
+      <xs:selector xpath=".//rail:vehicles/rail:vehicle" />
+      <xs:field xpath="@vehicleFamilyRef" />
+    </xs:keyref>
+    <xs:keyref name="vehicle-trainOrderKeyref" refer="rail:vehicleKey">
+      <xs:selector xpath=".//rail:trainOrder/rail:vehicleRef" />
+      <xs:field xpath="@vehicleRef" />
+    </xs:keyref>
+
+    <!-- vehicle reference in timetable subschema -->
+    <xs:keyref name="vehicle-bookingKeyref" refer="rail:vehicleKey">
+      <xs:selector xpath=".//rail:reservationInfo/rail:booking" />
+      <xs:field xpath="@vehicleRef" />
+    </xs:keyref>
+    <xs:keyref name="vehicle-rosteringKeyref" refer="rail:vehicleKey">
+      <xs:selector xpath=".//rail:rosterings/rail:rostering" />
+      <xs:field xpath="@vehicleRef" />
+    </xs:keyref>
+    <xs:keyref name="vehicle-blockPartKeyref" refer="rail:vehicleKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@vehicleRef" />
+    </xs:keyref>
+
+    <!-- formation idendity in rollingstock subschema -->
+    <xs:key name="formationKey">
+      <xs:selector xpath=".//rail:formations/rail:formation" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- formation reference in timetable subschema -->
+    <xs:keyref name="formation-formationTTKeyref" refer="rail:formationKey">
+      <xs:selector xpath=".//rail:formationTT" />
+      <xs:field xpath="@formationRef" />
+    </xs:keyref>
+    <xs:keyref name="formation-rosteringKeyref" refer="rail:formationKey">
+      <xs:selector xpath=".//rail:rosterings/rail:rostering" />
+      <xs:field xpath="@formationRef" />
+    </xs:keyref>
+    <xs:keyref name="formation-blockPartKeyref" refer="rail:formationKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@formationRef" />
+    </xs:keyref>
+
+    <!-- category idendity in timetable subschema -->
+    <xs:key name="categoryKey">
+      <xs:selector xpath=".//rail:categories/rail:category" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- category reference in timetable subschema -->
+    <xs:keyref name="category-patternTrainPartKeyref" refer="rail:categoryKey">
+      <xs:selector xpath=".//rail:patternTrainParts/rail:patternTrainPart" />
+      <xs:field xpath="@categoryRef" />
+    </xs:keyref>
+    <xs:keyref name="category-trainPartKeyref" refer="rail:categoryKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart" />
+      <xs:field xpath="@categoryRef" />
+    </xs:keyref>
+    <xs:keyref name="category-trainPartSequenceKeyref" refer="rail:categoryKey">
+      <xs:selector xpath=".//rail:trainPartSequence" />
+      <xs:field xpath="@categoryRef" />
+    </xs:keyref>
+    <xs:keyref name="category-categoryParentRef" refer="rail:categoryKey">
+      <xs:selector xpath=".//rail:categories/rail:category" />
+      <xs:field xpath="@parentRef" />
+    </xs:keyref>
+
+    <!-- category reference in rollingstock subschema -->
+    <xs:keyref name="category-formationKeyref" refer="rail:categoryKey">
+      <xs:selector xpath=".//rail:formations/rail:formation/rail:categoryRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- speed profile idendity in infrastructure subschema -->
+    <xs:key name="speedProfileKey">
+      <xs:selector xpath=".//rail:speedProfiles/rail:speedProfile" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- speed profile reference in timetable subschema -->
+    <xs:keyref name="speedProfile-trainPartSequenceKeyref" refer="rail:speedProfileKey">
+      <xs:selector xpath=".//rail:trainPartSequence/rail:speedProfileRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- stop post idendity in infrastructure subschema -->
+    <xs:key name="stopPostKey">
+      <xs:selector xpath=".//rail:stopPosts/rail:stopPost" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- stop post reference in timetable subschema -->
+    <xs:keyref name="stopPost-stopDescriptionKeyref" refer="rail:stopPostKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:stopDescription" />
+      <xs:field xpath="@stopPostRef" />
+    </xs:keyref>
+
+    <!-- platform edge identity in infrastructure subschema -->
+    <xs:key name="platformEdgeKey">
+      <xs:selector xpath=".//rail:platformEdges/rail:platformEdge" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- platform edge reference in infrastructure subschema -->
+    <xs:keyref name="platformEdge-platformEdgeKeyref" refer="rail:platformEdgeKey">
+      <xs:selector xpath=".//rail:platformEdges/rail:platformEdge" />
+      <xs:field xpath="@parentPlatformEdgeRef" />
+    </xs:keyref>
+    <xs:keyref name="platformEdge-stopPostKeyref" refer="rail:platformEdgeKey">
+      <xs:selector xpath=".//rail:stopPosts/rail:stopPost" />
+      <xs:field xpath="@platformEdgeRef" />
+    </xs:keyref>
+
+    <!-- platform edge reference in timetable subschema -->
+    <xs:keyref name="platformEdge-stopDescriptionKeyref" refer="rail:platformEdgeKey">
+      <xs:selector xpath=".//rail:stopDescription/rail:platformEdgeRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- service section identity in infrastructure subschema -->
+    <xs:key name="serviceSectionKey">
+      <xs:selector xpath=".//rail:serviceSections/rail:serviceSection" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- service section reference in infrastructure subschema -->
+    <xs:keyref name="serviceSection-serviceSectionKeyref" refer="rail:serviceSectionKey">
+      <xs:selector xpath=".//rail:serviceSections/rail:serviceSection" />
+      <xs:field xpath="@parentServiceSectionRef" />
+    </xs:keyref>
+
+    <!-- service section reference in timetable subschema -->
+    <xs:keyref name="serviceSection-stopDescriptionKeyref" refer="rail:serviceSectionKey">
+      <xs:selector xpath=".//rail:stopDescription/rail:serviceSectionRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+    <!-- operating period identity in timetable subschema -->
+    <xs:key name="operatingPeriodKey">
+      <xs:selector xpath=".//rail:operatingPeriods/rail:operatingPeriod" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- operating period reference in timetable subschema -->
+    <xs:keyref name="operatingPeriod-trainPartKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:trainParts/rail:trainPart/rail:operatingPeriodRef" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-stopDescriptionKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:ocpsTT/rail:ocpTT/rail:stopDescription" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-blockPartKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:blockParts/rail:blockPart" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-circulationKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:circulations/rail:circulation" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-circulationNextKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:circulations/rail:circulation" />
+      <xs:field xpath="@nextOperatingPeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-annotationKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:annotationRef" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+
+    <!-- operating period reference in infrastructure subschema -->
+    <xs:keyref name="operatingPeriod-stateKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:states/rail:state" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+    <xs:keyref name="operatingPeriod-speedProfileKeyref" refer="rail:operatingPeriodKey">
+      <xs:selector xpath=".//rail:speedProfiles/rail:speedProfile" />
+      <xs:field xpath="@operatingPeriodRef" />
+    </xs:keyref>
+
+    <!-- project identity in common schema -->
+    <xs:key name="projectKey">
+      <xs:selector xpath="./rail:metadata/rail:projects/rail:project" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- project reference in common schema -->
+    <xs:keyref name="project-revisionKeyref" refer="rail:projectKey">
+      <xs:selector xpath="./rail:metadata/rail:projects/rail:project/rail:revision" />
+      <xs:field xpath="@initialProjectRef" />
+    </xs:keyref>
+
+    <!-- genericArea identity in infrastructure schema -->
+    <xs:key name="genericAreaKey">
+      <xs:selector xpath="./rail:infrastructure/rail:genericAreas/rail:genericArea" />
+      <xs:field xpath="@id" />
+    </xs:key>
+
+    <!-- genericArea reference in common schema -->
+    <xs:keyref name="genericArea-projectKeyref" refer="rail:genericAreaKey">
+      <xs:selector xpath="./rail:metadata/rail:projects/rail:project/rail:projectArea" />
+      <xs:field xpath="@ref" />
+    </xs:keyref>
+
+  </xs:element>
+
+</xs:schema>
