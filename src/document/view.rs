@@ -59,4 +59,23 @@ impl View {
         let hi = self.screen_to_world_pt(ImVec2 { x: size.x, y: 0.0 });
         (lo,hi)
     }
+
+    pub fn fit_to_bounds(&mut self, min: PtC, max: PtC, size: ImVec2) {
+        let margin = 40.0;
+        if size.x <= margin * 2.0 || size.y <= margin * 2.0 {
+            return;
+        }
+
+        let width = (max.x - min.x).max(1.0);
+        let height = (max.y - min.y).max(1.0);
+        let scale_x = (size.x - margin * 2.0) / width;
+        let scale_y = (size.y - margin * 2.0) / height;
+        let scale = scale_x.min(scale_y).max(20.0).min(150.0);
+
+        self.scale = scale.round() as usize;
+        let cx = (min.x + max.x) * 0.5;
+        let cy = (min.y + max.y) * 0.5;
+        let s = self.scale as f32;
+        self.translation = ImVec2 { x: s * cx - size.x * 0.5, y: s * -cy - size.y * 0.5 };
+    }
 }

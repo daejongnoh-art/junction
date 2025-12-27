@@ -36,6 +36,12 @@ pub fn inf_view(config :&Config,
         let pos_before : ImVec2 = igGetCursorPos_nonUDT2().into();
 
         let size = igGetContentRegionAvail_nonUDT2().into();
+        if inf_view.pending_fit_view {
+            if let Some((min, max)) = model_bounds(analysis.model()) {
+                inf_view.view.fit_to_bounds(min, max, size);
+            }
+            inf_view.pending_fit_view = false;
+        }
         let draw = widgets::canvas(size,
                         config.color_u32(RailUIColorName::CanvasBackground),
                         const_cstr!("railwaycanvas").as_ptr());
@@ -54,6 +60,46 @@ pub fn inf_view(config :&Config,
         igSetCursorPos(pos_after);
         draw
     }
+}
+
+fn model_bounds(model: &Model) -> Option<(PtC, PtC)> {
+    let mut min = glm::vec2(f32::INFINITY, f32::INFINITY);
+    let mut max = glm::vec2(f32::NEG_INFINITY, f32::NEG_INFINITY);
+    let mut any = false;
+
+    for (a, b) in model.linesegs.iter() {
+        let pts = [
+            glm::vec2(a.x as f32, a.y as f32),
+            glm::vec2(b.x as f32, b.y as f32),
+        ];
+        for p in pts {
+            min.x = min.x.min(p.x);
+            min.y = min.y.min(p.y);
+            max.x = max.x.max(p.x);
+            max.y = max.y.max(p.y);
+            any = true;
+        }
+    }
+
+    for (pt, _node) in model.node_data.iter() {
+        let p = glm::vec2(pt.x as f32, pt.y as f32);
+        min.x = min.x.min(p.x);
+        min.y = min.y.min(p.y);
+        max.x = max.x.max(p.x);
+        max.y = max.y.max(p.y);
+        any = true;
+    }
+
+    for (_key, obj) in model.objects.iter() {
+        let p = obj.loc;
+        min.x = min.x.min(p.x);
+        min.y = min.y.min(p.y);
+        max.x = max.x.max(p.x);
+        max.y = max.y.max(p.y);
+        any = true;
+    }
+
+    if any { Some((min, max)) } else { None }
 }
 
 fn draw_inf(config :&Config, analysis :&Analysis, inf_view :&mut InfView, 

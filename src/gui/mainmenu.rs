@@ -122,6 +122,10 @@ pub fn main_menu(app :&mut App) {
                                   std::ptr::null(), app.windows.log, true) {
                     app.windows.log = !app.windows.log;
                 }
+                if igMenuItemBool(const_cstr!("Fit to view").as_ptr(),
+                                  std::ptr::null(), false, true) {
+                    app.document.inf_view.pending_fit_view = true;
+                }
                 igEndMenu();
             }
             if igBeginMenu(const_cstr!("Tools").as_ptr(), true) {

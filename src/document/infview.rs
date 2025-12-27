@@ -14,6 +14,7 @@ pub struct InfView {
     pub instant_cache: dispatch::InstantCache,
     pub drag_ghost :Option<DragState>,
     pub clipboard :crate::document::model::Model,
+    pub pending_fit_view: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +53,7 @@ impl InfView {
             instant_cache: dispatch::InstantCache::new(),
             drag_ghost: None,
             clipboard: crate::document::model::Model::empty(),
+            pending_fit_view: false,
         }
     }
 }
