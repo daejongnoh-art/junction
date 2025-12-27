@@ -18,6 +18,7 @@ pub struct Topological {
     pub tracks :Vec<TopoTrack>,
     pub nodes :Vec<TopoNode>,
     pub connections :Vec<TopoConnection>,
+    pub node_coords: Vec<Option<(f64, f64)>>,
 }
 
 #[derive(Debug)]
@@ -26,8 +27,46 @@ pub struct TopoTrack {
     pub track_elements :TrackElements,
     pub length: f64,
     pub offset :f64, // absolute mileage at track start if available
+    pub source: TrackSource,
+    pub segment_index: usize,
+    pub segment_id: String,
+    pub begin_id: String,
+    pub end_id: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct TrackSource {
+    pub id: Id,
+    pub code: Option<String>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub track_type: Option<String>,
+    pub main_dir: Option<String>,
+    pub begin_id: String,
+    pub end_id: String,
+    pub abs_pos_begin: Option<f64>,
+    pub abs_pos_end: Option<f64>,
+}
+
+pub fn segment_track_id(base: &str, segment_index: usize) -> String {
+    if segment_index == 0 {
+        base.to_string()
+    } else {
+        format!("{}-s{}", base, segment_index)
+    }
+}
+
+fn segment_begin_id(base: &str, segment_index: usize, source_begin: &str) -> String {
+    if segment_index == 0 {
+        source_begin.to_string()
+    } else {
+        format!("{}-b", segment_track_id(base, segment_index))
+    }
+}
+
+fn segment_end_id(base: &str, segment_index: usize) -> String {
+    format!("{}-e", segment_track_id(base, segment_index))
+}
 #[derive(Copy,Clone,PartialEq,Eq,Hash)]
 #[derive(Debug)]
 pub enum AB { A, B }
@@ -96,6 +135,7 @@ pub enum TopoNode {
 pub fn new_node(topo :&mut Topological, node :TopoNode) -> usize {
     let idx = topo.nodes.len();
     topo.nodes.push(node);
+    topo.node_coords.push(None);
     idx
 }
 
@@ -114,6 +154,14 @@ pub fn topo_node_type(n :TrackEndConnection) -> TopoNode {
     }
 }
 
+fn parse_geo_coord(value: &str) -> Option<(f64, f64)> {
+    let cleaned = value.replace(',', " ");
+    let mut it = cleaned.split_whitespace();
+    let x: f64 = it.next()?.parse().ok()?;
+    let y: f64 = it.next()?.parse().ok()?;
+    Some((x, y))
+}
+
 #[derive(Debug)]
 pub enum TopoConvErr {
     SwitchConnectionMissing(String),
@@ -127,11 +175,12 @@ pub enum TopoConvErr {
 
 #[derive(Debug)]
 pub struct TopoSwitchInfo {
-    connref: (Id,IdRef),
+    connrefs: Vec<(Id, IdRef, Option<SwitchConnectionCourse>)>,
     deviating_side :Side,
     switch_geometry :Side,
     dir :AB,
     pos :f64,
+    geo_coord: Option<String>,
 }
 
 pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
@@ -140,22 +189,31 @@ pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
             match connections.as_slice() {
                 &[] => Err(TopoConvErr::SwitchConnectionMissing(id)),
                 &[ref connection] =>  {
-                    let sw_course = connection.course
+                    let ref_conn = connection;
+                    let sw_course = ref_conn.course
                         .or(track_continue_course.and_then(|c| c.opposite()))
                         .ok_or(TopoConvErr::SwitchCourseUnknown(id.clone()))?;
 
-                    let deviating_side = sw_course.to_side().unwrap();
-                    let switch_geometry = if connection.radius.unwrap_or(0.0) > 
-                                            track_continue_radius.unwrap_or(std::f64::INFINITY) {
-                        sw_course.opposite().unwrap().to_side().unwrap()
-                    } else { sw_course.to_side().unwrap() };
+                    let deviating_side = sw_course
+                        .to_side()
+                        .ok_or(TopoConvErr::SwitchCourseUnknown(id.clone()))?;
+                    let switch_geometry = if ref_conn.radius.unwrap_or(0.0) >
+                        track_continue_radius.unwrap_or(std::f64::INFINITY) {
+                        sw_course
+                            .opposite()
+                            .and_then(|c| c.to_side())
+                            .unwrap_or(deviating_side)
+                    } else { deviating_side };
 
                     Ok(
                         TopoSwitchInfo {
-                            connref: (connection.id.clone(), connection.r#ref.clone()),
+                            connrefs: connections.iter()
+                                .map(|conn| (conn.id.clone(), conn.r#ref.clone(), conn.course))
+                                .collect(),
                             deviating_side: deviating_side,
                             switch_geometry: switch_geometry,
                             pos: pos.offset,
+                            geo_coord: pos.geo_coord.clone(),
                             dir: match connection.orientation { 
                                 ConnectionOrientation::Outgoing => AB::A,
                                 ConnectionOrientation::Incoming => AB::B,
@@ -167,22 +225,33 @@ pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
                 },
                 // railML 2.5 can list both trunk and deviating connection; use the first as reference
                 &[ref connection, ..] => {
-                    let sw_course = connection.course
+                    let ref_conn = connections.iter()
+                        .find(|conn| conn.course.and_then(|c| c.to_side()).is_some())
+                        .unwrap_or(connection);
+                    let sw_course = ref_conn.course
                         .or(track_continue_course.and_then(|c| c.opposite()))
                         .ok_or(TopoConvErr::SwitchCourseUnknown(id.clone()))?;
 
-                    let deviating_side = sw_course.to_side().unwrap();
-                    let switch_geometry = if connection.radius.unwrap_or(0.0) > 
-                                            track_continue_radius.unwrap_or(std::f64::INFINITY) {
-                        sw_course.opposite().unwrap().to_side().unwrap()
-                    } else { sw_course.to_side().unwrap() };
+                    let deviating_side = sw_course
+                        .to_side()
+                        .ok_or(TopoConvErr::SwitchCourseUnknown(id.clone()))?;
+                    let switch_geometry = if ref_conn.radius.unwrap_or(0.0) >
+                        track_continue_radius.unwrap_or(std::f64::INFINITY) {
+                        sw_course
+                            .opposite()
+                            .and_then(|c| c.to_side())
+                            .unwrap_or(deviating_side)
+                    } else { deviating_side };
 
                     Ok(
                         TopoSwitchInfo {
-                            connref: (connection.id.clone(), connection.r#ref.clone()),
+                            connrefs: connections.iter()
+                                .map(|conn| (conn.id.clone(), conn.r#ref.clone(), conn.course))
+                                .collect(),
                             deviating_side: deviating_side,
                             switch_geometry: switch_geometry,
                             pos: pos.offset,
+                            geo_coord: pos.geo_coord.clone(),
                             dir: match connection.orientation { 
                                 ConnectionOrientation::Outgoing => AB::A,
                                 ConnectionOrientation::Incoming => AB::B,
@@ -199,10 +268,13 @@ pub fn switch_info(sw :Switch) -> Result<TopoSwitchInfo,TopoConvErr> {
                 &[ref connection] =>  {
                     Ok(
                         TopoSwitchInfo {
-                            connref: (connection.id.clone(), connection.r#ref.clone()),
+                            connrefs: connections.iter()
+                                .map(|conn| (conn.id.clone(), conn.r#ref.clone(), conn.course))
+                                .collect(),
                             deviating_side: Side::Left, // Dummy for crossing
                             switch_geometry: Side::Left, // Dummy for crossing
                             pos: pos.offset,
+                            geo_coord: pos.geo_coord.clone(),
                             dir: match connection.orientation { 
                                 ConnectionOrientation::Outgoing => AB::A,
                                 ConnectionOrientation::Incoming => AB::B,
@@ -223,6 +295,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
         tracks: Vec::new(),
         nodes :Vec::new(),
         connections: Vec::new(),
+        node_coords: Vec::new(),
     };
 
     let mut named_track_ports :HashMap<(String,String), (usize, AB)> = HashMap::new();
@@ -255,12 +328,31 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
 
             let mut init_objects = Objects::empty();
             init_objects.train_protection_element_groups = track.objects.train_protection_element_groups.clone();
+            let source = TrackSource {
+                id: track.id.clone(),
+                code: track.code.clone(),
+                name: track.name.clone(),
+                description: track.description.clone(),
+                track_type: track.track_type.clone(),
+                main_dir: track.main_dir.clone(),
+                begin_id: track.begin.id.clone(),
+                end_id: track.end.id.clone(),
+                abs_pos_begin: track.begin.pos.mileage,
+                abs_pos_end: track.end.pos.mileage,
+            };
+            let mut segment_index = 0usize;
             let mut track_idx = new_track(&mut topo, TopoTrack {
                 objects: init_objects,
                 track_elements: TrackElements::empty(),
                 offset: current_abs,
                 length: 0.0,
+                source: source.clone(),
+                segment_index,
+                segment_id: segment_track_id(&source.id, segment_index),
+                begin_id: segment_begin_id(&source.id, segment_index, &source.begin_id),
+                end_id: segment_end_id(&source.id, segment_index),
             });
+            let first_track_idx = track_idx;
 
             // prepare sorted objects for this track
             let mut sigs = track.objects.signals.clone();
@@ -283,6 +375,8 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
             lcs.sort_by_key(|l| OrderedFloat(l.pos.offset));
             let mut css = track.track_elements.cross_sections.clone();
             css.sort_by_key(|c| OrderedFloat(c.pos.offset));
+            let mut gms = track.track_elements.geo_mappings.clone();
+            gms.sort_by_key(|g| OrderedFloat(g.pos.offset));
 
             let mut push_segment_objects = |seg: &mut TopoTrack, start: f64, end: f64| {
                 while let Some(s) = sigs.first() {
@@ -355,9 +449,22 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                         seg.track_elements.cross_sections.push(c);
                     } else { break; }
                 }
+                while let Some(g) = gms.first() {
+                    if g.pos.offset <= end {
+                        let mut g = gms.remove(0);
+                        g.pos.offset -= start;
+                        seg.track_elements.geo_mappings.push(g);
+                    } else { break; }
+                }
             };
 
-            track_end(track.begin.connection, (track_idx, AB::A), &mut topo, &mut named_track_ports);
+            track_end(
+                track.begin.connection,
+                (track_idx, AB::A),
+                &mut topo,
+                &mut named_track_ports,
+                track.begin.pos.geo_coord.clone(),
+            );
             track.switches.sort_by_key(|s| match s { 
                 Switch::Switch { pos, .. } | Switch::Crossing { pos, .. } => OrderedFloat(pos.offset) });
             for sw in track.switches {
@@ -373,6 +480,9 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 } else {
                     new_node(&mut topo, TopoNode::Switch(sw_info.switch_geometry))
                 };
+                if let Some(gc) = sw_info.geo_coord.as_ref().and_then(|v| parse_geo_coord(v)) {
+                    topo.node_coords[nd] = Some(gc);
+                }
 
                 let (mut a_port, mut b_port) = if is_crossing {
                     (Port::Crossing(AB::A, 0), Port::Crossing(AB::B, 0))
@@ -386,25 +496,64 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                     sw_info.deviating_side.to_port()
                 };
 
-                named_node_ports.insert(sw_info.connref, (nd, deviating_port));
+                if is_crossing {
+                    if let Some((id, r#ref, _)) = sw_info.connrefs.first() {
+                        named_node_ports.insert((id.clone(), r#ref.clone()), (nd, deviating_port));
+                    }
+                } else {
+                    for (id, r#ref, course) in &sw_info.connrefs {
+                        let port = match course {
+                            Some(SwitchConnectionCourse::Straight) => Port::Trunk,
+                            Some(SwitchConnectionCourse::Left) => Port::Left,
+                            Some(SwitchConnectionCourse::Right) => Port::Right,
+                            None => deviating_port,
+                        };
+                        named_node_ports.insert((id.clone(), r#ref.clone()), (nd, port));
+                    }
+                }
+
+                let pos_eps = 1e-6;
+                let at_begin = (sw_info.pos - current_offset).abs() <= pos_eps;
+                let at_end = (track.end.pos.offset - sw_info.pos).abs() <= pos_eps;
+
+                if at_begin || at_end {
+                    if at_end {
+                        break;
+                    }
+                    continue;
+                }
 
                 if sw_info.dir == AB::B { std::mem::swap(&mut a_port, &mut b_port); }
 
                 topo.connections.push(((track_idx,AB::B), (nd, a_port)));
                 
+                segment_index += 1;
                 track_idx = new_track(&mut topo, TopoTrack {
                     objects: Objects::empty(),
                     track_elements: TrackElements::empty(),
                     offset: current_abs,
-                    length: 0.0
+                    length: 0.0,
+                    source: source.clone(),
+                    segment_index,
+                    segment_id: segment_track_id(&source.id, segment_index),
+                    begin_id: segment_begin_id(&source.id, segment_index, &source.begin_id),
+                    end_id: segment_end_id(&source.id, segment_index),
                 });
                 topo.connections.push(((track_idx,AB::A), (nd, b_port)));
                 current_offset = sw_info.pos;
             }
 
-            track_end(track.end.connection, (track_idx, AB::B), &mut topo, &mut named_track_ports);
+            track_end(
+                track.end.connection,
+                (track_idx, AB::B),
+                &mut topo,
+                &mut named_track_ports,
+                track.end.pos.geo_coord.clone(),
+            );
             topo.tracks[track_idx].length = track.end.pos.offset - current_offset;
             push_segment_objects(&mut topo.tracks[track_idx], current_offset, track.end.pos.offset);
+            topo.tracks[first_track_idx].begin_id = source.begin_id.clone();
+            topo.tracks[track_idx].end_id = source.end_id.clone();
         }
     }
 
@@ -458,12 +607,16 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
 pub fn track_end(conn :TrackEndConnection, 
                  (track_idx,side) :(usize,AB),
                  topo :&mut Topological,
-                 named_track_ports :&mut HashMap<(String,String),(usize,AB)>) {
+                 named_track_ports :&mut HashMap<(String,String),(usize,AB)>,
+                 geo_coord: Option<String>) {
     match conn {
         n @ TrackEndConnection::BufferStop | 
         n @ TrackEndConnection::OpenEnd |
         n @ TrackEndConnection::MacroscopicNode(_) => {
             let nd = new_node(topo, topo_node_type(n));
+            if let Some(gc) = geo_coord.as_ref().and_then(|v| parse_geo_coord(v)) {
+                topo.node_coords[nd] = Some(gc);
+            }
             topo.connections.push(((track_idx,side),(nd, Port::Single)));
         },
         TrackEndConnection::Connection(from,to) => {

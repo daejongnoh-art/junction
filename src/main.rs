@@ -13,6 +13,36 @@ use log::*;
 use crate::app::*;
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if let Some(pos) = args.iter().position(|x| x == "--dump-json") {
+        let input = match args.get(pos + 1) {
+            Some(val) => val,
+            None => {
+                eprintln!("Missing input file. Usage: junction --dump-json <input> <output>");
+                std::process::exit(2);
+            }
+        };
+        let output = match args.get(pos + 2) {
+            Some(val) => val,
+            None => {
+                eprintln!("Missing output file. Usage: junction --dump-json <input> <output>");
+                std::process::exit(2);
+            }
+        };
+        let model = match file::load(input) {
+            Ok(m) => m,
+            Err(err) => {
+                eprintln!("Failed to load {:?}: {}", input, err);
+                std::process::exit(1);
+            }
+        };
+        if let Err(err) = file::dump_json(output, &model) {
+            eprintln!("Failed to write {:?}: {}", output, err);
+            std::process::exit(1);
+        }
+        return;
+    }
+
     // Init logging
     let logstring = gui::windows::logview::StringLogger::init(log::LevelFilter::Trace).unwrap();
     info!("Starting {} v{}.", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
@@ -37,7 +67,6 @@ fn main() {
     };
 
 
-   let args: Vec<String> = std::env::args().collect();
    let big = args.iter().find(|x| *x == "--big").is_some();
 
     backend_glfw::backend(&app.document.fileinfo.window_title(),

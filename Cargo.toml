@@ -27,6 +27,7 @@ nalgebra-glm = "0.4"
 petgraph = "0.4"
 serde =  { version = "1.0", features = ["derive", "rc"] }
 serde_cbor = "0.10"
+serde_json = "1.0"
 
 font-kit = "0.4"
 tinyfiledialogs = "3.3.6"

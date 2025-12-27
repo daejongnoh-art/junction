@@ -1,0 +1,2241 @@
+{
+  "linesegs": [
+    {
+      "a": {
+        "x": 8,
+        "y": -32
+      },
+      "b": {
+        "x": 9,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 8,
+        "y": -29
+      },
+      "b": {
+        "x": 9,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 8,
+        "y": -26
+      },
+      "b": {
+        "x": 9,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 9,
+        "y": -32
+      },
+      "b": {
+        "x": 10,
+        "y": -33
+      }
+    },
+    {
+      "a": {
+        "x": 9,
+        "y": -32
+      },
+      "b": {
+        "x": 10,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 9,
+        "y": -29
+      },
+      "b": {
+        "x": 10,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 9,
+        "y": -29
+      },
+      "b": {
+        "x": 10,
+        "y": -28
+      }
+    },
+    {
+      "a": {
+        "x": 9,
+        "y": -26
+      },
+      "b": {
+        "x": 10,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 10,
+        "y": -33
+      },
+      "b": {
+        "x": 11,
+        "y": -34
+      }
+    },
+    {
+      "a": {
+        "x": 10,
+        "y": -32
+      },
+      "b": {
+        "x": 11,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 10,
+        "y": -29
+      },
+      "b": {
+        "x": 11,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 10,
+        "y": -28
+      },
+      "b": {
+        "x": 11,
+        "y": -27
+      }
+    },
+    {
+      "a": {
+        "x": 10,
+        "y": -26
+      },
+      "b": {
+        "x": 11,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 11,
+        "y": -34
+      },
+      "b": {
+        "x": 12,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 11,
+        "y": -32
+      },
+      "b": {
+        "x": 12,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 11,
+        "y": -29
+      },
+      "b": {
+        "x": 12,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 11,
+        "y": -27
+      },
+      "b": {
+        "x": 12,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 11,
+        "y": -26
+      },
+      "b": {
+        "x": 12,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 12,
+        "y": -35
+      },
+      "b": {
+        "x": 13,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 12,
+        "y": -32
+      },
+      "b": {
+        "x": 13,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 12,
+        "y": -29
+      },
+      "b": {
+        "x": 13,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 12,
+        "y": -26
+      },
+      "b": {
+        "x": 13,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -35
+      },
+      "b": {
+        "x": 14,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -32
+      },
+      "b": {
+        "x": 14,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -32
+      },
+      "b": {
+        "x": 14,
+        "y": -31
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -29
+      },
+      "b": {
+        "x": 14,
+        "y": -30
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -29
+      },
+      "b": {
+        "x": 14,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 13,
+        "y": -26
+      },
+      "b": {
+        "x": 14,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -35
+      },
+      "b": {
+        "x": 15,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -32
+      },
+      "b": {
+        "x": 15,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -31
+      },
+      "b": {
+        "x": 15,
+        "y": -30
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -30
+      },
+      "b": {
+        "x": 15,
+        "y": -31
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -29
+      },
+      "b": {
+        "x": 15,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 14,
+        "y": -26
+      },
+      "b": {
+        "x": 15,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -35
+      },
+      "b": {
+        "x": 16,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -32
+      },
+      "b": {
+        "x": 16,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -31
+      },
+      "b": {
+        "x": 16,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -30
+      },
+      "b": {
+        "x": 16,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -29
+      },
+      "b": {
+        "x": 16,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 15,
+        "y": -26
+      },
+      "b": {
+        "x": 16,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 16,
+        "y": -35
+      },
+      "b": {
+        "x": 17,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 16,
+        "y": -32
+      },
+      "b": {
+        "x": 17,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 16,
+        "y": -29
+      },
+      "b": {
+        "x": 17,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 16,
+        "y": -26
+      },
+      "b": {
+        "x": 17,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 17,
+        "y": -35
+      },
+      "b": {
+        "x": 18,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 17,
+        "y": -32
+      },
+      "b": {
+        "x": 18,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 17,
+        "y": -29
+      },
+      "b": {
+        "x": 18,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 17,
+        "y": -26
+      },
+      "b": {
+        "x": 18,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 18,
+        "y": -35
+      },
+      "b": {
+        "x": 19,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 18,
+        "y": -32
+      },
+      "b": {
+        "x": 19,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 18,
+        "y": -29
+      },
+      "b": {
+        "x": 19,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 18,
+        "y": -26
+      },
+      "b": {
+        "x": 19,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 19,
+        "y": -35
+      },
+      "b": {
+        "x": 20,
+        "y": -35
+      }
+    },
+    {
+      "a": {
+        "x": 19,
+        "y": -32
+      },
+      "b": {
+        "x": 20,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 19,
+        "y": -29
+      },
+      "b": {
+        "x": 20,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 19,
+        "y": -26
+      },
+      "b": {
+        "x": 20,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 20,
+        "y": -35
+      },
+      "b": {
+        "x": 21,
+        "y": -34
+      }
+    },
+    {
+      "a": {
+        "x": 20,
+        "y": -32
+      },
+      "b": {
+        "x": 21,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 20,
+        "y": -29
+      },
+      "b": {
+        "x": 21,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 20,
+        "y": -26
+      },
+      "b": {
+        "x": 21,
+        "y": -27
+      }
+    },
+    {
+      "a": {
+        "x": 20,
+        "y": -26
+      },
+      "b": {
+        "x": 21,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 21,
+        "y": -34
+      },
+      "b": {
+        "x": 22,
+        "y": -33
+      }
+    },
+    {
+      "a": {
+        "x": 21,
+        "y": -32
+      },
+      "b": {
+        "x": 22,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 21,
+        "y": -29
+      },
+      "b": {
+        "x": 22,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 21,
+        "y": -27
+      },
+      "b": {
+        "x": 22,
+        "y": -28
+      }
+    },
+    {
+      "a": {
+        "x": 21,
+        "y": -26
+      },
+      "b": {
+        "x": 22,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 22,
+        "y": -33
+      },
+      "b": {
+        "x": 23,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 22,
+        "y": -32
+      },
+      "b": {
+        "x": 23,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 22,
+        "y": -29
+      },
+      "b": {
+        "x": 23,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 22,
+        "y": -28
+      },
+      "b": {
+        "x": 23,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 22,
+        "y": -26
+      },
+      "b": {
+        "x": 23,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 23,
+        "y": -32
+      },
+      "b": {
+        "x": 24,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 23,
+        "y": -29
+      },
+      "b": {
+        "x": 24,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 23,
+        "y": -26
+      },
+      "b": {
+        "x": 24,
+        "y": -26
+      }
+    },
+    {
+      "a": {
+        "x": 24,
+        "y": -32
+      },
+      "b": {
+        "x": 25,
+        "y": -32
+      }
+    },
+    {
+      "a": {
+        "x": 24,
+        "y": -29
+      },
+      "b": {
+        "x": 25,
+        "y": -29
+      }
+    },
+    {
+      "a": {
+        "x": 24,
+        "y": -26
+      },
+      "b": {
+        "x": 25,
+        "y": -26
+      }
+    }
+  ],
+  "objects": [
+    {
+      "key": {
+        "x": 114,
+        "y": -292
+      },
+      "object": {
+        "loc": [
+          11.4,
+          -29.25
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          {
+            "MainSignal": {
+              "has_distant": false,
+              "kind": "Main"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 114,
+        "y": -290
+      },
+      "object": {
+        "loc": [
+          11.428572,
+          -29.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 127,
+        "y": -350
+      },
+      "object": {
+        "loc": [
+          12.742857,
+          -35.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 127,
+        "y": -260
+      },
+      "object": {
+        "loc": [
+          12.742858,
+          -26.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 167,
+        "y": -317
+      },
+      "object": {
+        "loc": [
+          16.77143,
+          -31.75
+        ],
+        "tangent": [
+          -1,
+          0
+        ],
+        "functions": [
+          {
+            "MainSignal": {
+              "has_distant": false,
+              "kind": "Main"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 168,
+        "y": -320
+      },
+      "object": {
+        "loc": [
+          16.885714,
+          -32.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 169,
+        "y": -290
+      },
+      "object": {
+        "loc": [
+          16.914286,
+          -29.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 169,
+        "y": -287
+      },
+      "object": {
+        "loc": [
+          16.942858,
+          -28.75
+        ],
+        "tangent": [
+          -1,
+          0
+        ],
+        "functions": [
+          {
+            "MainSignal": {
+              "has_distant": false,
+              "kind": "Main"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 191,
+        "y": -350
+      },
+      "object": {
+        "loc": [
+          19.171429,
+          -35.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    },
+    {
+      "key": {
+        "x": 192,
+        "y": -260
+      },
+      "object": {
+        "loc": [
+          19.285715,
+          -26.0
+        ],
+        "tangent": [
+          1,
+          0
+        ],
+        "functions": [
+          "Detector"
+        ]
+      }
+    }
+  ],
+  "node_data": [
+    {
+      "key": {
+        "x": 8,
+        "y": -32
+      },
+      "value": "OpenEnd"
+    },
+    {
+      "key": {
+        "x": 8,
+        "y": -29
+      },
+      "value": "OpenEnd"
+    },
+    {
+      "key": {
+        "x": 8,
+        "y": -26
+      },
+      "value": "OpenEnd"
+    },
+    {
+      "key": {
+        "x": 25,
+        "y": -32
+      },
+      "value": "BufferStop"
+    },
+    {
+      "key": {
+        "x": 25,
+        "y": -29
+      },
+      "value": "BufferStop"
+    },
+    {
+      "key": {
+        "x": 25,
+        "y": -26
+      },
+      "value": "BufferStop"
+    }
+  ],
+  "vehicles": [
+    [
+      0,
+      {
+        "name": "Vehicle 1",
+        "length": 210.0,
+        "max_acc": 0.9,
+        "max_brk": 0.85,
+        "max_vel": 50.0
+      }
+    ]
+  ],
+  "dispatches": [],
+  "plans": [],
+  "railml_metadata": null,
+  "railml_track_groups": [],
+  "railml_ocps": [],
+  "railml_states": [],
+  "railml_tracks": [
+    {
+      "id": "tr1",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr1tb",
+      "end_id": "tr1te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            8,
+            -32
+          ],
+          [
+            9,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr2",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr2tb",
+      "end_id": "tr2te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            8,
+            -29
+          ],
+          [
+            9,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr3",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr3tb",
+      "end_id": "tr3te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            8,
+            -26
+          ],
+          [
+            9,
+            -26
+          ]
+        ],
+        [
+          [
+            9,
+            -26
+          ],
+          [
+            10,
+            -26
+          ]
+        ],
+        [
+          [
+            10,
+            -26
+          ],
+          [
+            11,
+            -26
+          ]
+        ],
+        [
+          [
+            11,
+            -26
+          ],
+          [
+            12,
+            -26
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr4",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr4tb",
+      "end_id": "tr4te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            9,
+            -32
+          ],
+          [
+            10,
+            -33
+          ]
+        ],
+        [
+          [
+            10,
+            -33
+          ],
+          [
+            11,
+            -34
+          ]
+        ],
+        [
+          [
+            11,
+            -34
+          ],
+          [
+            12,
+            -35
+          ]
+        ],
+        [
+          [
+            12,
+            -35
+          ],
+          [
+            13,
+            -35
+          ]
+        ],
+        [
+          [
+            13,
+            -35
+          ],
+          [
+            14,
+            -35
+          ]
+        ],
+        [
+          [
+            14,
+            -35
+          ],
+          [
+            15,
+            -35
+          ]
+        ],
+        [
+          [
+            15,
+            -35
+          ],
+          [
+            16,
+            -35
+          ]
+        ],
+        [
+          [
+            16,
+            -35
+          ],
+          [
+            17,
+            -35
+          ]
+        ],
+        [
+          [
+            17,
+            -35
+          ],
+          [
+            18,
+            -35
+          ]
+        ],
+        [
+          [
+            18,
+            -35
+          ],
+          [
+            19,
+            -35
+          ]
+        ],
+        [
+          [
+            19,
+            -35
+          ],
+          [
+            20,
+            -35
+          ]
+        ],
+        [
+          [
+            20,
+            -35
+          ],
+          [
+            21,
+            -34
+          ]
+        ],
+        [
+          [
+            21,
+            -34
+          ],
+          [
+            22,
+            -33
+          ]
+        ],
+        [
+          [
+            22,
+            -33
+          ],
+          [
+            23,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr5",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr5tb",
+      "end_id": "tr5te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            9,
+            -32
+          ],
+          [
+            10,
+            -32
+          ]
+        ],
+        [
+          [
+            10,
+            -32
+          ],
+          [
+            11,
+            -32
+          ]
+        ],
+        [
+          [
+            11,
+            -32
+          ],
+          [
+            12,
+            -32
+          ]
+        ],
+        [
+          [
+            12,
+            -32
+          ],
+          [
+            13,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr6",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr6tb",
+      "end_id": "tr6te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            9,
+            -29
+          ],
+          [
+            10,
+            -29
+          ]
+        ],
+        [
+          [
+            10,
+            -29
+          ],
+          [
+            11,
+            -29
+          ]
+        ],
+        [
+          [
+            11,
+            -29
+          ],
+          [
+            12,
+            -29
+          ]
+        ],
+        [
+          [
+            12,
+            -29
+          ],
+          [
+            13,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr7",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr7tb",
+      "end_id": "tr7te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            9,
+            -29
+          ],
+          [
+            10,
+            -28
+          ]
+        ],
+        [
+          [
+            10,
+            -28
+          ],
+          [
+            11,
+            -27
+          ]
+        ],
+        [
+          [
+            11,
+            -27
+          ],
+          [
+            12,
+            -26
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr8",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr8tb",
+      "end_id": "tr8te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            12,
+            -26
+          ],
+          [
+            13,
+            -26
+          ]
+        ],
+        [
+          [
+            13,
+            -26
+          ],
+          [
+            14,
+            -26
+          ]
+        ],
+        [
+          [
+            14,
+            -26
+          ],
+          [
+            15,
+            -26
+          ]
+        ],
+        [
+          [
+            15,
+            -26
+          ],
+          [
+            16,
+            -26
+          ]
+        ],
+        [
+          [
+            16,
+            -26
+          ],
+          [
+            17,
+            -26
+          ]
+        ],
+        [
+          [
+            17,
+            -26
+          ],
+          [
+            18,
+            -26
+          ]
+        ],
+        [
+          [
+            18,
+            -26
+          ],
+          [
+            19,
+            -26
+          ]
+        ],
+        [
+          [
+            19,
+            -26
+          ],
+          [
+            20,
+            -26
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr9",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr9tb",
+      "end_id": "tr9te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            13,
+            -32
+          ],
+          [
+            14,
+            -32
+          ]
+        ],
+        [
+          [
+            14,
+            -32
+          ],
+          [
+            15,
+            -32
+          ]
+        ],
+        [
+          [
+            15,
+            -32
+          ],
+          [
+            16,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr10",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr10tb",
+      "end_id": "tr10te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            13,
+            -32
+          ],
+          [
+            14,
+            -31
+          ]
+        ],
+        [
+          [
+            14,
+            -31
+          ],
+          [
+            15,
+            -30
+          ]
+        ],
+        [
+          [
+            15,
+            -30
+          ],
+          [
+            16,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr11",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr11tb",
+      "end_id": "tr11te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            13,
+            -29
+          ],
+          [
+            14,
+            -30
+          ]
+        ],
+        [
+          [
+            14,
+            -30
+          ],
+          [
+            15,
+            -31
+          ]
+        ],
+        [
+          [
+            15,
+            -31
+          ],
+          [
+            16,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr12",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr12tb",
+      "end_id": "tr12te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            13,
+            -29
+          ],
+          [
+            14,
+            -29
+          ]
+        ],
+        [
+          [
+            14,
+            -29
+          ],
+          [
+            15,
+            -29
+          ]
+        ],
+        [
+          [
+            15,
+            -29
+          ],
+          [
+            16,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr13",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr13tb",
+      "end_id": "tr13te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            16,
+            -32
+          ],
+          [
+            17,
+            -32
+          ]
+        ],
+        [
+          [
+            17,
+            -32
+          ],
+          [
+            18,
+            -32
+          ]
+        ],
+        [
+          [
+            18,
+            -32
+          ],
+          [
+            19,
+            -32
+          ]
+        ],
+        [
+          [
+            19,
+            -32
+          ],
+          [
+            20,
+            -32
+          ]
+        ],
+        [
+          [
+            20,
+            -32
+          ],
+          [
+            21,
+            -32
+          ]
+        ],
+        [
+          [
+            21,
+            -32
+          ],
+          [
+            22,
+            -32
+          ]
+        ],
+        [
+          [
+            22,
+            -32
+          ],
+          [
+            23,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr14",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr14tb",
+      "end_id": "tr14te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            16,
+            -29
+          ],
+          [
+            17,
+            -29
+          ]
+        ],
+        [
+          [
+            17,
+            -29
+          ],
+          [
+            18,
+            -29
+          ]
+        ],
+        [
+          [
+            18,
+            -29
+          ],
+          [
+            19,
+            -29
+          ]
+        ],
+        [
+          [
+            19,
+            -29
+          ],
+          [
+            20,
+            -29
+          ]
+        ],
+        [
+          [
+            20,
+            -29
+          ],
+          [
+            21,
+            -29
+          ]
+        ],
+        [
+          [
+            21,
+            -29
+          ],
+          [
+            22,
+            -29
+          ]
+        ],
+        [
+          [
+            22,
+            -29
+          ],
+          [
+            23,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr15",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr15tb",
+      "end_id": "tr15te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            20,
+            -26
+          ],
+          [
+            21,
+            -27
+          ]
+        ],
+        [
+          [
+            21,
+            -27
+          ],
+          [
+            22,
+            -28
+          ]
+        ],
+        [
+          [
+            22,
+            -28
+          ],
+          [
+            23,
+            -29
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr16",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr16tb",
+      "end_id": "tr16te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            20,
+            -26
+          ],
+          [
+            21,
+            -26
+          ]
+        ],
+        [
+          [
+            21,
+            -26
+          ],
+          [
+            22,
+            -26
+          ]
+        ],
+        [
+          [
+            22,
+            -26
+          ],
+          [
+            23,
+            -26
+          ]
+        ],
+        [
+          [
+            23,
+            -26
+          ],
+          [
+            24,
+            -26
+          ]
+        ],
+        [
+          [
+            24,
+            -26
+          ],
+          [
+            25,
+            -26
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr17",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr17tb",
+      "end_id": "tr17te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            23,
+            -32
+          ],
+          [
+            24,
+            -32
+          ]
+        ],
+        [
+          [
+            24,
+            -32
+          ],
+          [
+            25,
+            -32
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tr18",
+      "code": null,
+      "name": null,
+      "description": null,
+      "track_type": null,
+      "main_dir": null,
+      "begin_id": "tr18tb",
+      "end_id": "tr18te",
+      "abs_pos_begin": null,
+      "abs_pos_end": null,
+      "segments": [
+        [
+          [
+            23,
+            -29
+          ],
+          [
+            24,
+            -29
+          ]
+        ],
+        [
+          [
+            24,
+            -29
+          ],
+          [
+            25,
+            -29
+          ]
+        ]
+      ]
+    }
+  ],
+  "railml_objects": [
+    {
+      "key": {
+        "x": 114,
+        "y": -292
+      },
+      "value": [
+        {
+          "Signal": {
+            "id": "tr6sig01",
+            "sight": null,
+            "type": "Main",
+            "function": null,
+            "code": null,
+            "switchable": null,
+            "ocp_station_ref": null,
+            "dir": "Up"
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 114,
+        "y": -290
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr6tde01",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 127,
+        "y": -350
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr4tde02",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 127,
+        "y": -260
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr8tde02",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 167,
+        "y": -317
+      },
+      "value": [
+        {
+          "Signal": {
+            "id": "tr13sig01",
+            "sight": null,
+            "type": "Main",
+            "function": null,
+            "code": null,
+            "switchable": null,
+            "ocp_station_ref": null,
+            "dir": "Down"
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 168,
+        "y": -320
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr13tde01",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 169,
+        "y": -290
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr14tde01",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 169,
+        "y": -287
+      },
+      "value": [
+        {
+          "Signal": {
+            "id": "tr14sig01",
+            "sight": null,
+            "type": "Main",
+            "function": null,
+            "code": null,
+            "switchable": null,
+            "ocp_station_ref": null,
+            "dir": "Down"
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 191,
+        "y": -350
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr4tde01",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    },
+    {
+      "key": {
+        "x": 192,
+        "y": -260
+      },
+      "value": [
+        {
+          "TrainDetector": {
+            "id": "tr8tde01",
+            "axle_counting": null,
+            "direction_detection": null,
+            "medium": null
+          }
+        }
+      ]
+    }
+  ]
+}

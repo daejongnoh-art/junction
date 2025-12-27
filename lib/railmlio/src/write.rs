@@ -44,6 +44,24 @@ fn write_position_attrs(out: &mut String, pos: &Position) {
     }
 }
 
+fn write_geo_coord(out: &mut String, coord: &str, level: usize) {
+    push_indent(out, level);
+    out.push_str("<geoCoord");
+    push_attr(out, "coord", coord);
+    out.push_str("/>\n");
+}
+
+fn write_text_element(out: &mut String, tag: &str, value: &str, level: usize) {
+    push_indent(out, level);
+    out.push('<');
+    out.push_str(tag);
+    out.push('>');
+    out.push_str(&escape_attr(value));
+    out.push_str("</");
+    out.push_str(tag);
+    out.push_str(">\n");
+}
+
 fn write_track_direction(out: &mut String, dir: TrackDirection) {
     let dir_str = match dir {
         TrackDirection::Up => "up",
@@ -152,6 +170,9 @@ fn write_switch(out: &mut String, sw: &Switch, level: usize) {
                 push_attr(out, "trackContinueRadius", &fmt_f64(*radius));
             }
             out.push_str(">\n");
+            if let Some(gc) = &pos.geo_coord {
+                write_geo_coord(out, gc, level + 1);
+            }
             for conn in connections {
                 push_indent(out, level + 1);
                 out.push_str("<connection");
@@ -201,6 +222,9 @@ fn write_switch(out: &mut String, sw: &Switch, level: usize) {
                 push_attr(out, "length", &fmt_f64(*len));
             }
             out.push_str(">\n");
+            if let Some(gc) = &pos.geo_coord {
+                write_geo_coord(out, gc, level + 1);
+            }
             for conn in connections {
                 push_indent(out, level + 1);
                 out.push_str("<connection");
@@ -222,39 +246,13 @@ fn write_track_elements(out: &mut String, track: &Track, level: usize) {
     if track.track_elements.platform_edges.is_empty()
         && track.track_elements.speed_changes.is_empty()
         && track.track_elements.level_crossings.is_empty()
+        && track.track_elements.geo_mappings.is_empty()
     {
         return;
     }
 
     push_indent(out, level);
     out.push_str("<trackElements>\n");
-
-    if !track.track_elements.platform_edges.is_empty() {
-        push_indent(out, level + 1);
-        out.push_str("<platformEdges>\n");
-        for pe in &track.track_elements.platform_edges {
-            push_indent(out, level + 2);
-            out.push_str("<platformEdge");
-            push_attr(out, "id", &pe.id);
-            write_position_attrs(out, &pe.pos);
-            write_track_direction(out, pe.dir);
-            if let Some(name) = &pe.name {
-                push_attr(out, "name", name);
-            }
-            if let Some(side) = &pe.side {
-                push_attr(out, "side", side);
-            }
-            if let Some(height) = pe.height {
-                push_attr(out, "height", &fmt_f64(height));
-            }
-            if let Some(length) = pe.length {
-                push_attr(out, "length", &fmt_f64(length));
-            }
-            out.push_str("/>\n");
-        }
-        push_indent(out, level + 1);
-        out.push_str("</platformEdges>\n");
-    }
 
     if !track.track_elements.speed_changes.is_empty() {
         push_indent(out, level + 1);
@@ -295,6 +293,63 @@ fn write_track_elements(out: &mut String, track: &Track, level: usize) {
         }
         push_indent(out, level + 1);
         out.push_str("</levelCrossings>\n");
+    }
+
+    if !track.track_elements.geo_mappings.is_empty() {
+        push_indent(out, level + 1);
+        out.push_str("<geoMappings>\n");
+        for gm in &track.track_elements.geo_mappings {
+            push_indent(out, level + 2);
+            out.push_str("<geoMapping");
+            push_attr(out, "id", &gm.id);
+            write_position_attrs(out, &gm.pos);
+            if let Some(name) = &gm.name {
+                push_attr(out, "name", name);
+            }
+            if let Some(code) = &gm.code {
+                push_attr(out, "code", code);
+            }
+            if let Some(desc) = &gm.description {
+                push_attr(out, "description", desc);
+            }
+            if let Some(gc) = &gm.pos.geo_coord {
+                out.push_str(">\n");
+                write_geo_coord(out, gc, level + 3);
+                push_indent(out, level + 2);
+                out.push_str("</geoMapping>\n");
+            } else {
+                out.push_str("/>\n");
+            }
+        }
+        push_indent(out, level + 1);
+        out.push_str("</geoMappings>\n");
+    }
+
+    if !track.track_elements.platform_edges.is_empty() {
+        push_indent(out, level + 1);
+        out.push_str("<platformEdges>\n");
+        for pe in &track.track_elements.platform_edges {
+            push_indent(out, level + 2);
+            out.push_str("<platformEdge");
+            push_attr(out, "id", &pe.id);
+            write_position_attrs(out, &pe.pos);
+            write_track_direction(out, pe.dir);
+            if let Some(name) = &pe.name {
+                push_attr(out, "name", name);
+            }
+            if let Some(side) = &pe.side {
+                push_attr(out, "side", side);
+            }
+            if let Some(height) = pe.height {
+                push_attr(out, "height", &fmt_f64(height));
+            }
+            if let Some(length) = pe.length {
+                push_attr(out, "length", &fmt_f64(length));
+            }
+            out.push_str("/>\n");
+        }
+        push_indent(out, level + 1);
+        out.push_str("</platformEdges>\n");
     }
 
     push_indent(out, level);
@@ -491,6 +546,188 @@ fn write_objects(out: &mut String, objs: &Objects, level: usize) {
     out.push_str("</ocsElements>\n");
 }
 
+fn write_metadata(out: &mut String, md: &Metadata, level: usize) {
+    push_indent(out, level);
+    out.push_str("<metadata");
+    if let Some(v) = &md.version {
+        push_attr(out, "version", v);
+    }
+    out.push_str(">\n");
+
+    if let Some(v) = &md.dc_format {
+        write_text_element(out, "format", v, level + 1);
+    }
+    if let Some(v) = &md.dc_identifier {
+        write_text_element(out, "identifier", v, level + 1);
+    }
+    if let Some(v) = &md.dc_source {
+        write_text_element(out, "source", v, level + 1);
+    }
+    if let Some(v) = &md.dc_title {
+        write_text_element(out, "title", v, level + 1);
+    }
+    if let Some(v) = &md.dc_language {
+        write_text_element(out, "language", v, level + 1);
+    }
+    if let Some(v) = &md.dc_creator {
+        write_text_element(out, "creator", v, level + 1);
+    }
+    if let Some(v) = &md.dc_description {
+        write_text_element(out, "description", v, level + 1);
+    }
+    if let Some(v) = &md.dc_rights {
+        write_text_element(out, "rights", v, level + 1);
+    }
+
+    if !md.organizational_units.is_empty() {
+        push_indent(out, level + 1);
+        out.push_str("<organizationalUnits>\n");
+        for ou in &md.organizational_units {
+            push_indent(out, level + 2);
+            out.push_str("<infrastructureManager");
+            push_attr(out, "id", &ou.id);
+            if let Some(code) = &ou.code {
+                push_attr(out, "code", code);
+            }
+            if let Some(name) = &ou.name {
+                push_attr(out, "name", name);
+            }
+            if let Some(contact) = &ou.contact {
+                push_attr(out, "contact", contact);
+            }
+            out.push_str("/>\n");
+        }
+        push_indent(out, level + 1);
+        out.push_str("</organizationalUnits>\n");
+    }
+
+    push_indent(out, level);
+    out.push_str("</metadata>\n");
+}
+
+fn write_track_groups(out: &mut String, infra: &Infrastructure, level: usize) {
+    if infra.track_groups.is_empty() {
+        return;
+    }
+    push_indent(out, level);
+    out.push_str("<trackGroups>\n");
+    for line in &infra.track_groups {
+        push_indent(out, level + 1);
+        out.push_str("<line");
+        push_attr(out, "id", &line.id);
+        if let Some(name) = &line.name {
+            push_attr(out, "name", name);
+        }
+        if let Some(im) = &line.infrastructure_manager_ref {
+            push_attr(out, "infrastructureManagerRef", im);
+        }
+        if let Some(cat) = &line.line_category {
+            push_attr(out, "lineCategory", cat);
+        }
+        if let Some(ty) = &line.line_type {
+            push_attr(out, "type", ty);
+        }
+        if line.track_refs.is_empty() {
+            out.push_str("/>\n");
+            continue;
+        }
+        out.push_str(">\n");
+        for tr in &line.track_refs {
+            push_indent(out, level + 2);
+            out.push_str("<trackRef");
+            push_attr(out, "ref", &tr.r#ref);
+            if let Some(seq) = tr.sequence {
+                push_attr(out, "sequence", &seq.to_string());
+            }
+            out.push_str("/>\n");
+        }
+        push_indent(out, level + 1);
+        out.push_str("</line>\n");
+    }
+    push_indent(out, level);
+    out.push_str("</trackGroups>\n");
+}
+
+fn write_operation_control_points(out: &mut String, infra: &Infrastructure, level: usize) {
+    if infra.ocps.is_empty() {
+        return;
+    }
+    push_indent(out, level);
+    out.push_str("<operationControlPoints>\n");
+    for ocp in &infra.ocps {
+        push_indent(out, level + 1);
+        out.push_str("<ocp");
+        push_attr(out, "id", &ocp.id);
+        if let Some(name) = &ocp.name {
+            push_attr(out, "name", name);
+        }
+        if let Some(t) = &ocp.r#type {
+            push_attr(out, "type", t);
+        }
+        if let Some(gc) = &ocp.geo_coord {
+            push_attr(out, "geoCoord", gc);
+        }
+        out.push_str("/>\n");
+    }
+    push_indent(out, level);
+    out.push_str("</operationControlPoints>\n");
+}
+
+fn write_states(out: &mut String, infra: &Infrastructure, level: usize) {
+    if infra.states.is_empty() {
+        return;
+    }
+    push_indent(out, level);
+    out.push_str("<states>\n");
+    for state in &infra.states {
+        push_indent(out, level + 1);
+        out.push_str("<state");
+        push_attr(out, "id", &state.id);
+        if let Some(disabled) = state.disabled {
+            push_attr(out, "disabled", if disabled { "true" } else { "false" });
+        }
+        if let Some(status) = &state.status {
+            push_attr(out, "status", status);
+        }
+        out.push_str("/>\n");
+    }
+    push_indent(out, level);
+    out.push_str("</states>\n");
+}
+
+fn write_rollingstock(out: &mut String, rs: &Rollingstock, level: usize) {
+    if rs.vehicles.is_empty() {
+        return;
+    }
+
+    push_indent(out, level);
+    out.push_str("<rollingstock>\n");
+    push_indent(out, level + 1);
+    out.push_str("<vehicles>\n");
+    for vehicle in &rs.vehicles {
+        push_indent(out, level + 2);
+        out.push_str("<vehicle");
+        push_attr(out, "id", &vehicle.id);
+        if let Some(name) = &vehicle.name {
+            push_attr(out, "name", name);
+        }
+        if let Some(desc) = &vehicle.description {
+            push_attr(out, "description", desc);
+        }
+        if let Some(length) = vehicle.length {
+            push_attr(out, "length", &format!("{}", length));
+        }
+        if let Some(speed) = vehicle.speed {
+            push_attr(out, "speed", &format!("{}", speed));
+        }
+        out.push_str("/>\n");
+    }
+    push_indent(out, level + 1);
+    out.push_str("</vehicles>\n");
+    push_indent(out, level);
+    out.push_str("</rollingstock>\n");
+}
+
 pub fn write_railml(railml: &RailML) -> String {
     let mut out = String::new();
     out.push_str("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
@@ -500,9 +737,16 @@ pub fn write_railml(railml: &RailML) -> String {
     out.push_str("xsi:schemaLocation=\"https://www.railml.org/schemas/2021 https://schemas.railml.org/2021/railML-2.5/schema/railML.xsd\" ");
     out.push_str("version=\"2.5\">\n");
 
+    if let Some(md) = &railml.metadata {
+        write_metadata(&mut out, md, 1);
+    }
+
     if let Some(infra) = &railml.infrastructure {
         push_indent(&mut out, 1);
         out.push_str("<infrastructure id=\"inf01\">\n");
+        write_operation_control_points(&mut out, infra, 2);
+        write_track_groups(&mut out, infra, 2);
+        write_states(&mut out, infra, 2);
         push_indent(&mut out, 2);
         out.push_str("<tracks>\n");
         for track in &infra.tracks {
@@ -534,6 +778,9 @@ pub fn write_railml(railml: &RailML) -> String {
             push_attr(&mut out, "id", &track.begin.id);
             write_position_attrs(&mut out, &track.begin.pos);
             out.push_str(">\n");
+            if let Some(gc) = &track.begin.pos.geo_coord {
+                write_geo_coord(&mut out, gc, 6);
+            }
             write_track_end_connection(&mut out, &track.begin.connection, 6);
             push_indent(&mut out, 5);
             out.push_str("</trackBegin>\n");
@@ -543,6 +790,9 @@ pub fn write_railml(railml: &RailML) -> String {
             push_attr(&mut out, "id", &track.end.id);
             write_position_attrs(&mut out, &track.end.pos);
             out.push_str(">\n");
+            if let Some(gc) = &track.end.pos.geo_coord {
+                write_geo_coord(&mut out, gc, 6);
+            }
             write_track_end_connection(&mut out, &track.end.connection, 6);
             push_indent(&mut out, 5);
             out.push_str("</trackEnd>\n");
@@ -572,6 +822,10 @@ pub fn write_railml(railml: &RailML) -> String {
         out.push_str("</tracks>\n");
         push_indent(&mut out, 1);
         out.push_str("</infrastructure>\n");
+    }
+
+    if let Some(rs) = &railml.rollingstock {
+        write_rollingstock(&mut out, rs, 1);
     }
 
     out.push_str("</railml>\n");

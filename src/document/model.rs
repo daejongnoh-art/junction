@@ -7,7 +7,7 @@ use serde::{Serialize,Deserialize};
 
 use std::sync::Arc;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[derive(Serialize,Deserialize)]
 pub enum Side {
     Left, Right
@@ -63,7 +63,7 @@ impl Default for Vehicle {
     } }
 }
 
-#[derive(Debug,Copy,Clone, PartialEq, Eq)]
+#[derive(Debug,Copy,Clone, PartialEq, Eq, Hash)]
 #[derive(Serialize,Deserialize)]
 pub enum CrossingType { 
     Crossover,
@@ -71,7 +71,7 @@ pub enum CrossingType {
     DoubleSlip,
 }
 
-#[derive(Debug,Copy,Clone, PartialEq, Eq)]
+#[derive(Debug,Copy,Clone, PartialEq, Eq, Hash)]
 #[derive(Serialize,Deserialize)]
 pub enum NDType { OpenEnd, BufferStop, Cont, Sw(Side), Crossing(CrossingType), Err }
 // TODO crossing switchable, crossing orthogonal?, what settings does a crossing have?
@@ -289,6 +289,104 @@ pub struct Model {
     pub vehicles :ImShortGenList<Vehicle>, 
     pub dispatches :ImShortGenList<Dispatch>,
     pub plans :ImShortGenList<PlanSpec>,
+    #[serde(default)]
+    pub railml_metadata: Option<railmlio::model::Metadata>,
+    #[serde(default)]
+    pub railml_track_groups: Vec<railmlio::model::TrackGroup>,
+    #[serde(default)]
+    pub railml_ocps: Vec<railmlio::model::Ocp>,
+    #[serde(default)]
+    pub railml_states: Vec<railmlio::model::State>,
+    #[serde(default)]
+    pub railml_tracks: Vec<RailMLTrackInfo>,
+    #[serde(default)]
+    pub railml_objects: im::HashMap<PtA, Vec<RailMLObjectInfo>>,
+}
+
+#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize)]
+pub struct RailMLTrackInfo {
+    pub id: String,
+    pub code: Option<String>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub track_type: Option<String>,
+    pub main_dir: Option<String>,
+    pub begin_id: String,
+    pub end_id: String,
+    pub abs_pos_begin: Option<f64>,
+    pub abs_pos_end: Option<f64>,
+    pub segments: Vec<(Pt, Pt)>,
+}
+
+#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize)]
+pub enum RailMLObjectInfo {
+    Signal {
+        id: String,
+        sight: Option<f64>,
+        r#type: railmlio::model::SignalType,
+        function: Option<railmlio::model::SignalFunction>,
+        code: Option<String>,
+        switchable: Option<bool>,
+        ocp_station_ref: Option<String>,
+        dir: railmlio::model::TrackDirection,
+    },
+    TrainDetector {
+        id: String,
+        axle_counting: Option<bool>,
+        direction_detection: Option<bool>,
+        medium: Option<String>,
+    },
+    TrackCircuitBorder {
+        id: String,
+        insulated_rail: Option<String>,
+    },
+    Derailer {
+        id: String,
+        dir: Option<railmlio::model::TrackDirection>,
+        derail_side: Option<String>,
+        code: Option<String>,
+    },
+    TrainProtectionElement {
+        id: String,
+        dir: Option<railmlio::model::TrackDirection>,
+        medium: Option<String>,
+        system: Option<String>,
+    },
+    TrainProtectionElementGroup {
+        id: String,
+        element_refs: Vec<String>,
+    },
+    Balise {
+        id: String,
+        name: Option<String>,
+    },
+    PlatformEdge {
+        id: String,
+        name: Option<String>,
+        dir: railmlio::model::TrackDirection,
+        side: Option<String>,
+        height: Option<f64>,
+        length: Option<f64>,
+    },
+    SpeedChange {
+        id: String,
+        dir: railmlio::model::TrackDirection,
+        vmax: Option<String>,
+        signalised: Option<bool>,
+    },
+    LevelCrossing {
+        id: String,
+        protection: Option<String>,
+        angle: Option<f64>,
+    },
+    CrossSection {
+        id: String,
+        name: Option<String>,
+        ocp_ref: Option<String>,
+        section_type: Option<String>,
+    },
 }
 
 

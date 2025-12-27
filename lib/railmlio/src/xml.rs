@@ -25,6 +25,7 @@ fn parse_railml_xml(root: &xml::Node) -> BoxResult<RailML> {
             Some(inf) => Some(parse_infrastructure(&inf).map_err(|e| format!("{:?}", e))?),
             None => None,
         },
+        rollingstock: parse_rollingstock(root).ok(),
     })
 }
 
@@ -110,6 +111,35 @@ fn parse_infrastructure(inf: &xml::Node) -> Result<Infrastructure, DocErr> {
         track_groups,
         ocps,
         states,
+    })
+}
+
+fn parse_rollingstock(root: &xml::Node) -> Result<Rollingstock, DocErr> {
+    let rs = root
+        .children()
+        .find(|c| c.has_tag_name("rollingstock"))
+        .ok_or(DocErr::ElementMissing("rollingstock", root.range().start))?;
+
+    let mut vehicles = Vec::new();
+    if let Some(vehicles_root) = rs.children().find(|c| c.has_tag_name("vehicles")) {
+        for v in vehicles_root.children().filter(|c| c.has_tag_name("vehicle")) {
+            vehicles.push(parse_vehicle(&v)?);
+        }
+    }
+
+    Ok(Rollingstock { vehicles })
+}
+
+fn parse_vehicle(node: &xml::Node) -> Result<Vehicle, DocErr> {
+    Ok(Vehicle {
+        id: node
+            .attribute("id")
+            .ok_or(DocErr::AttributeMissing("id", node.range().start))?
+            .to_string(),
+        name: node.attribute("name").map(|x| x.to_string()),
+        description: node.attribute("description").map(|x| x.to_string()),
+        length: node.attribute("length").and_then(|v| v.parse().ok()),
+        speed: node.attribute("speed").and_then(|v| v.parse().ok()),
     })
 }
 
@@ -224,6 +254,11 @@ fn parse_track_elements(track: &xml::Node, topo: &xml::Node) -> Result<TrackElem
                 res.level_crossings.push(parse_level_crossing(&l)?);
             }
         }
+        if let Some(gms) = te.children().find(|c| c.has_tag_name("geoMappings")) {
+            for g in gms.children().filter(|c| c.has_tag_name("geoMapping")) {
+                res.geo_mappings.push(parse_geo_mapping(&g)?);
+            }
+        }
     }
     Ok(res)
 }
@@ -278,6 +313,19 @@ fn parse_level_crossing(node: &xml::Node) -> Result<LevelCrossing, DocErr> {
         pos: parse_position(node)?,
         protection: node.attribute("protection").map(|s| s.to_string()),
         angle: node.attribute("angle").and_then(|v| v.parse::<f64>().ok()),
+    })
+}
+
+fn parse_geo_mapping(node: &xml::Node) -> Result<GeoMapping, DocErr> {
+    Ok(GeoMapping {
+        id: node
+            .attribute("id")
+            .ok_or(DocErr::AttributeMissing("id", node.range().start))?
+            .to_string(),
+        pos: parse_position(node)?,
+        name: node.attribute("name").map(|x| x.to_string()),
+        code: node.attribute("code").map(|x| x.to_string()),
+        description: node.attribute("description").map(|x| x.to_string()),
     })
 }
 
@@ -681,6 +729,12 @@ fn parse_position(node: &xml::Node) -> Result<Position, DocErr> {
             ),
             None => None,
         },
+        geo_coord: node
+            .children()
+            .find(|c| c.has_tag_name("geoCoord"))
+            .and_then(|c| c.attribute("coord"))
+            .map(|x| x.to_string())
+            .or_else(|| node.attribute("geoCoord").map(|x| x.to_string())),
     })
 }
 

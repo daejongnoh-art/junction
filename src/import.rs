@@ -5,6 +5,7 @@ use const_cstr::const_cstr;
 use crate::document::model::*;
 use crate::document::model;
 use crate::document::analysis::*;
+use crate::document::infview::round_coord;
 use crate::file;
 use crate::app::*;
 use crate::gui::widgets;
@@ -140,7 +141,7 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
     if tx.send(ImportState::Ping).is_err() { return; }
     info!("Parsed railml");
 
-    let topomodel = match railmlio::topo::convert_railml_topo(parsed) {
+    let topomodel = match railmlio::topo::convert_railml_topo(parsed.clone()) {
         Ok(m) => m,
         Err(e) => {
             println!("TOPMODEL ERR {:?}", e);
@@ -174,39 +175,43 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
     };
     use railplotlib::solvers::SchematicSolver;
     let mut solver = new_solver();
-
-
     let fallback_plot = simple_layout_from(&plotmodel);
 
-    info!("Starting solver");
-    info!("plot model {:#?}", plotmodel);
-    let mut plot = match solver.solve(plotmodel) {
-        Ok(m) => m,
-        Err(e) => {
-            warn!("Solver failed (FromFile): {:?}, retrying Estimated", e);
-            let mut solver = new_solver();
-            let est_plotmodel = match convert_railplot_estimated(&topomodel) {
-                Ok(m) => m,
-                Err(err) => {
-                    let _ = tx.send(err);
-                    return;
-                },
-            };
-            let fallback = simple_layout_from(&est_plotmodel);
-            match solver.solve(est_plotmodel) {
-                Ok(m2) => m2,
-                Err(e2) => {
-                    warn!("Solver failed (Estimated): {:?}, using simple layout fallback", e2);
-                    match convert_junction(fallback, auto_scale) {
-                        Ok(m) => {
-                            let _ = tx.send(ImportState::Available(m));
-                        },
-                        Err(err) => { let _ = tx.send(err); }
-                    }
-                    return;
-                },
-            }
-        },
+    let (mut plot, used_geo) = if let Some(plot) = layout_from_geocoord(&plotmodel, &topomodel) {
+        info!("Using geoCoord-based layout");
+        (plot, true)
+    } else {
+        info!("Starting solver");
+        info!("plot model {:#?}", plotmodel);
+        let solved = match solver.solve(plotmodel) {
+            Ok(m) => m,
+            Err(e) => {
+                warn!("Solver failed (FromFile): {:?}, retrying Estimated", e);
+                let mut solver = new_solver();
+                let est_plotmodel = match convert_railplot_estimated(&topomodel) {
+                    Ok(m) => m,
+                    Err(err) => {
+                        let _ = tx.send(err);
+                        return;
+                    },
+                };
+                let fallback = simple_layout_from(&est_plotmodel);
+                match solver.solve(est_plotmodel) {
+                    Ok(m2) => m2,
+                    Err(e2) => {
+                        warn!("Solver failed (Estimated): {:?}, using simple layout fallback", e2);
+                        match convert_junction(fallback, auto_scale) {
+                            Ok((m, _)) => {
+                                let _ = tx.send(ImportState::Available(m));
+                            },
+                            Err(err) => { let _ = tx.send(err); }
+                        }
+                        return;
+                    },
+                }
+            },
+        };
+        (solved, false)
     };
     let y_min = plot.nodes.iter().map(|(_,pt)| pt.1).fold(f64::INFINITY, f64::min);
     let y_max = plot.nodes.iter().map(|(_,pt)| pt.1).fold(f64::NEG_INFINITY, f64::max);
@@ -220,32 +225,42 @@ pub fn load_railml_file(filename :String, tx :mpsc::Sender<ImportState>, auto_sc
     if tx.send(ImportState::Ping).is_err() { return; }
 
     info!("Found model");
-    let model = match convert_junction(plot, auto_scale) {
-        Ok(m) => m,
+    let (mut model, track_segments) = match convert_junction(plot, auto_scale && !used_geo) {
+        Ok(result) => result,
         Err(e) => {
             let _ = tx.send(e);
             return;
         },
     };
+    model.railml_metadata = parsed.metadata.clone();
+    if let Some(inf) = parsed.infrastructure.as_ref() {
+        model.railml_track_groups = inf.track_groups.clone();
+        model.railml_ocps = inf.ocps.clone();
+        model.railml_states = inf.states.clone();
+    }
+    model.railml_tracks = build_railml_tracks(&topomodel, track_segments);
+    if let Some(rs) = parsed.rollingstock.as_ref() {
+        for v in &rs.vehicles {
+            let mut vehicle = Vehicle::default();
+            vehicle.name = v.name.clone().unwrap_or_else(|| v.id.clone());
+            if let Some(length) = v.length {
+                vehicle.length = length as f32;
+            }
+            if let Some(speed) = v.speed {
+                vehicle.max_vel = speed as f32;
+            }
+            model.vehicles.insert(vehicle);
+        }
+    }
 
     info!("Model available");
     let _ = tx.send(ImportState::Available(model));
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum RailObject {
-    Signal { r#type: railmlio::model::SignalType, dir: Option<railmlio::model::TrackDirection> },
-    Detector,
-    TrackCircuitBorder,
-    Derailer,
-    TrainProtectionElement,
-    TrainProtectionGroup,
-    Balise,
-    PlatformEdge,
-    SpeedChange,
-    LevelCrossing,
-    CrossSection,
+    Info(crate::document::model::RailMLObjectInfo),
 }
 
 fn validate_topo_positions(topo: &railmlio::topo::Topological) {
@@ -273,6 +288,7 @@ fn validate_topo_positions(topo: &railmlio::topo::Topological) {
         for s in &track.track_elements.speed_changes { check("speed", s.pos.offset); }
         for l in &track.track_elements.level_crossings { check("level_crossing", l.pos.offset); }
         for c in &track.track_elements.cross_sections { check("cross_section", c.pos.offset); }
+        for g in &track.track_elements.geo_mappings { check("geo_mapping", g.pos.offset); }
     }
     if issues > 0 {
         warn!("Topological position validation reported {} issues", issues);
@@ -422,7 +438,16 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Signal { r#type: s.r#type, dir: Some(s.dir) }));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Signal {
+                            id: s.id.clone(),
+                            sight: s.sight,
+                            r#type: s.r#type,
+                            function: s.function,
+                            code: s.code.clone(),
+                            switchable: s.switchable,
+                            ocp_station_ref: s.ocp_station_ref.clone(),
+                            dir: s.dir,
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.train_detectors {
                         objects.push((plot::Symbol {
@@ -430,7 +455,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Detector));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrainDetector {
+                            id: d.id.clone(),
+                            axle_counting: d.axle_counting,
+                            direction_detection: d.direction_detection,
+                            medium: d.medium.clone(),
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.track_circuit_borders {
                         objects.push((plot::Symbol {
@@ -438,7 +468,10 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::TrackCircuitBorder));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrackCircuitBorder {
+                            id: d.id.clone(),
+                            insulated_rail: d.insulated_rail.clone(),
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.derailers {
                         objects.push((plot::Symbol {
@@ -446,7 +479,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Derailer));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Derailer {
+                            id: d.id.clone(),
+                            dir: d.dir,
+                            derail_side: d.derail_side.clone(),
+                            code: d.code.clone(),
+                        })));
                     }
                     for e in &topo.tracks[track_idx].objects.train_protection_elements {
                         objects.push((plot::Symbol {
@@ -454,7 +492,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::TrainProtectionElement));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrainProtectionElement {
+                            id: e.id.clone(),
+                            dir: e.dir,
+                            medium: e.medium.clone(),
+                            system: e.system.clone(),
+                        })));
                     }
                     for p in &topo.tracks[track_idx].track_elements.platform_edges {
                         objects.push((plot::Symbol {
@@ -462,7 +505,14 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::PlatformEdge));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::PlatformEdge {
+                            id: p.id.clone(),
+                            name: p.name.clone(),
+                            dir: p.dir,
+                            side: p.side.clone(),
+                            height: p.height,
+                            length: p.length,
+                        })));
                     }
                     for s in &topo.tracks[track_idx].track_elements.speed_changes {
                         objects.push((plot::Symbol {
@@ -470,7 +520,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::SpeedChange));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::SpeedChange {
+                            id: s.id.clone(),
+                            dir: s.dir,
+                            vmax: s.vmax.clone(),
+                            signalised: s.signalised,
+                        })));
                     }
                     for l in &topo.tracks[track_idx].track_elements.level_crossings {
                         objects.push((plot::Symbol {
@@ -478,7 +533,11 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::LevelCrossing));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::LevelCrossing {
+                            id: l.id.clone(),
+                            protection: l.protection.clone(),
+                            angle: l.angle,
+                        })));
                     }
                     for c in &topo.tracks[track_idx].track_elements.cross_sections {
                         objects.push((plot::Symbol {
@@ -486,7 +545,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::CrossSection));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::CrossSection {
+                            id: c.id.clone(),
+                            name: c.name.clone(),
+                            ocp_ref: c.ocp_ref.clone(),
+                            section_type: c.section_type.clone(),
+                        })));
                     }
                     for b in &topo.tracks[track_idx].objects.balises {
                         objects.push((plot::Symbol {
@@ -494,7 +558,10 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Balise));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Balise {
+                            id: b.id.clone(),
+                            name: b.name.clone(),
+                        })));
                     }
                     if let Some(&mi) = node_map.get(&na.0) {
                         model.nodes[mi].pos = pos_a;
@@ -808,7 +875,16 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Signal { r#type: s.r#type, dir: Some(s.dir) }));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Signal {
+                            id: s.id.clone(),
+                            sight: s.sight,
+                            r#type: s.r#type,
+                            function: s.function,
+                            code: s.code.clone(),
+                            switchable: s.switchable,
+                            ocp_station_ref: s.ocp_station_ref.clone(),
+                            dir: s.dir,
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.train_detectors {
                         objects.push((plot::Symbol {
@@ -816,7 +892,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Detector));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrainDetector {
+                            id: d.id.clone(),
+                            axle_counting: d.axle_counting,
+                            direction_detection: d.direction_detection,
+                            medium: d.medium.clone(),
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.track_circuit_borders {
                         objects.push((plot::Symbol {
@@ -824,7 +905,10 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::TrackCircuitBorder));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrackCircuitBorder {
+                            id: d.id.clone(),
+                            insulated_rail: d.insulated_rail.clone(),
+                        })));
                     }
                     for d in &topo.tracks[track_idx].objects.derailers {
                         objects.push((plot::Symbol {
@@ -832,7 +916,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Derailer));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Derailer {
+                            id: d.id.clone(),
+                            dir: d.dir,
+                            derail_side: d.derail_side.clone(),
+                            code: d.code.clone(),
+                        })));
                     }
                     for e in &topo.tracks[track_idx].objects.train_protection_elements {
                         objects.push((plot::Symbol {
@@ -840,26 +929,31 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::TrainProtectionElement));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::TrainProtectionElement {
+                            id: e.id.clone(),
+                            dir: e.dir,
+                            medium: e.medium.clone(),
+                            system: e.system.clone(),
+                        })));
                     }
                     if let Some(group_positions) = group_by_track.get(&track_idx) {
-                        for pos in group_positions {
-                            objects.push((plot::Symbol {
-                                pos: *pos,
-                                width: 0.1,
-                                origin: 0.0,
-                                level: 1,
-                            }, RailObject::TrainProtectionGroup));
-                        }
-                    }
-                    if let Some(group_positions) = group_by_track.get(&track_idx) {
-                        for pos in group_positions {
-                            objects.push((plot::Symbol {
-                                pos: *pos,
-                                width: 0.1,
-                                origin: 0.0,
-                                level: 1,
-                            }, RailObject::TrainProtectionGroup));
+                        for (idx, pos) in group_positions.iter().enumerate() {
+                            let info = topo.tracks[track_idx]
+                                .objects
+                                .train_protection_element_groups
+                                .get(idx)
+                                .map(|g| crate::document::model::RailMLObjectInfo::TrainProtectionElementGroup {
+                                    id: g.id.clone(),
+                                    element_refs: g.element_refs.clone(),
+                                });
+                            if let Some(info) = info {
+                                objects.push((plot::Symbol {
+                                    pos: *pos,
+                                    width: 0.1,
+                                    origin: 0.0,
+                                    level: 1,
+                                }, RailObject::Info(info)));
+                            }
                         }
                     }
                     for p in &topo.tracks[track_idx].track_elements.platform_edges {
@@ -868,7 +962,14 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::PlatformEdge));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::PlatformEdge {
+                            id: p.id.clone(),
+                            name: p.name.clone(),
+                            dir: p.dir,
+                            side: p.side.clone(),
+                            height: p.height,
+                            length: p.length,
+                        })));
                     }
                     for s in &topo.tracks[track_idx].track_elements.speed_changes {
                         objects.push((plot::Symbol {
@@ -876,7 +977,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::SpeedChange));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::SpeedChange {
+                            id: s.id.clone(),
+                            dir: s.dir,
+                            vmax: s.vmax.clone(),
+                            signalised: s.signalised,
+                        })));
                     }
                     for l in &topo.tracks[track_idx].track_elements.level_crossings {
                         objects.push((plot::Symbol {
@@ -884,7 +990,11 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::LevelCrossing));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::LevelCrossing {
+                            id: l.id.clone(),
+                            protection: l.protection.clone(),
+                            angle: l.angle,
+                        })));
                     }
                     for c in &topo.tracks[track_idx].track_elements.cross_sections {
                         objects.push((plot::Symbol {
@@ -892,7 +1002,12 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::CrossSection));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::CrossSection {
+                            id: c.id.clone(),
+                            name: c.name.clone(),
+                            ocp_ref: c.ocp_ref.clone(),
+                            section_type: c.section_type.clone(),
+                        })));
                     }
                     for b in &topo.tracks[track_idx].objects.balises {
                         objects.push((plot::Symbol {
@@ -900,7 +1015,10 @@ pub fn convert_railplot_with_method(topo :&railmlio::topo::Topological, force_es
                             width: 0.1,
                             origin: 0.0,
                             level: 1,
-                        }, RailObject::Balise));
+                        }, RailObject::Info(crate::document::model::RailMLObjectInfo::Balise {
+                            id: b.id.clone(),
+                            name: b.name.clone(),
+                        })));
                     }
                     model.edges.push(plot::Edge { a, b, objects });
                 }
@@ -918,10 +1036,60 @@ pub fn round_pt_tol((x,y) :(f64,f64)) -> Result<Pt,()> {
     let tol = 0.6;
     if (x.round() - x).abs() > tol { return Err(()); }
     if (y.round() - y).abs() > tol { return Err(()); }
-    Ok(glm::vec2(x.round() as _, (-20.0 + y.round()) as _))
+    Ok(glm::vec2(x.round() as _, y.round() as _))
 }
 
-pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, auto_scale: bool) -> Result<Model, ImportState> {
+fn build_track_segments(plot: &railplotlib::model::SchematicOutput<RailObject>) -> Result<Vec<Vec<(Pt,Pt)>>, ImportState> {
+    let mut track_segments = Vec::new();
+    for (_e, pts) in &plot.lines {
+        let pts = pts
+            .iter()
+            .map(|x| round_pt_tol(*x))
+            .collect::<Result<Vec<_>, ()>>()
+            .map_err(|_| ImportState::PlotError("Solution contains point not on grid".to_string()))?;
+        let mut segs = Vec::new();
+        for (p1, p2) in pts.iter().zip(pts.iter().skip(1)) {
+            let segs_raw = line_segments(*p1, *p2).or_else(|_| manhattan_segments(*p1, *p2));
+            let segs_raw = segs_raw.unwrap_or_default();
+            for (mut a, mut b) in segs_raw {
+                if a > b { std::mem::swap(&mut a, &mut b); }
+                segs.push((a, b));
+            }
+        }
+        track_segments.push(segs);
+    }
+    Ok(track_segments)
+}
+
+fn build_railml_tracks(
+    topo: &railmlio::topo::Topological,
+    track_segments: Vec<Vec<(Pt,Pt)>>,
+) -> Vec<crate::document::model::RailMLTrackInfo> {
+    topo.tracks
+        .iter()
+        .enumerate()
+        .map(|(idx, track)| {
+            let has_abs = track.source.abs_pos_begin.is_some() || track.source.abs_pos_end.is_some();
+            let abs_pos_begin = if has_abs { Some(track.offset) } else { None };
+            let abs_pos_end = abs_pos_begin.map(|v| v + track.length);
+            crate::document::model::RailMLTrackInfo {
+                id: track.segment_id.clone(),
+                code: track.source.code.clone(),
+                name: track.source.name.clone(),
+                description: track.source.description.clone(),
+                track_type: track.source.track_type.clone(),
+                main_dir: track.source.main_dir.clone(),
+                begin_id: track.begin_id.clone(),
+                end_id: track.end_id.clone(),
+                abs_pos_begin,
+                abs_pos_end,
+                segments: track_segments.get(idx).cloned().unwrap_or_default(),
+            }
+        })
+        .collect()
+}
+
+pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, auto_scale: bool) -> Result<(Model, Vec<Vec<(Pt,Pt)>>), ImportState> {
     debug!("Starting conversion of railplotlib schematic output");
 
     // Heuristic scaling: scale up tiny outputs and scale down huge outputs to keep grid reasonable.
@@ -932,7 +1100,7 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
             .map(|(_,pt)| pt.0.abs().max(pt.1.abs()))
             .max_by(|a,b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
         if let Some(max_pos) = max_pos {
-            let scale = if max_pos > 0.0 && max_pos < 50.0 {
+            let scale: f64 = if max_pos > 0.0 && max_pos < 50.0 {
                 50.0 / max_pos
             } else if max_pos > 500.0 {
                 500.0 / max_pos
@@ -961,20 +1129,23 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
         }
     }
 
+    let track_segments = build_track_segments(&plot)?;
     let mut model :Model = Default::default();
 
     for (n,pt) in plot.nodes {
         let pt = round_pt_tol(pt)
             .map_err(|_| ImportState::PlotError(format!("Solution contains point not on grid, {:?}", pt)))?;
         use railplotlib::model::Shape;
-        model.node_data.insert(pt, match n.shape {
-            Shape::Begin => NDType::OpenEnd,
-            Shape::End => NDType::BufferStop,
-            Shape::Switch(railplotlib::model::Side::Left, _) => NDType::Sw(model::Side::Left),
-            Shape::Switch(railplotlib::model::Side::Right, _) => NDType::Sw(model::Side::Right),
-            Shape::Crossing => NDType::Crossing(CrossingType::Crossover),
-            _ => NDType::Err,
-        });
+        let nd = match n.shape {
+            Shape::Begin => Some(NDType::OpenEnd),
+            Shape::End => Some(NDType::BufferStop),
+            Shape::Crossing => Some(NDType::Crossing(CrossingType::Crossover)),
+            Shape::Switch(_, _) => None,
+            _ => Some(NDType::Err),
+        };
+        if let Some(nd) = nd {
+            model.node_data.insert(pt, nd);
+        }
     }
 
     let mut plot_segments: Vec<((f64, f64), (f64, f64))> = Vec::new();
@@ -998,10 +1169,32 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
         }
     }
 
+    let to_grid_key = |pt: (f64, f64)| {
+        nalgebra_glm::vec2(pt.0.round() as i32, (pt.1.round() as i32 - 20))
+    };
+
+    let find_free_key = |base: Pt, objects: &im::HashMap<PtA, crate::document::objects::Object>| {
+        if !objects.contains_key(&base) {
+            return base;
+        }
+        for radius in 1i32..=3i32 {
+            for dx in -radius..=radius {
+                for dy in -radius..=radius {
+                    if dx.abs() != radius && dy.abs() != radius {
+                        continue;
+                    }
+                    let cand = nalgebra_glm::vec2(base.x + dx, base.y + dy);
+                    if !objects.contains_key(&cand) {
+                        return cand;
+                    }
+                }
+            }
+        }
+        base
+    };
+
     for (obj, pts) in plot.symbols {
-        let p_res1 = round_pt_tol(pts.0);
-        if p_res1.is_err() { continue; }
-        let p1 = p_res1.unwrap();
+        let p1 = round_pt_tol(pts.0).unwrap_or_else(|_| to_grid_key(pts.0));
 
         let mut best_tangent: Option<Pt> = None;
         let mut best_dist = f64::INFINITY;
@@ -1034,13 +1227,18 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
         let tvec = best_tangent.unwrap_or_else(|| {
             nalgebra_glm::vec2((pts.1 .0).signum() as i32, (pts.1 .1).signum() as i32)
         });
-        let loc = nalgebra_glm::vec2(p1.x as f32, p1.y as f32);
+        let loc = nalgebra_glm::vec2(pts.0 .0 as f32, pts.0 .1 as f32);
         let tangent: Pt = if tvec == nalgebra_glm::zero() { nalgebra_glm::vec2(1, 0) } else { tvec };
         
         let mut functions = Vec::new();
-        match obj {
-            RailObject::Signal { r#type: t, dir } => {
-                use crate::document::objects::{Function, Object};
+        let mut signal_dir: Option<railmlio::model::TrackDirection> = None;
+        let info = match obj {
+            RailObject::Info(info) => info,
+        };
+        let mut tangent = tangent;
+        match &info {
+            crate::document::model::RailMLObjectInfo::Signal { r#type: t, dir, .. } => {
+                use crate::document::objects::Function;
                 let kind = match t {
                     railmlio::model::SignalType::Main => crate::document::objects::SignalKind::Main,
                     railmlio::model::SignalType::Distant => crate::document::objects::SignalKind::Distant,
@@ -1052,110 +1250,62 @@ pub fn convert_junction(plot :railplotlib::model::SchematicOutput<RailObject>, a
                     crate::document::objects::SignalKind::Combined |
                     crate::document::objects::SignalKind::Distant);
                 functions.push(Function::MainSignal { has_distant, kind });
-                let mut tangent = tangent;
-                if matches!(dir, Some(railmlio::model::TrackDirection::Down)) {
-                    tangent = -tangent;
-                }
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+                signal_dir = Some(*dir);
             }
-            RailObject::Detector => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::Detector);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::TrainDetector { .. } => {
+                functions.push(crate::document::objects::Function::Detector);
             }
-            RailObject::TrackCircuitBorder => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::TrackCircuitBorder);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::TrackCircuitBorder { .. } => {
+                functions.push(crate::document::objects::Function::TrackCircuitBorder);
             }
-            RailObject::Derailer => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::Derailer);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::Derailer { .. } => {
+                functions.push(crate::document::objects::Function::Derailer);
             }
-            RailObject::TrainProtectionElement => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::TrainProtectionElement);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::TrainProtectionElement { .. } => {
+                functions.push(crate::document::objects::Function::TrainProtectionElement);
             }
-            RailObject::TrainProtectionGroup => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::TrainProtectionGroup);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::TrainProtectionElementGroup { .. } => {
+                functions.push(crate::document::objects::Function::TrainProtectionGroup);
             }
-            RailObject::PlatformEdge => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::PlatformEdge);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::Balise { .. } => {
+                functions.push(crate::document::objects::Function::Balise);
             }
-            RailObject::SpeedChange => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::SpeedChange);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::PlatformEdge { .. } => {
+                functions.push(crate::document::objects::Function::PlatformEdge);
             }
-            RailObject::LevelCrossing => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::LevelCrossing);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::SpeedChange { .. } => {
+                functions.push(crate::document::objects::Function::SpeedChange);
             }
-            RailObject::CrossSection => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::CrossSection);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::LevelCrossing { .. } => {
+                functions.push(crate::document::objects::Function::LevelCrossing);
             }
-            RailObject::Balise => {
-                use crate::document::objects::{Function, Object};
-                functions.push(Function::Balise);
-                model.objects.insert(p1, Object {
-                    loc,
-                    tangent,
-                    functions,
-                });
+            crate::document::model::RailMLObjectInfo::CrossSection { .. } => {
+                functions.push(crate::document::objects::Function::CrossSection);
             }
         }
+        let mut obj = crate::document::objects::Object {
+            loc,
+            tangent,
+            functions,
+        };
+        if let Some(dir) = signal_dir {
+            if matches!(dir, railmlio::model::TrackDirection::Down) {
+                obj.tangent = -obj.tangent;
+            }
+            // Preserve along-track position; offset to a consistent side based on direction.
+            let tangent_f = nalgebra_glm::vec2(obj.tangent.x as f32, obj.tangent.y as f32);
+            let normal = nalgebra_glm::vec2(-tangent_f.y, tangent_f.x);
+            obj.loc = obj.loc + (-0.25 * normal);
+        } else {
+            let _ = obj.move_to(&model, obj.loc);
+        }
+        let base_key = round_coord(obj.loc);
+        let key = find_free_key(base_key, &model.objects);
+        model.objects.insert(key, obj);
+        model.railml_objects.entry(key).or_insert_with(Vec::new).push(info);
     }
 
-    Ok(model)
+    Ok((model, track_segments))
 }
 
 pub fn line_segments(a :Pt, b :Pt) -> Result<Vec<(Pt,Pt)>, ()> {
@@ -1312,16 +1462,303 @@ fn simple_layout_from(plotmodel: &railplotlib::model::SchematicGraph<RailObject>
             } else {
                 a_pos
             };
-            symbols.push((*obj, (pos, tvec)));
+            symbols.push((obj.clone(), (pos, tvec)));
         }
     }
 
     railplotlib::model::SchematicOutput { nodes, lines, symbols }
 }
 
+fn layout_from_geocoord(
+    plotmodel: &railplotlib::model::SchematicGraph<RailObject>,
+    topo: &railmlio::topo::Topological,
+) -> Option<railplotlib::model::SchematicOutput<RailObject>> {
+    fn parse_geo_coord(value: &str) -> Option<(f64, f64)> {
+        let cleaned = value.replace(',', " ");
+        let mut it = cleaned.split_whitespace();
+        let x: f64 = it.next()?.parse().ok()?;
+        let y: f64 = it.next()?.parse().ok()?;
+        Some((x, y))
+    }
+
+    fn push_unique(points: &mut Vec<(f64, f64)>, pt: (f64, f64)) {
+        let eps = 1e-6;
+        if let Some(last) = points.last() {
+            if (last.0 - pt.0).abs() <= eps && (last.1 - pt.1).abs() <= eps {
+                return;
+            }
+        }
+        points.push(pt);
+    }
+
+    fn position_on_polyline(points: &[(f64, f64)], t: f64) -> ((f64, f64), (f64, f64)) {
+        if points.len() < 2 {
+            return (points.get(0).copied().unwrap_or((0.0, 0.0)), (1.0, 0.0));
+        }
+        let mut total = 0.0;
+        let mut seg_lens = Vec::new();
+        for (a, b) in points.iter().zip(points.iter().skip(1)) {
+            let dx = b.0 - a.0;
+            let dy = b.1 - a.1;
+            let len = (dx * dx + dy * dy).sqrt();
+            seg_lens.push(len);
+            total += len;
+        }
+        if total <= f64::EPSILON {
+            return (points[0], (1.0, 0.0));
+        }
+        let mut dist = (t.max(0.0).min(1.0)) * total;
+        for (idx, len) in seg_lens.iter().enumerate() {
+            if *len <= f64::EPSILON {
+                continue;
+            }
+            if dist <= *len {
+                let frac = dist / *len;
+                let a = points[idx];
+                let b = points[idx + 1];
+                let dx = b.0 - a.0;
+                let dy = b.1 - a.1;
+                let pos = (a.0 + dx * frac, a.1 + dy * frac);
+                let tvec = (dx / *len, dy / *len);
+                return (pos, tvec);
+            }
+            dist -= *len;
+        }
+        let last = points[points.len() - 1];
+        let prev = points[points.len() - 2];
+        let dx = last.0 - prev.0;
+        let dy = last.1 - prev.1;
+        let len = (dx * dx + dy * dy).sqrt();
+        let tvec = if len > f64::EPSILON {
+            (dx / len, dy / len)
+        } else {
+            (1.0, 0.0)
+        };
+        (last, tvec)
+    }
+
+    fn position_on_geo_mapping(
+        points: &[(f64, (f64, f64))],
+        pos: f64,
+    ) -> ((f64, f64), (f64, f64)) {
+        if points.is_empty() {
+            return ((0.0, 0.0), (1.0, 0.0));
+        }
+        if points.len() == 1 {
+            return (points[0].1, (1.0, 0.0));
+        }
+        let clamped = pos.max(points[0].0).min(points[points.len() - 1].0);
+        for i in 0..points.len() - 1 {
+            let (p0, c0) = points[i];
+            let (p1, c1) = points[i + 1];
+            if clamped >= p0 && clamped <= p1 {
+                let denom = (p1 - p0).abs();
+                let t = if denom > f64::EPSILON {
+                    (clamped - p0) / (p1 - p0)
+                } else {
+                    0.0
+                };
+                let dx = c1.0 - c0.0;
+                let dy = c1.1 - c0.1;
+                let len = (dx * dx + dy * dy).sqrt();
+                let pos = (c0.0 + dx * t, c0.1 + dy * t);
+                let tvec = if len > f64::EPSILON {
+                    (dx / len, dy / len)
+                } else {
+                    (1.0, 0.0)
+                };
+                return (pos, tvec);
+            }
+        }
+        let last = points[points.len() - 1].1;
+        let prev = points[points.len() - 2].1;
+        let dx = last.0 - prev.0;
+        let dy = last.1 - prev.1;
+        let len = (dx * dx + dy * dy).sqrt();
+        let tvec = if len > f64::EPSILON {
+            (dx / len, dy / len)
+        } else {
+            (1.0, 0.0)
+        };
+        (last, tvec)
+    }
+
+    let mut node_index = HashMap::new();
+    for (idx, n) in plotmodel.nodes.iter().enumerate() {
+        node_index.insert(n.name.clone(), idx);
+    }
+
+    let mut node_pos = HashMap::new();
+    for n in &plotmodel.nodes {
+        let idx = n.name.strip_prefix('n')?.parse::<usize>().ok()?;
+        let coord = topo.node_coords.get(idx)?.as_ref()?;
+        node_pos.insert(n.name.clone(), *coord);
+    }
+
+    let mut nodes = Vec::new();
+    for n in &plotmodel.nodes {
+        let mut shape = n.shape;
+        if let railplotlib::model::Shape::Switch(side, _) = shape {
+            let node_pt = *node_pos.get(&n.name)?;
+            let mut inferred = None;
+            for e in &plotmodel.edges {
+                let (port, other_name) = if e.a.0 == n.name {
+                    (e.a.1, &e.b.0)
+                } else if e.b.0 == n.name {
+                    (e.b.1, &e.a.0)
+                } else {
+                    continue;
+                };
+                if matches!(port, railplotlib::model::Port::Left | railplotlib::model::Port::Right) {
+                    if let Some(other_pt) = node_pos.get(other_name) {
+                        let dir = if other_pt.1 < node_pt.1 {
+                            railplotlib::model::Dir::Up
+                        } else {
+                            railplotlib::model::Dir::Down
+                        };
+                        inferred = Some(dir);
+                        break;
+                    }
+                }
+            }
+            if let Some(dir) = inferred {
+                shape = railplotlib::model::Shape::Switch(side, dir);
+            }
+        }
+        let pt = *node_pos.get(&n.name)?;
+        let mut n = n.clone();
+        n.shape = shape;
+        nodes.push((n, pt));
+    }
+
+    let mut track_geo = HashMap::new();
+    for (idx, track) in topo.tracks.iter().enumerate() {
+        let mut points = Vec::new();
+        for gm in &track.track_elements.geo_mappings {
+            if let Some(coord) = gm.pos.geo_coord.as_ref().and_then(|v| parse_geo_coord(v)) {
+                points.push((gm.pos.offset, coord));
+            }
+        }
+        points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
+        if !points.is_empty() {
+            track_geo.insert(idx, points);
+        }
+    }
+
+    use railmlio::topo as topo_model;
+    let track_connections: HashMap<(usize, topo_model::AB), (usize, topo_model::Port)> =
+        topo.connections.iter().cloned().collect();
+    let node_connections: HashMap<(usize, topo_model::Port), (usize, topo_model::AB)> = topo
+        .connections
+        .iter()
+        .map(|(a, b)| (*b, *a))
+        .collect();
+    let cont_opposite = |p: topo_model::Port| match p {
+        topo_model::Port::ContA => topo_model::Port::ContB,
+        topo_model::Port::ContB => topo_model::Port::ContA,
+        x => x,
+    };
+    let resolve_endpoint = |track_idx: usize, side: topo_model::AB| -> Option<usize> {
+        let mut next = *track_connections.get(&(track_idx, side))?;
+        loop {
+            match next.1 {
+                topo_model::Port::ContA | topo_model::Port::ContB => {
+                    let (ti, tab) = node_connections.get(&(next.0, cont_opposite(next.1)))?;
+                    next = *track_connections.get(&(*ti, tab.opposite()))?;
+                }
+                _ => return Some(next.0),
+            }
+        }
+    };
+    let mut edge_track_map: HashMap<(usize, usize), Vec<usize>> = HashMap::new();
+    for track_idx in 0..topo.tracks.len() {
+        if let (Some(a), Some(b)) = (
+            resolve_endpoint(track_idx, topo_model::AB::A),
+            resolve_endpoint(track_idx, topo_model::AB::B),
+        ) {
+            let key = if a < b { (a, b) } else { (b, a) };
+            edge_track_map.entry(key).or_default().push(track_idx);
+        }
+    }
+
+    let mut lines = Vec::new();
+    let mut edge_lines = Vec::new();
+    let mut edge_track_indices = Vec::new();
+    for e in &plotmodel.edges {
+        let a_pos = *node_pos.get(&e.a.0)?;
+        let b_pos = *node_pos.get(&e.b.0)?;
+        let a_idx = e.a.0.strip_prefix('n')?.parse::<usize>().ok()?;
+        let b_idx = e.b.0.strip_prefix('n')?.parse::<usize>().ok()?;
+        let key = if a_idx < b_idx { (a_idx, b_idx) } else { (b_idx, a_idx) };
+        let track_idx = edge_track_map
+            .get_mut(&key)
+            .and_then(|list| list.pop());
+        edge_track_indices.push(track_idx);
+
+        let mut pts = Vec::new();
+        push_unique(&mut pts, a_pos);
+        if let Some(track_idx) = track_idx {
+            if let Some(geom) = track_geo.get(&track_idx) {
+                let mut coords: Vec<(f64, f64)> = geom.iter().map(|(_, coord)| *coord).collect();
+                if let (Some(first), Some(last)) = (coords.first(), coords.last()) {
+                    let d_first = (first.0 - a_pos.0).powi(2) + (first.1 - a_pos.1).powi(2);
+                    let d_last = (last.0 - a_pos.0).powi(2) + (last.1 - a_pos.1).powi(2);
+                    if d_last < d_first {
+                        coords.reverse();
+                    }
+                }
+                for coord in coords {
+                    push_unique(&mut pts, coord);
+                }
+            }
+        }
+        push_unique(&mut pts, b_pos);
+        edge_lines.push(pts.clone());
+        lines.push((e.clone(), pts));
+    }
+
+    let mut symbols = Vec::new();
+    for (edge_idx, e) in plotmodel.edges.iter().enumerate() {
+        let a_idx = *node_index.get(&e.a.0)?;
+        let b_idx = *node_index.get(&e.b.0)?;
+        let a_m = plotmodel.nodes[a_idx].pos;
+        let b_m = plotmodel.nodes[b_idx].pos;
+        let denom = b_m - a_m;
+        let line_pts = edge_lines.get(edge_idx)?;
+        let track_idx = edge_track_indices.get(edge_idx).copied().flatten();
+        for (sym, obj) in &e.objects {
+            let (pos, tvec) = if let Some(track_idx) = track_idx {
+                if let Some(geom) = track_geo.get(&track_idx) {
+                    let track = &topo.tracks[track_idx];
+                    let local_pos = (sym.pos - track.offset).max(0.0).min(track.length);
+                    position_on_geo_mapping(geom, local_pos)
+                } else {
+                    let t = if denom.abs() > f64::EPSILON {
+                        ((sym.pos - a_m) / denom).max(0.0).min(1.0)
+                    } else {
+                        0.0
+                    };
+                    position_on_polyline(line_pts, t)
+                }
+            } else {
+                let t = if denom.abs() > f64::EPSILON {
+                    ((sym.pos - a_m) / denom).max(0.0).min(1.0)
+                } else {
+                    0.0
+                };
+                position_on_polyline(line_pts, t)
+            };
+            symbols.push((obj.clone(), (pos, tvec)));
+        }
+    }
+
+    Some(railplotlib::model::SchematicOutput { nodes, lines, symbols })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::export::export_railml_to_file;
 
     #[test]
     fn test_nest_sample_import() {
@@ -1347,6 +1784,43 @@ mod tests {
         assert!(model.node_data.len() > 0);
         assert!(model.linesegs.len() > 0);
         println!("NEST sample import successful. Nodes: {}, Segments: {}", model.node_data.len(), model.linesegs.len());
+    }
+
+    #[test]
+    fn test_railml_roundtrip_export() {
+        let filename = "railML/IS NEST view/2024-07-19_railML_SimpleExample_v13_NEST_railML2.5.xml".to_string();
+        let (tx, rx) = std::sync::mpsc::channel();
+
+        load_railml_file(filename, tx, true);
+
+        let mut available_model = None;
+        while let Ok(state) = rx.recv() {
+            match state {
+                ImportState::Available(model) => {
+                    available_model = Some(model);
+                    break;
+                }
+                ImportState::SourceFileError(e) => panic!("Source file error: {}", e),
+                ImportState::PlotError(e) => panic!("Plot error: {}", e),
+                _ => {}
+            }
+        }
+
+        let model = available_model.expect("Model should be available");
+        let tmp_path = std::env::temp_dir().join(format!("junction_roundtrip_{}.railml", std::process::id()));
+        export_railml_to_file(tmp_path.to_str().expect("temp path"), &model)
+            .expect("export should succeed");
+
+        let xml = std::fs::read_to_string(&tmp_path).expect("exported file should exist");
+        assert!(!xml.is_empty(), "exported railML should not be empty");
+        let parsed = railmlio::xml::parse_railml(&xml).expect("exported railML should parse");
+        let has_tracks = parsed
+            .infrastructure
+            .map(|inf| !inf.tracks.is_empty())
+            .unwrap_or(false);
+        assert!(has_tracks, "exported railML should contain tracks");
+
+        let _ = std::fs::remove_file(tmp_path);
     }
 }
 

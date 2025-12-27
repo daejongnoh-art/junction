@@ -15,6 +15,7 @@ pub struct Topology {
     pub locations : HashMap<Pt,(NDType,Vc)>,
     pub trackobjects : Vec<Vec<(f64,PtA, Function,Option<AB>)>>,
     pub interval_lines :Vec<Vec<(OrderedFloat<f64>,PtC)>>,
+    pub track_segments: Vec<Vec<(Pt,Pt)>>,
 }
 
 impl Topology {
@@ -70,6 +71,7 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
 
     let mut piece_map : HashMap<((i32,i32),(i32,i32)), (usize, f64, f64)> = HashMap::new();
     let mut trackobjects = Vec::new();
+    let mut track_segments = Vec::new();
     while let Some((p1,p2)) = pieces.remove_any() {
         let mut list = VecDeque::new();
         list.push_back((p1,p2));
@@ -112,15 +114,20 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
         //println!("List {:?}", list);
         let mut l = 0.0;
         let mut interval_map = Vec::new();
+        let mut segments = Vec::new();
         for (a,b) in list.iter().cloned() {
             piece_map.insert((a,b), (tracks.len()-1, l, def_len));
             interval_map.push((OrderedFloat(l),glm::vec2(a.0 as f32 ,a.1 as f32)));
             l += def_len;
+            let (mut pa, mut pb) = (to_vec(a), to_vec(b));
+            if pa > pb { std::mem::swap(&mut pa, &mut pb); }
+            segments.push((pa, pb));
         }
         let last_pt = list[list.len()-1].1;
         interval_map.push((OrderedFloat(l),glm::vec2(last_pt.0 as f32, last_pt.1 as f32)));
         interval_lines.push(interval_map);
         trackobjects.push(Vec::new());
+        track_segments.push(segments);
     }
 
     fn get_dir_from_side((a,b) :&(Pt,Pt), pt :PtC) -> AB {
@@ -367,7 +374,8 @@ pub fn convert(model :&Model, def_len :f64) -> Result<Topology, ()>{
             tracks: tp.into_iter().map(|(a,b,l)| (l, a.unwrap(), b.unwrap())).collect(),
             locations: locx,
             trackobjects: trackobjects,
-            interval_lines: interval_lines, 
+            interval_lines: interval_lines,
+            track_segments: track_segments,
         }
     )
 }
