@@ -459,7 +459,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
             };
 
             track_end(
-                track.begin.connection,
+                track.begin.connection.clone(),
                 (track_idx, AB::A),
                 &mut topo,
                 &mut named_track_ports,
@@ -467,6 +467,7 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
             );
             track.switches.sort_by_key(|s| match s { 
                 Switch::Switch { pos, .. } | Switch::Crossing { pos, .. } => OrderedFloat(pos.offset) });
+            let mut end_connected_by_switch = false;
             for sw in track.switches {
                 let is_crossing = matches!(sw, Switch::Crossing { .. });
                 let sw_info = switch_info(sw)?;
@@ -516,14 +517,41 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 let at_begin = (sw_info.pos - current_offset).abs() <= pos_eps;
                 let at_end = (track.end.pos.offset - sw_info.pos).abs() <= pos_eps;
 
+                if sw_info.dir == AB::B { std::mem::swap(&mut a_port, &mut b_port); }
+
                 if at_begin || at_end {
+                    if at_begin {
+                        // Track starts at the switch: connect begin to the outgoing side.
+                        topo.connections.push(((track_idx, AB::A), (nd, b_port)));
+                        if let TrackEndConnection::Connection(id, r#ref) = &track.begin.connection {
+                            // If this end points to a switch-connection id, drop that pending
+                            // node-port mapping; otherwise, map this track connection to trunk.
+                            let switch_key = (r#ref.clone(), id.clone());
+                            if named_node_ports.remove(&switch_key).is_none() {
+                                named_node_ports.insert((id.clone(), r#ref.clone()), (nd, a_port));
+                            }
+                            // Prevent a dangling track-to-track continuation for this end.
+                            named_track_ports.remove(&(id.clone(), r#ref.clone()));
+                        }
+                    }
                     if at_end {
+                        // Track ends at the switch: connect end to the incoming side.
+                        topo.connections.push(((track_idx, AB::B), (nd, a_port)));
+                        if let TrackEndConnection::Connection(id, r#ref) = &track.end.connection {
+                            // If this end points to a switch-connection id, drop that pending
+                            // node-port mapping; otherwise, map this track connection to trunk.
+                            let switch_key = (r#ref.clone(), id.clone());
+                            if named_node_ports.remove(&switch_key).is_none() {
+                                named_node_ports.insert((id.clone(), r#ref.clone()), (nd, b_port));
+                            }
+                            // Prevent a dangling track-to-track continuation for this end.
+                            named_track_ports.remove(&(id.clone(), r#ref.clone()));
+                        }
+                        end_connected_by_switch = true;
                         break;
                     }
                     continue;
                 }
-
-                if sw_info.dir == AB::B { std::mem::swap(&mut a_port, &mut b_port); }
 
                 topo.connections.push(((track_idx,AB::B), (nd, a_port)));
                 
@@ -543,13 +571,15 @@ pub fn convert_railml_topo(doc :RailML) -> Result<Topological,TopoConvErr> {
                 current_offset = sw_info.pos;
             }
 
-            track_end(
-                track.end.connection,
-                (track_idx, AB::B),
-                &mut topo,
-                &mut named_track_ports,
-                track.end.pos.geo_coord.clone(),
-            );
+            if !(end_connected_by_switch && matches!(track.end.connection, TrackEndConnection::Connection(_, _))) {
+                track_end(
+                    track.end.connection.clone(),
+                    (track_idx, AB::B),
+                    &mut topo,
+                    &mut named_track_ports,
+                    track.end.pos.geo_coord.clone(),
+                );
+            }
             topo.tracks[track_idx].length = track.end.pos.offset - current_offset;
             push_segment_objects(&mut topo.tracks[track_idx], current_offset, track.end.pos.offset);
             topo.tracks[first_track_idx].begin_id = source.begin_id.clone();
