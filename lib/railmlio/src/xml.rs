@@ -154,29 +154,107 @@ fn parse_track_group(node: &xml::Node) -> Result<TrackGroup, DocErr> {
             sequence: tr.attribute("sequence").and_then(|s| s.parse().ok()),
         });
     }
+    let mut additional_names = Vec::new();
+    for an in node.children().filter(|c| c.has_tag_name("additionalName")) {
+        if let Some(name) = an.attribute("name") {
+            additional_names.push(AdditionalName {
+                name: name.to_string(),
+                lang: an.attribute("xml:lang").or_else(|| an.attribute("lang")).map(|x| x.to_string()),
+                name_type: an.attribute("type").map(|x| x.to_string()),
+            });
+        }
+    }
 
     Ok(TrackGroup {
         id: node
             .attribute("id")
             .ok_or(DocErr::AttributeMissing("id", node.range().start))?
             .to_string(),
+        code: node.attribute("code").map(|x| x.to_string()),
         name: node.attribute("name").map(|x| x.to_string()),
         infrastructure_manager_ref: node.attribute("infrastructureManagerRef").map(|x| x.to_string()),
         line_category: node.attribute("lineCategory").map(|x| x.to_string()),
         line_type: node.attribute("type").map(|x| x.to_string()),
         track_refs,
+        additional_names,
     })
 }
 
 fn parse_ocp(node: &xml::Node) -> Result<Ocp, DocErr> {
+    let mut additional_names = Vec::new();
+    for an in node.children().filter(|c| c.has_tag_name("additionalName")) {
+        if let Some(name) = an.attribute("name") {
+            additional_names.push(AdditionalName {
+                name: name.to_string(),
+                lang: an.attribute("xml:lang").or_else(|| an.attribute("lang")).map(|x| x.to_string()),
+                name_type: an.attribute("type").map(|x| x.to_string()),
+            });
+        }
+    }
+
+    let prop_operational = node.children().find(|c| c.has_tag_name("propOperational")).map(|p| {
+        PropOperational {
+            ensures_train_sequence: p.attribute("ensuresTrainSequence").and_then(|v| v.parse::<bool>().ok()),
+            order_changeable: p.attribute("orderChangeable").and_then(|v| v.parse::<bool>().ok()),
+            operational_type: p.attribute("operationalType").map(|x| x.to_string()),
+            traffic_type: p.attribute("trafficType").map(|x| x.to_string()),
+        }
+    });
+
+    let prop_service = node.children().find(|c| c.has_tag_name("propService")).map(|p| {
+        PropService {
+            passenger: p.attribute("passenger").and_then(|v| v.parse::<bool>().ok()),
+            service: p.attribute("service").and_then(|v| v.parse::<bool>().ok()),
+            goods_siding: p.attribute("goodsSiding").and_then(|v| v.parse::<bool>().ok()),
+        }
+    });
+
+    let prop_equipment = node.children().find(|c| c.has_tag_name("propEquipment")).map(|p| {
+        let summary = p.children().find(|c| c.has_tag_name("summary")).map(|s| {
+            PropEquipmentSummary {
+                has_home_signals: s.attribute("hasHomeSignals").and_then(|v| v.parse::<bool>().ok()),
+                has_starter_signals: s.attribute("hasStarterSignals").and_then(|v| v.parse::<bool>().ok()),
+                has_switches: s.attribute("hasSwitches").and_then(|v| v.parse::<bool>().ok()),
+                signal_box: s.attribute("signalBox").map(|x| x.to_string()),
+            }
+        });
+        let mut track_refs = Vec::new();
+        for tr in p.children().filter(|c| c.has_tag_name("trackRef")) {
+            if let Some(r) = tr.attribute("ref") {
+                track_refs.push(r.to_string());
+            }
+        }
+        PropEquipment { summary, track_refs }
+    });
+
+    let designator = node.children().find(|c| c.has_tag_name("designator")).map(|d| {
+        Designator {
+            register: d.attribute("register").map(|x| x.to_string()),
+            entry: d.attribute("entry").map(|x| x.to_string()),
+        }
+    });
+
+    let geo_coord = node.children().find(|c| c.has_tag_name("geoCoord")).and_then(|g| {
+        g.attribute("coord").map(|coord| GeoCoord {
+            coord: coord.to_string(),
+            epsg_code: g.attribute("epsgCode").map(|x| x.to_string()),
+        })
+    });
+
     Ok(Ocp {
         id: node
             .attribute("id")
             .ok_or(DocErr::AttributeMissing("id", node.range().start))?
             .to_string(),
         name: node.attribute("name").map(|x| x.to_string()),
+        lang: node.attribute("xml:lang").or_else(|| node.attribute("lang")).map(|x| x.to_string()),
         r#type: node.attribute("type").map(|x| x.to_string()),
-        geo_coord: node.attribute("geoCoord").map(|x| x.to_string()),
+        geo_coord,
+        additional_names,
+        prop_operational,
+        prop_equipment,
+        prop_service,
+        designator,
     })
 }
 
@@ -398,6 +476,27 @@ fn parse_objects(track: &xml::Node) -> Result<Objects, DocErr> {
 }
 
 fn parse_signal(s: &xml::Node) -> Result<Signal, DocErr> {
+    let mut speeds = Vec::new();
+    for sp in s.children().filter(|c| c.has_tag_name("speed")) {
+        let speed_change_ref = sp
+            .children()
+            .find(|c| c.has_tag_name("speedChangeRef"))
+            .and_then(|c| c.attribute("ref"))
+            .map(|x| x.to_string());
+        speeds.push(SignalSpeed {
+            kind: sp.attribute("kind").map(|x| x.to_string()),
+            train_relation: sp.attribute("trainRelation").map(|x| x.to_string()),
+            switchable: sp.attribute("switchable").and_then(|v| v.parse::<bool>().ok()),
+            speed_change_ref,
+        });
+    }
+    let etcs = s.children().find(|c| c.has_tag_name("etcs")).map(|e| {
+        Etcs {
+            level_1: e.attribute("level_1").or_else(|| e.attribute("level1")).and_then(|v| v.parse::<bool>().ok()),
+            level_2: e.attribute("level_2").or_else(|| e.attribute("level2")).and_then(|v| v.parse::<bool>().ok()),
+            level_3: e.attribute("level_3").or_else(|| e.attribute("level3")).and_then(|v| v.parse::<bool>().ok()),
+        }
+    });
     Ok(Signal {
         id: s
             .attribute("id")
@@ -425,6 +524,8 @@ fn parse_signal(s: &xml::Node) -> Result<Signal, DocErr> {
         code: s.attribute("code").map(|x| x.to_string()),
         switchable: s.attribute("switchable").and_then(|v| v.parse::<bool>().ok()),
         ocp_station_ref: s.attribute("ocpStationRef").map(|x| x.to_string()),
+        speeds,
+        etcs,
     })
 }
 

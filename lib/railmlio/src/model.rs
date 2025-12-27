@@ -70,11 +70,13 @@ pub struct Vehicle {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrackGroup {
     pub id: Id,
+    pub code: Option<String>,
     pub name: Option<String>,
     pub infrastructure_manager_ref: Option<String>,
     pub line_category: Option<String>,
     pub line_type: Option<String>,
     pub track_refs: Vec<TrackRef>,
+    pub additional_names: Vec<AdditionalName>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,8 +89,62 @@ pub struct TrackRef {
 pub struct Ocp {
     pub id: Id,
     pub name: Option<String>,
+    pub lang: Option<String>,
     pub r#type: Option<String>,
-    pub geo_coord: Option<String>,
+    pub geo_coord: Option<GeoCoord>,
+    pub additional_names: Vec<AdditionalName>,
+    pub prop_operational: Option<PropOperational>,
+    pub prop_equipment: Option<PropEquipment>,
+    pub prop_service: Option<PropService>,
+    pub designator: Option<Designator>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdditionalName {
+    pub name: String,
+    pub lang: Option<String>,
+    pub name_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Designator {
+    pub register: Option<String>,
+    pub entry: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropOperational {
+    pub ensures_train_sequence: Option<bool>,
+    pub order_changeable: Option<bool>,
+    pub operational_type: Option<String>,
+    pub traffic_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropService {
+    pub passenger: Option<bool>,
+    pub service: Option<bool>,
+    pub goods_siding: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropEquipmentSummary {
+    pub has_home_signals: Option<bool>,
+    pub has_starter_signals: Option<bool>,
+    pub has_switches: Option<bool>,
+    pub signal_box: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropEquipment {
+    pub summary: Option<PropEquipmentSummary>,
+    pub track_refs: Vec<IdRef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeoCoord {
+    pub coord: String,
+    pub epsg_code: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -309,6 +365,23 @@ pub struct Signal {
     pub code: Option<String>,
     pub switchable: Option<bool>,
     pub ocp_station_ref: Option<String>,
+    pub speeds: Vec<SignalSpeed>,
+    pub etcs: Option<Etcs>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SignalSpeed {
+    pub kind: Option<String>,
+    pub train_relation: Option<String>,
+    pub switchable: Option<bool>,
+    pub speed_change_ref: Option<IdRef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Etcs {
+    pub level_1: Option<bool>,
+    pub level_2: Option<bool>,
+    pub level_3: Option<bool>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

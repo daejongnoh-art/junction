@@ -422,7 +422,51 @@ fn write_objects(out: &mut String, objs: &Objects, level: usize) {
             if let Some(ocp) = &sig.ocp_station_ref {
                 push_attr(out, "ocpStationRef", ocp);
             }
-            out.push_str("/>\n");
+            if sig.etcs.is_none() && sig.speeds.is_empty() {
+                out.push_str("/>\n");
+            } else {
+                out.push_str(">\n");
+                if let Some(etcs) = &sig.etcs {
+                    push_indent(out, level + 3);
+                    out.push_str("<etcs");
+                    if let Some(v) = etcs.level_1 {
+                        push_attr(out, "level_1", if v { "true" } else { "false" });
+                    }
+                    if let Some(v) = etcs.level_2 {
+                        push_attr(out, "level_2", if v { "true" } else { "false" });
+                    }
+                    if let Some(v) = etcs.level_3 {
+                        push_attr(out, "level_3", if v { "true" } else { "false" });
+                    }
+                    out.push_str("/>\n");
+                }
+                for sp in &sig.speeds {
+                    push_indent(out, level + 3);
+                    out.push_str("<speed");
+                    if let Some(kind) = &sp.kind {
+                        push_attr(out, "kind", kind);
+                    }
+                    if let Some(rel) = &sp.train_relation {
+                        push_attr(out, "trainRelation", rel);
+                    }
+                    if let Some(sw) = sp.switchable {
+                        push_attr(out, "switchable", if sw { "true" } else { "false" });
+                    }
+                    if let Some(r) = &sp.speed_change_ref {
+                        out.push_str(">\n");
+                        push_indent(out, level + 4);
+                        out.push_str("<speedChangeRef");
+                        push_attr(out, "ref", r);
+                        out.push_str("/>\n");
+                        push_indent(out, level + 3);
+                        out.push_str("</speed>\n");
+                    } else {
+                        out.push_str("/>\n");
+                    }
+                }
+                push_indent(out, level + 2);
+                out.push_str("</signal>\n");
+            }
         }
         push_indent(out, level + 1);
         out.push_str("</signals>\n");
@@ -615,6 +659,9 @@ fn write_track_groups(out: &mut String, infra: &Infrastructure, level: usize) {
         push_indent(out, level + 1);
         out.push_str("<line");
         push_attr(out, "id", &line.id);
+        if let Some(code) = &line.code {
+            push_attr(out, "code", code);
+        }
         if let Some(name) = &line.name {
             push_attr(out, "name", name);
         }
@@ -627,11 +674,23 @@ fn write_track_groups(out: &mut String, infra: &Infrastructure, level: usize) {
         if let Some(ty) = &line.line_type {
             push_attr(out, "type", ty);
         }
-        if line.track_refs.is_empty() {
+        if line.track_refs.is_empty() && line.additional_names.is_empty() {
             out.push_str("/>\n");
             continue;
         }
         out.push_str(">\n");
+        for an in &line.additional_names {
+            push_indent(out, level + 2);
+            out.push_str("<additionalName");
+            push_attr(out, "name", &an.name);
+            if let Some(lang) = &an.lang {
+                push_attr(out, "xml:lang", lang);
+            }
+            if let Some(t) = &an.name_type {
+                push_attr(out, "type", t);
+            }
+            out.push_str("/>\n");
+        }
         for tr in &line.track_refs {
             push_indent(out, level + 2);
             out.push_str("<trackRef");
@@ -661,13 +720,129 @@ fn write_operation_control_points(out: &mut String, infra: &Infrastructure, leve
         if let Some(name) = &ocp.name {
             push_attr(out, "name", name);
         }
+        if let Some(lang) = &ocp.lang {
+            push_attr(out, "xml:lang", lang);
+        }
         if let Some(t) = &ocp.r#type {
             push_attr(out, "type", t);
         }
-        if let Some(gc) = &ocp.geo_coord {
-            push_attr(out, "geoCoord", gc);
+        if ocp.additional_names.is_empty()
+            && ocp.prop_operational.is_none()
+            && ocp.prop_equipment.is_none()
+            && ocp.prop_service.is_none()
+            && ocp.designator.is_none()
+            && ocp.geo_coord.is_none()
+        {
+            out.push_str("/>\n");
+            continue;
         }
-        out.push_str("/>\n");
+        out.push_str(">\n");
+
+        for an in &ocp.additional_names {
+            push_indent(out, level + 2);
+            out.push_str("<additionalName");
+            push_attr(out, "name", &an.name);
+            if let Some(lang) = &an.lang {
+                push_attr(out, "xml:lang", lang);
+            }
+            if let Some(t) = &an.name_type {
+                push_attr(out, "type", t);
+            }
+            out.push_str("/>\n");
+        }
+
+        if let Some(prop) = &ocp.prop_operational {
+            push_indent(out, level + 2);
+            out.push_str("<propOperational");
+            if let Some(v) = prop.ensures_train_sequence {
+                push_attr(out, "ensuresTrainSequence", if v { "true" } else { "false" });
+            }
+            if let Some(v) = prop.order_changeable {
+                push_attr(out, "orderChangeable", if v { "true" } else { "false" });
+            }
+            if let Some(v) = &prop.operational_type {
+                push_attr(out, "operationalType", v);
+            }
+            if let Some(v) = &prop.traffic_type {
+                push_attr(out, "trafficType", v);
+            }
+            out.push_str("/>\n");
+        }
+
+        if let Some(prop) = &ocp.prop_service {
+            push_indent(out, level + 2);
+            out.push_str("<propService");
+            if let Some(v) = prop.passenger {
+                push_attr(out, "passenger", if v { "true" } else { "false" });
+            }
+            if let Some(v) = prop.service {
+                push_attr(out, "service", if v { "true" } else { "false" });
+            }
+            if let Some(v) = prop.goods_siding {
+                push_attr(out, "goodsSiding", if v { "true" } else { "false" });
+            }
+            out.push_str("/>\n");
+        }
+
+        if let Some(prop) = &ocp.prop_equipment {
+            push_indent(out, level + 2);
+            out.push_str("<propEquipment");
+            if prop.summary.is_none() && prop.track_refs.is_empty() {
+                out.push_str("/>\n");
+            } else {
+                out.push_str(">\n");
+                if let Some(summary) = &prop.summary {
+                    push_indent(out, level + 3);
+                    out.push_str("<summary");
+                    if let Some(v) = summary.has_home_signals {
+                        push_attr(out, "hasHomeSignals", if v { "true" } else { "false" });
+                    }
+                    if let Some(v) = summary.has_starter_signals {
+                        push_attr(out, "hasStarterSignals", if v { "true" } else { "false" });
+                    }
+                    if let Some(v) = summary.has_switches {
+                        push_attr(out, "hasSwitches", if v { "true" } else { "false" });
+                    }
+                    if let Some(v) = &summary.signal_box {
+                        push_attr(out, "signalBox", v);
+                    }
+                    out.push_str("/>\n");
+                }
+                for tr in &prop.track_refs {
+                    push_indent(out, level + 3);
+                    out.push_str("<trackRef");
+                    push_attr(out, "ref", tr);
+                    out.push_str("/>\n");
+                }
+                push_indent(out, level + 2);
+                out.push_str("</propEquipment>\n");
+            }
+        }
+
+        if let Some(gc) = &ocp.geo_coord {
+            push_indent(out, level + 2);
+            out.push_str("<geoCoord");
+            push_attr(out, "coord", &gc.coord);
+            if let Some(code) = &gc.epsg_code {
+                push_attr(out, "epsgCode", code);
+            }
+            out.push_str("/>\n");
+        }
+
+        if let Some(des) = &ocp.designator {
+            push_indent(out, level + 2);
+            out.push_str("<designator");
+            if let Some(reg) = &des.register {
+                push_attr(out, "register", reg);
+            }
+            if let Some(entry) = &des.entry {
+                push_attr(out, "entry", entry);
+            }
+            out.push_str("/>\n");
+        }
+
+        push_indent(out, level + 1);
+        out.push_str("</ocp>\n");
     }
     push_indent(out, level);
     out.push_str("</operationControlPoints>\n");

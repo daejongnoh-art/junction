@@ -436,6 +436,8 @@ fn convert_topology_to_railml(topo: &Topology, model: &Model) -> RailML {
                                 crate::document::model::RailMLObjectInfo::Signal { ocp_station_ref, .. } => ocp_station_ref.clone(),
                                 _ => None,
                             }),
+                        speeds: Vec::new(),
+                        etcs: None,
                     });
                 }
                 Function::Detector => {
